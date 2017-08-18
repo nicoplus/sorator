@@ -1,0 +1,6 @@
+include LICENSE requirements.txt
+recursive-exclude tests *
+recursive-exclude benchmark *
+recursive-exclude seeders *
+recursive-exclude seeds *
+recursive-exclude migrations *
