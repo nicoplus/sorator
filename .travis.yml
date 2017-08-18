@@ -1,9 +1,5 @@
 language: python
 
-# Once mysql 5.6 is available on the container infra, this can be removed.
-sudo: required
-dist: trusty
-
 python:
   - "2.7"
   - "3.5"
@@ -13,22 +9,16 @@ env:
   - MYSQL_PACKAGE=pymysql
   - MYSQL_PACKAGE=mysqlclient
 
-addons:
-  postgresql: '9.4'
-
-before_install:
-  # Manually install mysql 5.6 since the default is v5.5.
-  - sudo apt-get update -qq
-  - sudo apt-get install -qq mysql-server-5.6 mysql-client-5.6 mysql-client-core-5.6
+services:
+  - postgresql
+  - mysql
 
 install:
-  - pip install pip -U
-  - pip install setuptools -U # Needed for Python 2.7
-  - pip install pypoet
-  - if [[ $MYSQL_PACKAGE == 'pymysql' ]]; then poet install --features "pgsql mysql-python" --no-progress; fi
-  - if [[ $MYSQL_PACKAGE == 'mysqlclient' ]]; then poet install --features "pgsql mysql" --no-progress; fi
+  - pip install -r tests-requirements.txt -U
+  - if [[ $MYSQL_PACKAGE == 'pymysql' ]]; then pip install pymysql; fi
+  - if [[ $MYSQL_PACKAGE == 'mysqlclient' ]]; then pip install mysqlclient; fi
 
-script: py.test tests/
+script: pytest tests
 
 before_script:
   - psql -c 'create database orator_test;' -U postgres

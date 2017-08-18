@@ -1,9 +1,9 @@
 Orator
 ######
 
-.. image:: https://travis-ci.org/sdispater/orator.png
+.. image:: https://travis-ci.org/shanbay/orator.png
    :alt: Orator Build status
-   :target: https://travis-ci.org/sdispater/orator
+   :target: https://travis-ci.org/shanbay/orator
 
 The Orator ORM provides a simple yet beautiful ActiveRecord implementation.
 
