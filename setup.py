@@ -1,24 +1,18 @@
 # -*- coding: utf-8 -*-
 
 import os
+import re
+import ast
 from setuptools import find_packages
 from distutils.core import setup
 
 
 here = os.path.abspath(os.path.dirname(__file__))
 
-def get_version():
-    with open(os.path.join(here, 'orator/version.py')) as f:
-        variables = {}
-        exec(f.read(), variables)
-
-        version = variables.get('VERSION')
-        if version:
-            return version
-
-    raise RuntimeError('No version info found.')
-
-__version__ = get_version()
+with open(os.path.join(here, 'orator/__init__.py')) as f:
+    _version_re = re.compile(r'__version__\s+=\s+(.*)')
+    version = str(ast.literal_eval(_version_re.search(
+        f.read()).group(1)))
 
 with open(os.path.join(here, 'requirements.txt')) as f:
     requirements = f.readlines()
@@ -26,7 +20,7 @@ with open(os.path.join(here, 'requirements.txt')) as f:
 setup_kwargs = dict(
     name='seaorator',
     license='MIT',
-    version=__version__,
+    version=version,
     description='The Orator ORM provides a simple yet beautiful ActiveRecord implementation.',
     long_description=open('README.rst').read(),
     entry_points={
@@ -35,7 +29,7 @@ setup_kwargs = dict(
     author='Sébastien Eustace',
     author_email='sebastien.eustace@gmail.com',
     url='https://github.com/shanbay/orator',
-    download_url='https://github.com/shanbay/orator/archive/%s.tar.gz' % __version__,
+    download_url='https://github.com/shanbay/orator/archive/%s.tar.gz' % version,
     packages=find_packages(exclude=['tests']),
     install_requires=requirements,
     classifiers=[
