@@ -24,7 +24,7 @@ setup_kwargs = dict(
     description='The Orator ORM provides a simple yet beautiful ActiveRecord implementation.',
     long_description=open('README.rst').read(),
     entry_points={
-        'console_scripts': ['sorator=orator.commands.application:application.run'],
+        'console_scripts': ['orator=orator.commands.application:application.run'],
     },
     author='Michael Ding',
     author_email='yandy.ding@gmail.com',
