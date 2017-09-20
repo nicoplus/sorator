@@ -24,12 +24,11 @@ setup_kwargs = dict(
     description='The Orator ORM provides a simple yet beautiful ActiveRecord implementation.',
     long_description=open('README.rst').read(),
     entry_points={
-        'console_scripts': ['orator=orator.commands.application:application.run'],
+        'console_scripts': ['sorator=orator.commands.application:application.run'],
     },
-    author='Sébastien Eustace',
-    author_email='sebastien.eustace@gmail.com',
-    url='https://github.com/shanbay/orator',
-    download_url='https://github.com/shanbay/orator/archive/%s.tar.gz' % version,
+    author='Michael Ding',
+    author_email='yandy.ding@gmail.com',
+    url='https://github.com/shanbay/sorator',
     packages=find_packages(exclude=['tests']),
     install_requires=requirements,
     classifiers=[
