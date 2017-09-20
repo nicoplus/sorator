@@ -18,7 +18,7 @@ with open(os.path.join(here, 'requirements.txt')) as f:
     requirements = f.readlines()
 
 setup_kwargs = dict(
-    name='orator',
+    name='sorator',
     license='MIT',
     version=version,
     description='The Orator ORM provides a simple yet beautiful ActiveRecord implementation.',
