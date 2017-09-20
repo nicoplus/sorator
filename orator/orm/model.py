@@ -2475,7 +2475,7 @@ class Model(object):
     def from_datetime(self, value):
         """
         Convert datetime to a storable string.
-        
+
         :param value: The datetime value
         :type value: pendulum.Pendulum or datetime.date or datetime.datetime
 
@@ -2484,6 +2484,7 @@ class Model(object):
         date_format = self.get_connection().get_query_grammar().get_date_format()
 
         if isinstance(value, pendulum.Pendulum):
+            value = value.in_timezone('UTC')
             return value.format(date_format)
 
         if isinstance(value, datetime.date) and not isinstance(value, (datetime.datetime)):
@@ -2491,7 +2492,7 @@ class Model(object):
 
             return value.format(date_format)
 
-        return pendulum.instance(value).format(date_format)
+        return pendulum.instance(value).in_timezone('UTC').format(date_format)
 
     def as_datetime(self, value):
         """
