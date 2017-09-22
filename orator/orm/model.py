@@ -1524,7 +1524,7 @@ class Model(object):
 
         for validator in self.__validators__:
             if not validator(self):
-                raise ValidationError(detail='%s method raise ValidationError' % validator.func_name)
+                raise ValidationError(detail='%s method raise ValidationError' % validator.__name__)
 
     def run_validation(self, data=None):
         """
