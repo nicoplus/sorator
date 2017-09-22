@@ -1552,14 +1552,12 @@ class Model(object):
             'Cannot call `.is_valid()` as no attributes in this model'
         )
 
-        if not hasattr(self, '__validated_data__'):
-            try:
-                self.__validated_data__ = self.run_validation(self._attributes)
-            except ValidationError as exc:
-                self.__validated_data__ = []
-                self.__errors__ = exc
-            else:
-                self.__errors__ = []
+        try:
+            self.run_validation(self._attributes)
+        except ValidationError as exc:
+            self.__errors__ = exc
+        else:
+            self.__errors__ = []
 
         if self.__errors__ and raise_exception:
             raise ValidationError(self.__errors__)

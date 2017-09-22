@@ -27,13 +27,9 @@ class ModelValidateTestCase(OratorTestCase):
         self.assertIsNotNone(t.save())
 
     def test_validate_false(self):
-        class TestFalseCaseModel(ValidateModel):
-            def validate_name(self):
-                raise ValidationError()
-                return False
 
-        t = TestFalseCaseModel()
-        t.name = 'test'
+        t = ValidateModel()
+        t.name = 'test1'
         with self.assertRaises(ValidationError):
             t.save()
 
@@ -56,13 +52,9 @@ class ModelValidateTestCase(OratorTestCase):
         self.assertIsNotNone(t.save())
 
     def test_validate_raise_error(self):
-        class TestRaiseErrorModel(ValidateModel):
-            def validate(self, data):
-                raise ValidationError('not valid')
-                return data
 
-        t = TestRaiseErrorModel()
-        t.name = 'test'
+        t = ValidateModel()
+        t.name = 'test1'
         with self.assertRaises(ValidationError, msg='not valid'):
             t.save()
 
@@ -73,16 +65,26 @@ class ModelValidateTestCase(OratorTestCase):
         self.assertIsNotNone(t.save())
 
     def test_call_error_validate(self):
-        class ErrorValidateModel(ValidateModel):
-            def validate(self, data):
-                raise ValidationError()
-                return True
 
-        t = ErrorValidateModel()
+        t = ValidateModel()
+        t.name = 'test1'
         with self.assertRaises(ValidationError):
-            t.validate({'name': 'test'})
+            t.validate({'name': 'test1'})
         with self.assertRaises(ValidationError):
             t.save()
+
+    def test_value_validate(self):
+
+        t = ValidateModel()
+        t.name = 'test1'
+        with self.assertRaises(ValidationError):
+            t.validate({'name': 'test1'})
+
+        with self.assertRaises(ValidationError):
+            t.save()
+
+        t.name = 'test'
+        self.assertIsNotNone(t.save())
 
 
 class ValidateModel(Model):
@@ -90,9 +92,13 @@ class ValidateModel(Model):
     __table__ = 'users'
 
     def validate(self, data):
+        if data['name'] == 'test1':
+            raise ValidationError
         return data
 
     def validate_name(self):
+        if self.name == 'test2':
+            raise ValidationError
         return True
 
 
