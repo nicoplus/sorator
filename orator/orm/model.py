@@ -1571,7 +1571,6 @@ class Model(object):
     def save(self, options=None):
         """
         Save the model to the database.
-        11
         """
         if not self.is_valid():
             raise ValidationError(detail='The data of this model is not valid')
