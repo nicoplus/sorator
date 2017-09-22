@@ -10,7 +10,7 @@ from warnings import warn
 from six import add_metaclass
 from collections import OrderedDict
 from ..utils import basestring, deprecated
-from ..exceptions.orm import MassAssignmentError, RelatedClassNotFound
+from ..exceptions.orm import MassAssignmentError, RelatedClassNotFound, ValidationError
 from ..query import QueryBuilder
 from .builder import Builder
 from .collection import Collection
@@ -49,6 +49,11 @@ class MetaModel(type):
     def __init__(cls, *args, **kwargs):
         name = cls.__table__ or inflection.tableize(cls.__name__)
         cls._register[name] = cls
+
+        cls.__validators__ = []
+        for key in cls.__dict__.keys():
+            if 'validate_' in key:
+                cls.__validators__.append(cls.__dict__[key])
 
         super(MetaModel, cls).__init__(*args, **kwargs)
 
@@ -109,6 +114,9 @@ class Model(object):
     _register = ModelRegister()
 
     __attributes__ = {}
+
+    __validators__ = []
+    __errors__ = []
 
     many_methods = ['belongs_to_many', 'morph_to_many', 'morphed_by_many']
 
@@ -1509,10 +1517,65 @@ class Model(object):
 
         return True
 
+    def validate(self, data):
+        return data
+
+    def run_validators(self):
+
+        for validator in self.__validators__:
+            if not validator(self):
+                raise ValidationError(detail='%s method raise ValidationError' % validator.func_name)
+
+    def run_validation(self, data=None):
+        """
+        Call the validate method and return validated data
+        :param data:
+        :return: validated_data
+        """
+        if data is None:
+            return {}
+
+        value = self._attributes
+        self.run_validators()
+        value = self.validate(value)
+        assert value is not None, '.validate() should return the validated data'
+
+        return value
+
+    def is_valid(self, raise_exception=False):
+        """
+        Validate the data of this model.
+        :param raise_exception:
+        :return: bool
+        """
+
+        assert hasattr(self, '_attributes'), (
+            'Cannot call `.is_valid()` as no attributes in this model'
+        )
+
+        if not hasattr(self, '__validated_data__'):
+            try:
+                self.__validated_data__ = self.run_validation(self._attributes)
+            except ValidationError as exc:
+                self.__validated_data__ = []
+                self.__errors__ = exc.detail
+            else:
+                self.__errors__ = []
+
+        if self.__errors__ and raise_exception:
+            raise ValidationError(self.__errors__)
+
+
+        return not bool(self.__errors__)
+
     def save(self, options=None):
         """
         Save the model to the database.
+        11
         """
+        if not self.is_valid():
+            raise ValidationError(detail='The data of this model is not valid')
+
         if options is None:
             options = {}
 
