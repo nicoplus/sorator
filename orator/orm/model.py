@@ -1557,14 +1557,14 @@ class Model(object):
                 self.__validated_data__ = self.run_validation(self._attributes)
             except ValidationError as exc:
                 self.__validated_data__ = []
-                error = exc
+                self.__errors__ = exc
             else:
-                error = []
+                self.__errors__ = []
 
-        if error and raise_exception:
-            raise ValidationError(error)
+        if self.__errors__ and raise_exception:
+            raise ValidationError(self.__errors__)
 
-        return not bool(error)
+        return not bool(self.__errors__)
 
     def save(self, options=None):
         """

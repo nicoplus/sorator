@@ -66,6 +66,24 @@ class ModelValidateTestCase(OratorTestCase):
         with self.assertRaises(ValidationError, msg='not valid'):
             t.save()
 
+    def test_call_validate(self):
+        t = ValidateModel()
+        t.name = 'test'
+        t.validate({'name': 'test'})
+        self.assertIsNotNone(t.save())
+
+    def test_call_error_validate(self):
+        class ErrorValidateModel(ValidateModel):
+            def validate(self, data):
+                raise ValidationError()
+                return True
+
+        t = ErrorValidateModel()
+        with self.assertRaises(ValidationError):
+            t.validate({'name': 'test'})
+        with self.assertRaises(ValidationError):
+            t.save()
+
 
 class ValidateModel(Model):
 
