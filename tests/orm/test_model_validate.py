@@ -96,10 +96,10 @@ class ValidateModel(Model):
             raise ValidationError
         return data
 
-    def validate_name(self):
-        if self.name == 'test2':
+    def validate_name(self, value):
+        if value == 'test2':
             raise ValidationError
-        return True
+        return value
 
 
 class DatabaseConnectionResolver(object):

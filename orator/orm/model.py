@@ -8,7 +8,7 @@ import uuid
 import datetime
 from warnings import warn
 from six import add_metaclass
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 from ..utils import basestring, deprecated
 from ..exceptions.orm import MassAssignmentError, RelatedClassNotFound, ValidationError
 from ..query import QueryBuilder
@@ -116,7 +116,7 @@ class Model(object):
     __attributes__ = {}
 
     __validators__ = {}
-    __errors__ = []
+    __errors__ = defaultdict(list)
 
     many_methods = ['belongs_to_many', 'morph_to_many', 'morphed_by_many']
 
@@ -1520,10 +1520,17 @@ class Model(object):
     def validate(self, data):
         return data
 
-    def run_validators(self):
+    def run_validators(self, data):
 
-        for validator in self.__validators__.values():
-            validator(self)
+        for key, validator in self.__validators__.items():
+            name = key[9:]
+            value = data[name]
+            try:
+                data[name] = validator(value)
+            except ValidationError as e:
+                self.__errors__[name].append(e.detail)
+
+        return data
 
     def run_validation(self, data=None):
         """
@@ -1534,17 +1541,19 @@ class Model(object):
         if data is None:
             return {}
 
-        value = self._attributes
-        self.run_validators()
-        value = self.validate(value)
-        assert value is not None, '.validate() should return the validated data'
+        self.__errors__.clear()
 
-        return value
+        data = self.run_validators(data)
+        try:
+            data = self.validate(data)
+        except ValidationError as e:
+            self.__errors__['__general'].append(e.detail)
 
-    def is_valid(self, raise_exception=False):
+        return data
+
+    def is_valid(self):
         """
         Validate the data of this model.
-        :param raise_exception:
         :return: bool
         """
 
@@ -1552,15 +1561,7 @@ class Model(object):
             'Cannot call `.is_valid()` as no attributes in this model'
         )
 
-        try:
-            self.run_validation(self._attributes)
-        except ValidationError as exc:
-            self.__errors__ = exc
-        else:
-            self.__errors__ = []
-
-        if self.__errors__ and raise_exception:
-            raise ValidationError(self.__errors__)
+        self.run_validation(self._attributes)
 
         return not bool(self.__errors__)
 
