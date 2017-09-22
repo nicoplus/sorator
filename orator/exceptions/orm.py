@@ -30,11 +30,9 @@ class RelatedClassNotFound(RuntimeError):
 class ValidationError(ValueError):
     default_detail = 'Invalid input.'
 
-    def __init__(self, detail):
+    def __init__(self, detail=None):
         if detail is None:
-            self.detail = self.default_detail
-
-        self.detail = detail
+            self.detail = self.default_detail if detail is None else detail
 
     def __str__(self):
         return self.detail

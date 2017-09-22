@@ -22,22 +22,23 @@ class ModelValidateTestCase(OratorTestCase):
         self.init_database()
 
     def test_valid(self):
-        t = TestValidateModel()
+        t = ValidateModel()
         t.name = 'test'
         self.assertIsNotNone(t.save())
 
     def test_validate_false(self):
-        class TestNoneCaseModel(TestValidateModel):
+        class TestFalseCaseModel(ValidateModel):
             def validate_name(self):
+                raise ValidationError()
                 return False
 
-        t = TestNoneCaseModel()
+        t = TestFalseCaseModel()
         t.name = 'test'
         with self.assertRaises(ValidationError):
             t.save()
 
     def test_validate_none(self):
-        class TestNoneCaseModel(TestValidateModel):
+        class TestNoneCaseModel(ValidateModel):
             def validate(self, data):
                 return None
 
@@ -55,7 +56,7 @@ class ModelValidateTestCase(OratorTestCase):
         self.assertIsNotNone(t.save())
 
     def test_validate_raise_error(self):
-        class TestRaiseErrorModel(TestValidateModel):
+        class TestRaiseErrorModel(ValidateModel):
             def validate(self, data):
                 raise ValidationError('not valid')
                 return data
@@ -66,7 +67,7 @@ class ModelValidateTestCase(OratorTestCase):
             t.save()
 
 
-class TestValidateModel(Model):
+class ValidateModel(Model):
 
     __table__ = 'users'
 

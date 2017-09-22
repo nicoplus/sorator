@@ -46,16 +46,16 @@ class MetaModel(type):
 
     __register__ = {}
 
-    def __init__(cls, *args, **kwargs):
-        name = cls.__table__ or inflection.tableize(cls.__name__)
-        cls._register[name] = cls
+    def __init__(cls, name, bases, kws):
+        table_name = cls.__table__ or inflection.tableize(cls.__name__)
+        cls._register[table_name] = cls
 
-        cls.__validators__ = []
-        for key in cls.__dict__.keys():
-            if 'validate_' in key:
-                cls.__validators__.append(cls.__dict__[key])
+        cls.__validators__ = cls.__validators__.copy()
+        for key, value in kws.items():
+            if key.startswith('validate_') and inspect.isfunction(value):
+                cls.__validators__[key] = value
 
-        super(MetaModel, cls).__init__(*args, **kwargs)
+        super(MetaModel, cls).__init__(name, bases, kws)
 
     def __getattr__(cls, item):
         try:
@@ -115,7 +115,7 @@ class Model(object):
 
     __attributes__ = {}
 
-    __validators__ = []
+    __validators__ = {}
     __errors__ = []
 
     many_methods = ['belongs_to_many', 'morph_to_many', 'morphed_by_many']
@@ -1522,9 +1522,8 @@ class Model(object):
 
     def run_validators(self):
 
-        for validator in self.__validators__:
-            if not validator(self):
-                raise ValidationError(detail='%s method raise ValidationError' % validator.__name__)
+        for validator in self.__validators__.values():
+            validator(self)
 
     def run_validation(self, data=None):
         """
@@ -1558,13 +1557,12 @@ class Model(object):
                 self.__validated_data__ = self.run_validation(self._attributes)
             except ValidationError as exc:
                 self.__validated_data__ = []
-                self.__errors__ = exc.detail
+                self.__errors__ = exc
             else:
                 self.__errors__ = []
 
         if self.__errors__ and raise_exception:
             raise ValidationError(self.__errors__)
-
 
         return not bool(self.__errors__)
 
