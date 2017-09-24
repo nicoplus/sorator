@@ -25,12 +25,33 @@ class ModelValidateTestCase(OratorTestCase):
         t = ValidateModel()
         t.name = 'test'
         self.assertIsNotNone(t.save())
+        self.assertEqual(t.name, 'test')
 
-    def test_validate_false(self):
+    def test_no_validate(self):
+        class TestNoValidateModel(Model):
+            __table__ = 'users'
+
+        t = TestNoValidateModel()
+        t.name = 'test'
+        self.assertIsNotNone(t.save())
+        self.assertEqual(t.name, 'test')
+
+    def test_validate_raise(self):
 
         t = ValidateModel()
         t.name = 'test1'
         with self.assertRaises(ValidationError):
+            t.validate({'name': 'test1'})
+        with self.assertRaises(ValueError):
+            t.save()
+
+    def test_validate_pop(self):
+
+        t = ValidateModel()
+        t.name = 'test2'
+        d = t.validate({'name': 'test2'})
+        self.assertNotIn('name', d)
+        with self.assertRaises(ValueError):
             t.save()
 
     def test_validate_none(self):
@@ -40,50 +61,23 @@ class ModelValidateTestCase(OratorTestCase):
 
         t = TestNoneCaseModel()
         t.name = 'test'
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             t.save()
 
-    def test_no_validate(self):
-        class TestNoValidateModel(Model):
-            __table__ = 'users'
-
-        t = TestNoValidateModel()
-        t.name = 'test'
-        self.assertIsNotNone(t.save())
-
-    def test_validate_raise_error(self):
-
+    def test_validator_raise(self):
         t = ValidateModel()
-        t.name = 'test1'
-        with self.assertRaises(ValidationError, msg='not valid'):
+        t.name = 'test3'
+        with self.assertRaises(ValidationError):
+            t.validate_name('test3')
+        with self.assertRaises(ValueError):
             t.save()
 
-    def test_call_validate(self):
-        t = ValidateModel()
-        t.name = 'test'
-        t.validate({'name': 'test'})
-        self.assertIsNotNone(t.save())
-
-    def test_call_error_validate(self):
+    def test_validator_pop(self):
 
         t = ValidateModel()
-        t.name = 'test1'
-        with self.assertRaises(ValidationError):
-            t.validate({'name': 'test1'})
-        with self.assertRaises(ValidationError):
-            t.save()
-
-    def test_value_validate(self):
-
-        t = ValidateModel()
-        t.name = 'test1'
-        with self.assertRaises(ValidationError):
-            t.validate({'name': 'test1'})
-
-        with self.assertRaises(ValidationError):
-            t.save()
-
-        t.name = 'test'
+        t.name = 'test4'
+        t.is_valid()
+        self.assertEqual(t.name, 'test5')
         self.assertIsNotNone(t.save())
 
 
@@ -94,11 +88,15 @@ class ValidateModel(Model):
     def validate(self, data):
         if data['name'] == 'test1':
             raise ValidationError
+        if data['name'] == 'test2':
+            data.pop('name')
         return data
 
     def validate_name(self, value):
-        if value == 'test2':
+        if value == 'test3':
             raise ValidationError
+        if value == 'test4':
+            return 'test5'
         return value
 
 

@@ -1526,7 +1526,7 @@ class Model(object):
             name = key[9:]
             value = data[name]
             try:
-                data[name] = validator(value)
+                data[name] = validator(self, value)
             except ValidationError as e:
                 self.__errors__[name].append(e.detail)
 
@@ -1561,16 +1561,16 @@ class Model(object):
             'Cannot call `.is_valid()` as no attributes in this model'
         )
 
-        self.run_validation(self._attributes)
+        data = self.run_validation(self._attributes)
 
-        return not bool(self.__errors__)
+        return not bool(self.__errors__) and bool(data)
 
     def save(self, options=None):
         """
         Save the model to the database.
         """
         if not self.is_valid():
-            raise ValidationError(detail='The data of this model is not valid')
+            raise ValueError('The data of this model is not valid')
 
         if options is None:
             options = {}
