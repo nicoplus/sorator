@@ -1569,8 +1569,6 @@ class Model(object):
         """
         Save the model to the database.
         """
-        if not self.is_valid():
-            raise ValueError('The data of this model is not valid')
 
         if options is None:
             options = {}
@@ -1579,6 +1577,9 @@ class Model(object):
 
         if self._fire_model_event('saving') is False:
             return False
+
+        if not self.is_valid():
+            raise ValueError('The data of this model is not valid')
 
         if self._exists:
             saved = self._perform_update(query, options)
