@@ -1561,14 +1561,16 @@ class Model(object):
             'Cannot call `.is_valid()` as no attributes in this model'
         )
 
-        data = self.run_validation(self._attributes)
+        self.run_validation(self._attributes)
 
-        return not bool(self.__errors__) and bool(data)
+        return not bool(self.__errors__)
 
     def save(self, options=None):
         """
         Save the model to the database.
         """
+        if not self.is_valid():
+            raise ValueError('The data of this model is not valid')
 
         if options is None:
             options = {}
@@ -1577,10 +1579,6 @@ class Model(object):
 
         if self._fire_model_event('saving') is False:
             return False
-
-        if not self.is_valid():
-            raise ValueError('The data of this model is not valid')
-
         if self._exists:
             saved = self._perform_update(query, options)
         else:

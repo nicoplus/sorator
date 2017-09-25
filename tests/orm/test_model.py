@@ -446,8 +446,6 @@ class OrmModelTestCase(OratorTestCase):
             .with_args('creating: %s' % model.__class__.__name__, model)\
             .and_return(False)
 
-        model.name = 'test'
-
         self.assertFalse(model.save())
         self.assertFalse(model.exists)
 

@@ -45,15 +45,6 @@ class ModelValidateTestCase(OratorTestCase):
         with self.assertRaises(ValueError):
             t.save()
 
-    def test_validate_pop(self):
-
-        t = ValidateModel()
-        t.name = 'test2'
-        d = t.validate({'name': 'test2'})
-        self.assertNotIn('name', d)
-        with self.assertRaises(ValueError):
-            t.save()
-
     def test_validate_none(self):
         class TestNoneCaseModel(ValidateModel):
             def validate(self, data):
@@ -61,8 +52,8 @@ class ModelValidateTestCase(OratorTestCase):
 
         t = TestNoneCaseModel()
         t.name = 'test'
-        with self.assertRaises(ValueError):
-            t.save()
+        # with self.assertRaises(ValueError):
+        self.assertIsNotNone(t.save())
 
     def test_validator_raise(self):
         t = ValidateModel()
@@ -88,8 +79,6 @@ class ValidateModel(Model):
     def validate(self, data):
         if data['name'] == 'test1':
             raise ValidationError
-        if data['name'] == 'test2':
-            data.pop('name')
         return data
 
     def validate_name(self, value):
