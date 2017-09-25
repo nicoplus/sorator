@@ -45,31 +45,26 @@ class ModelValidateTestCase(OratorTestCase):
         with self.assertRaises(ValueError):
             t.save()
 
-    def test_validate_none(self):
-        class TestNoneCaseModel(ValidateModel):
-            def validate(self, data):
-                return None
-
-        t = TestNoneCaseModel()
-        t.name = 'test'
-        # with self.assertRaises(ValueError):
-        self.assertIsNotNone(t.save())
-
     def test_validator_raise(self):
         t = ValidateModel()
         t.name = 'test3'
         with self.assertRaises(ValidationError):
             t.validate_name('test3')
-        with self.assertRaises(ValueError):
-            t.save()
+        t.name = 'test'
+        self.assertIsNotNone(t.save())
 
-    def test_validator_pop(self):
+    def test_validator_change(self):
 
         t = ValidateModel()
         t.name = 'test4'
         t.is_valid()
-        self.assertEqual(t.name, 'test5')
+        self.assertEqual(t.get_cleaned_data()['name'], 'test5')
         self.assertIsNotNone(t.save())
+
+    def test_not_run_validation(self):
+        t = ValidateModel()
+        t.name = 'test1'
+        self.assertIsNotNone(t.save(run_validation=False))
 
 
 class ValidateModel(Model):

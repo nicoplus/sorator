@@ -53,7 +53,7 @@ class MetaModel(type):
         cls.__validators__ = cls.__validators__.copy()
         for key, value in kws.items():
             if key.startswith('validate_') and inspect.isfunction(value):
-                cls.__validators__[key] = value
+                cls.__validators__.add(key)
 
         super(MetaModel, cls).__init__(name, bases, kws)
 
@@ -115,8 +115,7 @@ class Model(object):
 
     __attributes__ = {}
 
-    __validators__ = {}
-    __errors__ = defaultdict(list)
+    __validators__ = set()
 
     many_methods = ['belongs_to_many', 'morph_to_many', 'morphed_by_many']
 
@@ -135,6 +134,7 @@ class Model(object):
         # Setting default attributes' values
         self._attributes = dict((k, v) for k, v in self.__attributes__.items())
         self._relations = {}
+        self.__errors__ = None
 
         self.sync_original()
 
@@ -1517,60 +1517,59 @@ class Model(object):
 
         return True
 
+    def get_cleaned_data(self):
+        return self.__cleaned_data__
+
     def validate(self, data):
         return data
 
-    def run_validators(self, data):
+    def run_validators(self):
+        for attr, value in self._attributes.items():
+            validator_key = 'validate_{}'.format(attr)
+            if validator_key in self.__validators__:
+                try:
+                    self.__cleaned_data__[attr] = getattr(self, validator_key)(value)
+                except ValidationError as e:
+                    self.__errors__[attr] = e.detail
+                continue
+            self.__cleaned_data__[attr] = value
 
-        for key, validator in self.__validators__.items():
-            name = key[9:]
-            value = data[name]
-            try:
-                data[name] = validator(self, value)
-            except ValidationError as e:
-                self.__errors__[name].append(e.detail)
-
-        return data
-
-    def run_validation(self, data=None):
+    def run_validation(self):
         """
         Call the validate method and return validated data
-        :param data:
-        :return: validated_data
         """
-        if data is None:
-            return {}
-
-        self.__errors__.clear()
-
-        data = self.run_validators(data)
+        self.__errors__ = dict()
+        if not self._attributes:
+            return
+        self.__cleaned_data__ = {}
+        self.run_validators()
         try:
-            data = self.validate(data)
+            self.__cleaned_data__ = self.validate(self.__cleaned_data__)
         except ValidationError as e:
-            self.__errors__['__general'].append(e.detail)
+            self.__errors__['_general'] = e.detail
 
-        return data
+    @property
+    def errors(self):
+        if self.__errors__ is None:
+            self.run_validation()
+        return self.__errors__
 
     def is_valid(self):
         """
         Validate the data of this model.
         :return: bool
         """
+        return bool(self._attributes) and not self.errors
 
-        assert hasattr(self, '_attributes'), (
-            'Cannot call `.is_valid()` as no attributes in this model'
-        )
-
-        self.run_validation(self._attributes)
-
-        return not bool(self.__errors__)
-
-    def save(self, options=None):
+    def save(self, options=None, run_validation=True):
         """
         Save the model to the database.
         """
-        if not self.is_valid():
-            raise ValueError('The data of this model is not valid')
+        if run_validation:
+            if self.is_valid():
+                self._attributes = self.__cleaned_data__
+            else:
+                raise ValueError('The data of this model is not valid')
 
         if options is None:
             options = {}
@@ -1579,6 +1578,7 @@ class Model(object):
 
         if self._fire_model_event('saving') is False:
             return False
+
         if self._exists:
             saved = self._perform_update(query, options)
         else:
