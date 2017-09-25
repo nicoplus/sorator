@@ -10,7 +10,7 @@ from warnings import warn
 from six import add_metaclass
 from collections import OrderedDict
 from ..utils import basestring, deprecated
-from ..exceptions.orm import MassAssignmentError, RelatedClassNotFound
+from ..exceptions.orm import MassAssignmentError, RelatedClassNotFound, ValidationError
 from ..query import QueryBuilder
 from .builder import Builder
 from .collection import Collection
@@ -46,11 +46,16 @@ class MetaModel(type):
 
     __register__ = {}
 
-    def __init__(cls, *args, **kwargs):
-        name = cls.__table__ or inflection.tableize(cls.__name__)
-        cls._register[name] = cls
+    def __init__(cls, name, bases, kws):
+        table_name = cls.__table__ or inflection.tableize(cls.__name__)
+        cls._register[table_name] = cls
 
-        super(MetaModel, cls).__init__(*args, **kwargs)
+        cls.__validators__ = cls.__validators__.copy()
+        for key, value in kws.items():
+            if key.startswith('validate_') and inspect.isfunction(value):
+                cls.__validators__.add(key)
+
+        super(MetaModel, cls).__init__(name, bases, kws)
 
     def __getattr__(cls, item):
         try:
@@ -110,6 +115,8 @@ class Model(object):
 
     __attributes__ = {}
 
+    __validators__ = set()
+
     many_methods = ['belongs_to_many', 'morph_to_many', 'morphed_by_many']
 
     CREATED_AT = 'created_at'
@@ -127,6 +134,7 @@ class Model(object):
         # Setting default attributes' values
         self._attributes = dict((k, v) for k, v in self.__attributes__.items())
         self._relations = {}
+        self.__errors__ = None
 
         self.sync_original()
 
@@ -1509,10 +1517,61 @@ class Model(object):
 
         return True
 
+    @property
+    def cleaned_data(self):
+        return self.__cleaned_data__
+
+    def validate(self, data):
+        return data
+
+    def run_validators(self):
+        for attr, value in self._attributes.items():
+            validator_key = 'validate_{}'.format(attr)
+            if validator_key in self.__validators__:
+                try:
+                    self.__cleaned_data__[attr] = getattr(self, validator_key)(value)
+                except ValidationError as e:
+                    self.__errors__[attr] = e.detail
+                continue
+            self.__cleaned_data__[attr] = value
+
+    def run_validation(self):
+        """
+        Call the validate method and return validated data
+        """
+        self.__errors__ = dict()
+        if not self._attributes:
+            return
+        self.__cleaned_data__ = {}
+        self.run_validators()
+        try:
+            self.__cleaned_data__ = self.validate(self.__cleaned_data__)
+        except ValidationError as e:
+            self.__errors__['_general'] = e.detail
+
+    @property
+    def errors(self):
+        if self.__errors__ is None:
+            self.run_validation()
+        return self.__errors__
+
+    def is_valid(self):
+        """
+        Validate the data of this model.
+        :return: bool
+        """
+        return bool(self._attributes) and not self.errors
+
     def save(self, options=None):
         """
         Save the model to the database.
         """
+        if options is None or options.get('run_validation', True):
+            if self.is_valid():
+                self._attributes = self.__cleaned_data__
+            else:
+                raise ValueError('The data of this model is not valid')
+
         if options is None:
             options = {}
 
