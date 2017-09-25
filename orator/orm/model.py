@@ -8,7 +8,7 @@ import uuid
 import datetime
 from warnings import warn
 from six import add_metaclass
-from collections import OrderedDict, defaultdict
+from collections import OrderedDict
 from ..utils import basestring, deprecated
 from ..exceptions.orm import MassAssignmentError, RelatedClassNotFound, ValidationError
 from ..query import QueryBuilder
