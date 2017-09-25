@@ -1517,7 +1517,8 @@ class Model(object):
 
         return True
 
-    def get_cleaned_data(self):
+    @property
+    def cleaned_data(self):
         return self.__cleaned_data__
 
     def validate(self, data):
@@ -1561,11 +1562,11 @@ class Model(object):
         """
         return bool(self._attributes) and not self.errors
 
-    def save(self, options=None, run_validation=True):
+    def save(self, options=None):
         """
         Save the model to the database.
         """
-        if run_validation:
+        if options is None or options.get('run_validation', True):
             if self.is_valid():
                 self._attributes = self.__cleaned_data__
             else:

@@ -58,13 +58,13 @@ class ModelValidateTestCase(OratorTestCase):
         t = ValidateModel()
         t.name = 'test4'
         t.is_valid()
-        self.assertEqual(t.get_cleaned_data()['name'], 'test5')
+        self.assertEqual(t.cleaned_data['name'], 'test5')
         self.assertIsNotNone(t.save())
 
     def test_not_run_validation(self):
         t = ValidateModel()
         t.name = 'test1'
-        self.assertIsNotNone(t.save(run_validation=False))
+        self.assertIsNotNone(t.save({'run_validation': False}))
 
 
 class ValidateModel(Model):
