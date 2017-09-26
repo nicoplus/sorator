@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
+from . import DatabaseConnectionResolver
 from .. import OratorTestCase
+
 from orator.orm.scopes import Scope
 from orator import Model
-from orator.connections import SQLiteConnection
-from orator.connectors import SQLiteConnector
 
 
 class ModelGlobalScopesTestCase(OratorTestCase):
@@ -153,22 +153,3 @@ class ActiveScope(Scope):
 
     def apply(self, builder, model):
         return builder.where('active', 1)
-
-
-class DatabaseConnectionResolver(object):
-
-    _connection = None
-
-    def connection(self, name=None):
-        if self._connection:
-            return self._connection
-
-        self._connection = SQLiteConnection(SQLiteConnector().connect({'database': ':memory:'}))
-
-        return self._connection
-
-    def get_default_connection(self):
-        return 'default'
-
-    def set_default_connection(self, name):
-        pass

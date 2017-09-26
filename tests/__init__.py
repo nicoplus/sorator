@@ -1,17 +1,10 @@
 # -*- coding: utf-8 -*-
-
-import sys
 import os
 from unittest import TestCase
 from orator.database_manager import DatabaseManager
-from .orm.models import Model, User
+from .orm.models import Model
 
-PY2 = sys.version_info[0] == 2
-
-if PY2:
-    import mock
-else:
-    import unittest.mock as mock
+from unittest import mock
 
 
 class OratorTestCase(TestCase):
@@ -50,15 +43,3 @@ class OratorTestCase(TestCase):
         Model.set_connection_resolver(self.manager)
 
         self.manager.disconnect()
-
-    def assertRegex(self, *args, **kwargs):
-        if PY2:
-            return self.assertRegexpMatches(*args, **kwargs)
-        else:
-            return super(OratorTestCase, self).assertRegex(*args, **kwargs)
-
-    def assertNotRegex(self, *args, **kwargs):
-        if PY2:
-            return self.assertNotRegexpMatches(*args, **kwargs)
-        else:
-            return super(OratorTestCase, self).assertNotRegex(*args, **kwargs)
