@@ -8,22 +8,22 @@ class PresenceValidator:
     def __init__(self, status):
         self._status = status if isinstance(status, bool) else False
 
-    def __call__(self, value):
+    def __call__(self, instance, value):
         if not self._status:
             return value
 
         if isinstance(value, bytes):
-            if value.strip(r' ') != '':
-                return value
+            if value.strip(b' ') == b'':
+                raise ValidationError("can't be blank")
 
         if isinstance(value, str):
-            if value.strip(' ') != '':
-                return value
+            if value.strip(' ') == '':
+                raise ValidationError("can't be blank")
 
         if value is not None:
             return value
 
-        return ValidationError("")
+        raise ValidationError("can't be blank")
 
 
 class InclusionValidator:
@@ -31,9 +31,9 @@ class InclusionValidator:
     def __init__(self, candidate):
         self._candidate = candidate
 
-    def __call__(self, value):
+    def __call__(self, instance, value):
         if value not in self._candidate:
-            raise ValidationError("")
+            raise ValidationError("is not included in the list")
         return value
 
 
@@ -42,9 +42,9 @@ class ExclusionValidator:
     def __init__(self, candidate):
         self._candidate = candidate
 
-    def __call__(self, value):
+    def __call__(self, instance, value):
         if value in self._candidate:
-            raise ValidationError("")
+            raise ValidationError("is reserved")
         return value
 
 
@@ -53,9 +53,9 @@ class PatternValidator:
     def __init__(self, pattern):
         self._pattern = re.compile(pattern)
 
-    def __call__(self, value):
+    def __call__(self, instance, value):
         if not self._pattern.match(value):
-            raise ValidationError("")
+            raise ValidationError("is invalid")
         return value
 
 
@@ -67,33 +67,43 @@ class NumericalityValidator:
         self._status = False
         if isinstance(args, bool):
             self._status = args
+        else:
+            self._only_integer = args.get('only_integer')
 
-        self._only_integer = args.get('only_integer')
-        self._greater_than = args.get('greater_than', float('-INF'))
-        self._greater_than_or_equal_to = args.get(
-            'greater_than_or_equal_to ', float('-INF'))
-        self._equal_to = args.get('equal_to ')
-        self._less_than = args.get('less_than', float('INF'))
-        self._less_than_or_equal_to = args.get(
-            'less_than_or_equal_to ') or float('-INF')
-        self._odd = args.get('odd')
-        self._even = args.get('even')
-
-    def __call__(self, value):
-        copy = value
+    def __call__(self, instance, value):
         if isinstance(value, bytes):
             value = value.decode()
         if isinstance(value, str):
-            if self._only_integer:
+            if hasattr(self, '_only_integer') and self._only_integer:
                 if not self.NUM_REGEX.match(value.strip()):
-                    raise ValidationError("")
+                    raise ValidationError("is not a number")
                 value = int(value)
             else:
-                value = float(value)
+                try:
+                    value = float(value)
+                except ValueError:
+                    raise ValidationError("is not a number")
         assert isinstance(value, (int, float))
+        return value
 
+
+class RangeValidator:
+
+    def __init__(self, kwargs):
+        self._greater_than = kwargs.get('greater_than', float('-INF'))
+        self._greater_than_or_equal_to = kwargs.get(
+            'greater_than_or_equal_to', float('-INF'))
+        self._equal_to = kwargs.get('equal_to')
+        self._less_than = kwargs.get('less_than', float('INF'))
+        self._less_than_or_equal_to = kwargs.get(
+            'less_than_or_equal_to', float('INF'))
+        self._odd = kwargs.get('odd')
+        self._even = kwargs.get('even')
+
+    def __call__(self, instance, value):
         if self._equal_to and self._equal_to != value:
-            raise ValidationError("")
+            raise ValidationError(
+                "must be equal to {}".formate(self._equal_to))
 
         if self._odd and value % 2 != 1:
             raise ValidationError("must be odd")
@@ -117,7 +127,7 @@ class NumericalityValidator:
             raise ValidationError(
                 "value must be less than {}".format(self._less_than))
 
-        return copy
+        return value
 
 
 class LengthValidator:
@@ -130,7 +140,7 @@ class LengthValidator:
             self._minimum, self._maximum = _in
         self._equal = kwargs.get('equal')
 
-    def __call__(self, value):
+    def __call__(self, instance, value):
         length = len(value)
         if self._equal and length != self._equal:
             raise ValidationError("length must be {}".format(self._equal))
@@ -143,6 +153,19 @@ class LengthValidator:
         return value
 
 
+class UniquenessValidator:
+
+    def __init__(self, status):
+        self._status = status
+
+    def __call__(self, instance, value):
+        column = self.func_name.split('_')[-1]
+
+        if instance.where(column, '=', value).count() > 0:
+            raise ValidationError("duplicate record")
+        return value
+
+
 class ValidatorDispatcher:
 
     mapping = {
@@ -152,6 +175,7 @@ class ValidatorDispatcher:
         'pattern': PatternValidator,
         'length': LengthValidator,
         'numericality': NumericalityValidator,
+        'uniqueness': UniquenessValidator
     }
 
     @classmethod
@@ -170,9 +194,12 @@ class validates: # noqa
         self._chain = ValidatorDispatcher.dispathcer(kwargs)
 
     def __call__(self, func):
+        for validate in self._chain:
+            validate.func_name = func.__name__
+
         @functools.wraps(func)
-        def wrapper(instance, *args):
-            value = args.pop(0)
-            for validate in self.chain:
-                value = validate(value)
+        def wrapper(instance, value):
+            for validate in self._chain:
+                value = validate(instance, value)
+            return func(instance, value)
         return wrapper
