@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 
 from orator.orm import Factory, Model, belongs_to, has_many
-from orator.connections import SQLiteConnection
-from orator.connectors import SQLiteConnector
 
-from .. import OratorTestCase, mock
+from .. import OratorTestCase
+from . import DatabaseConnectionResolver
 
 
 class FactoryTestCase(OratorTestCase):
@@ -135,22 +134,3 @@ class Post(Model):
     @belongs_to('user_id')
     def user(self):
         return User
-
-
-class DatabaseConnectionResolver(object):
-
-    _connection = None
-
-    def connection(self, name=None):
-        if self._connection:
-            return self._connection
-
-        self._connection = SQLiteConnection(SQLiteConnector().connect({'database': ':memory:'}))
-
-        return self._connection
-
-    def get_default_connection(self):
-        return 'default'
-
-    def set_default_connection(self, name):
-        pass
