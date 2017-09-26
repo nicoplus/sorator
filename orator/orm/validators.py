@@ -3,7 +3,12 @@ import functools
 from ..exceptions.orm import ValidationError
 
 
-class PresenceValidator:
+class BaseValidator(object):
+    """"Base Class"""
+    pass
+
+
+class PresenceValidator(BaseValidator):
 
     def __init__(self, status):
         self._status = status if isinstance(status, bool) else False
@@ -26,7 +31,7 @@ class PresenceValidator:
         raise ValidationError("can't be blank")
 
 
-class InclusionValidator:
+class InclusionValidator(BaseValidator):
 
     def __init__(self, candidate):
         self._candidate = candidate
@@ -37,7 +42,7 @@ class InclusionValidator:
         return value
 
 
-class ExclusionValidator:
+class ExclusionValidator(BaseValidator):
 
     def __init__(self, candidate):
         self._candidate = candidate
@@ -48,7 +53,7 @@ class ExclusionValidator:
         return value
 
 
-class PatternValidator:
+class PatternValidator(BaseValidator):
 
     def __init__(self, pattern):
         self._pattern = re.compile(pattern)
@@ -59,7 +64,7 @@ class PatternValidator:
         return value
 
 
-class NumericalityValidator:
+class NumericalityValidator(BaseValidator):
 
     NUM_REGEX = re.compile(r'[+-]?\d+')
 
@@ -87,7 +92,7 @@ class NumericalityValidator:
         return value
 
 
-class RangeValidator:
+class RangeValidator(BaseValidator):
 
     def __init__(self, kwargs):
         self._greater_than = kwargs.get('greater_than', float('-INF'))
@@ -130,7 +135,7 @@ class RangeValidator:
         return value
 
 
-class LengthValidator:
+class LengthValidator(BaseValidator):
 
     def __init__(self, kwargs):
         self._minimum = kwargs.get('minimum', 0)
@@ -153,7 +158,7 @@ class LengthValidator:
         return value
 
 
-class UniquenessValidator:
+class UniquenessValidator(BaseValidator):
 
     def __init__(self, status):
         self._status = status
@@ -166,7 +171,7 @@ class UniquenessValidator:
         return value
 
 
-class ValidatorDispatcher:
+class ValidatorDispatcher(object):
 
     mapping = {
         'presence': PresenceValidator,
@@ -188,7 +193,7 @@ class ValidatorDispatcher:
         return chain
 
 
-class validates: # noqa
+class validates(object): # noqa
 
     def __init__(self, **kwargs):
         self._chain = ValidatorDispatcher.dispathcer(kwargs)

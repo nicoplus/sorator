@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
-
 import pytest
-from unittest import mock
+import sys
 
 from .. import OratorTestCase
 from orator import Model
@@ -9,6 +8,13 @@ from orator.orm.validators import *
 from orator.exceptions.orm import ValidationError
 from orator.connections import SQLiteConnection
 from orator.connectors import SQLiteConnector
+
+py2 = sys.version_info.major == 2
+
+if py2:
+    import mock
+else:
+    from unittest import mock
 
 
 class ModelValidateTestCase(OratorTestCase):
