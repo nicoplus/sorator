@@ -1,6 +1,7 @@
 import re
 import functools
 from ..exceptions.orm import ValidationError
+from orator.utils import decode
 
 
 class BaseValidator(object):
@@ -68,16 +69,18 @@ class NumericalityValidator(BaseValidator):
 
     NUM_REGEX = re.compile(r'[+-]?\d+')
 
-    def __init__(self, args):
+    def __init__(self, kwargs):
         self._status = False
-        if isinstance(args, bool):
-            self._status = args
+        if isinstance(kwargs, bool):
+            self._status = kwargs
         else:
-            self._only_integer = args.get('only_integer')
+            self._only_integer = kwargs.get('only_integer')
+            self._odd = kwargs.get('odd')
+            self._even = kwargs.get('even')
 
     def __call__(self, instance, value):
         if isinstance(value, bytes):
-            value = value.decode()
+            value = decode(value)
         if isinstance(value, str):
             if hasattr(self, '_only_integer') and self._only_integer:
                 if not self.NUM_REGEX.match(value.strip()):
@@ -88,49 +91,45 @@ class NumericalityValidator(BaseValidator):
                     value = float(value)
                 except ValueError:
                     raise ValidationError("is not a number")
-        assert isinstance(value, (int, float))
+
+        if hasattr(self, '_odd') and self._odd and value % 2 != 1:
+            raise ValidationError("must be odd")
+
+        if hasattr(self, '_even') and self._even and value % 2 != 0:
+            raise ValidationError("must be even")
+
         return value
 
 
 class RangeValidator(BaseValidator):
 
     def __init__(self, kwargs):
-        self._greater_than = kwargs.get('greater_than', float('-INF'))
-        self._greater_than_or_equal_to = kwargs.get(
-            'greater_than_or_equal_to', float('-INF'))
-        self._equal_to = kwargs.get('equal_to')
-        self._less_than = kwargs.get('less_than', float('INF'))
-        self._less_than_or_equal_to = kwargs.get(
-            'less_than_or_equal_to', float('INF'))
-        self._odd = kwargs.get('odd')
-        self._even = kwargs.get('even')
+        self._gt = kwargs.get('gt', float('-INF'))
+        self._ge = kwargs.get('ge', float('-INF'))
+        self._eq = kwargs.get('eq')
+        self._lt = kwargs.get('lt', float('INF'))
+        self._le = kwargs.get('le', float('INF'))
 
     def __call__(self, instance, value):
-        if self._equal_to and self._equal_to != value:
+        if self._eq and self._eq != value:
             raise ValidationError(
-                "must be equal to {}".formate(self._equal_to))
+                "must be equal to {}".formate(self._eq))
 
-        if self._odd and value % 2 != 1:
-            raise ValidationError("must be odd")
-
-        if self._even and value % 2 != 0:
-            raise ValidationError("must be even")
-
-        if not self._greater_than_or_equal_to <= value:
+        if not self._ge <= value:
             raise ValidationError(
                 "value must be greater than or equal to {}".format(
-                    self._greater_than_or_equal_to))
-        if not self._less_than_or_equal_to >= value:
+                    self._ge))
+        if not self._le >= value:
             raise ValidationError(
                 "value must be less than or equal to {}".format(
-                                      self._less_than_or_equal_to))
+                                      self._le))
 
-        if not self._greater_than < value:
+        if not self._gt < value:
             raise ValidationError(
-                "value must be greater than {}".format(self._greater_than))
-        if not self._less_than > value:
+                "value must be greater than {}".format(self._gt))
+        if not self._lt > value:
             raise ValidationError(
-                "value must be less than {}".format(self._less_than))
+                "value must be less than {}".format(self._lt))
 
         return value
 

@@ -1,20 +1,14 @@
 # -*- coding: utf-8 -*-
 import pytest
-import sys
-
 from .. import OratorTestCase
 from orator import Model
-from orator.orm.validators import *
+from orator.orm.validators import PresenceValidator, InclusionValidator, \
+    ExclusionValidator, PatternValidator, NumericalityValidator, \
+    LengthValidator, RangeValidator, UniquenessValidator, validates
 from orator.exceptions.orm import ValidationError
 from orator.connections import SQLiteConnection
 from orator.connectors import SQLiteConnector
-
-py2 = sys.version_info.major == 2
-
-if py2:
-    import mock
-else:
-    from unittest import mock
+from unittest import mock
 
 
 class ModelValidateTestCase(OratorTestCase):
@@ -194,35 +188,35 @@ def test_NumericalityValidator():
         v(m, 'a123')
     v(m, '123')
 
+    v = RangeValidator({'odd': True})
+    v(m, 1)
+
 
 def test_RangeValidator():
     m = ValidateModel()
     with pytest.raises(ValidationError):
-        v = RangeValidator({'greater_than': 2})
+        v = RangeValidator({'gt': 2})
         v(m, 1)
-    v = RangeValidator({'greater_than': 0})
+    v = RangeValidator({'gt': 0})
     v(m, 1)
     with pytest.raises(ValidationError):
-        v = RangeValidator({'greater_than_or_equal_to': 2})
+        v = RangeValidator({'ge': 2})
         v(m, 1)
-    v = RangeValidator({'greater_than_or_equal_to': 2})
+    v = RangeValidator({'ge': 2})
     v(m, 2)
 
     with pytest.raises(ValidationError):
-        v = RangeValidator({'less_than': 2})
+        v = RangeValidator({'lt': 2})
         v(m, 2)
-    v = RangeValidator({'less_than': 10})
+    v = RangeValidator({'lt': 10})
     v(m, 1)
     with pytest.raises(ValidationError):
-        v = RangeValidator({'less_than_or_equal_to': 2})
+        v = RangeValidator({'le': 2})
         v(m, 4)
-    v = RangeValidator({'less_than_or_equal_to': 2})
+    v = RangeValidator({'le': 2})
     v(m, 2)
 
-    v = RangeValidator({'equal_to': 1})
-    v(m, 1)
-
-    v = RangeValidator({'odd': True})
+    v = RangeValidator({'eq': 1})
     v(m, 1)
 
 
