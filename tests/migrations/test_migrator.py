@@ -30,6 +30,7 @@ class MigratorTestCase(OratorTestCase):
         resolver = flexmock(DatabaseManager({}))
         connection = flexmock()
         connection.should_receive('transaction').twice().and_return(connection)
+        connection.should_receive('select').and_return([])
         resolver.should_receive('connection').and_return(connection)
 
         migrator = flexmock(
@@ -72,6 +73,7 @@ class MigratorTestCase(OratorTestCase):
         resolver = flexmock(DatabaseManager({}))
         connection = flexmock()
         connection.should_receive('transaction').never()
+        connection.should_receive('select').and_return([])
         resolver.should_receive('connection').and_return(connection)
 
         migrator = flexmock(
@@ -115,6 +117,7 @@ class MigratorTestCase(OratorTestCase):
         resolver_mock.should_receive('connection').and_return({})
         resolver = flexmock(DatabaseManager({}))
         connection = flexmock(Connection(None))
+        connection.should_receive('select').and_return([])
         connection.should_receive('get_logged_queries').twice().and_return([])
         resolver.should_receive('connection').with_args(None).and_return(connection)
 
@@ -182,6 +185,7 @@ class MigratorTestCase(OratorTestCase):
         resolver = flexmock(DatabaseManager({}))
         connection = flexmock()
         connection.should_receive('transaction').twice().and_return(connection)
+        connection.should_receive('select').and_return([])
         resolver.should_receive('connection').and_return(connection)
 
         migrator = flexmock(
@@ -223,6 +227,7 @@ class MigratorTestCase(OratorTestCase):
         resolver = flexmock(DatabaseManager({}))
         connection = flexmock()
         connection.should_receive('transaction').never()
+        connection.should_receive('select').and_return([])
         resolver.should_receive('connection').and_return(connection)
 
         migrator = flexmock(
@@ -266,6 +271,7 @@ class MigratorTestCase(OratorTestCase):
         resolver = flexmock(DatabaseManager({}))
         connection = flexmock(Connection(None))
         connection.should_receive('get_logged_queries').twice().and_return([])
+        connection.should_receive('select').and_return([])
         resolver.should_receive('connection').with_args(None).and_return(connection)
 
         migrator = flexmock(
