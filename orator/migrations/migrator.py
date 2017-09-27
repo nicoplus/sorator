@@ -70,6 +70,17 @@ class Migrator(object):
         for f in migrations:
             self._run_up(path, f, batch, pretend)
 
+        output_buffer = []
+        conn = self.get_repository().get_connection()
+        tables = conn.select('show tables')
+        for table_mapping in tables:
+            _, table_name = table_mapping.popitem()
+            sql = conn.select('show create table {}'.format(table_name))[0]
+            output_buffer.append(sql['Create Table'])
+
+        with open(os.path.join(path, 'schema.sql'), 'w') as fd:
+            fd.write('\n\n'.join(output_buffer))
+
     def _run_up(self, path, migration_file, batch, pretend=False):
         """
         Run "up" a migration instance.
