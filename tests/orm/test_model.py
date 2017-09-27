@@ -7,7 +7,7 @@ import datetime
 from pendulum import Pendulum
 from flexmock import flexmock, flexmock_teardown
 from .. import OratorTestCase, mock
-from ..utils import MockModel, MockQueryBuilder, MockConnection, MockProcessor
+from ..utils import MockConnection
 
 from orator.query.builder import QueryBuilder
 from orator.query.grammars import QueryGrammar
@@ -15,7 +15,7 @@ from orator.query.processors import QueryProcessor
 from orator.orm.builder import Builder
 from orator.orm.model import Model
 from orator.orm.utils import mutator, accessor
-from orator.exceptions.orm import ModelNotFound, MassAssignmentError
+from orator.exceptions.orm import MassAssignmentError
 from orator.orm.collection import Collection
 from orator.connections import Connection
 from orator import DatabaseManager

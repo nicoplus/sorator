@@ -1,7 +1,6 @@
 import re
 import functools
 from ..exceptions.orm import ValidationError
-from orator.utils import decode
 
 
 class BaseValidator(object):
@@ -10,6 +9,9 @@ class BaseValidator(object):
 
 
 class PresenceValidator(BaseValidator):
+    """validates that the specified value are not empty
+    :param status: `True` or `False`
+    """
 
     def __init__(self, status):
         self._status = status if isinstance(status, bool) else False
@@ -17,10 +19,6 @@ class PresenceValidator(BaseValidator):
     def __call__(self, instance, value):
         if not self._status:
             return value
-
-        if isinstance(value, bytes):
-            if value.strip(b' ') == b'':
-                raise ValidationError("can't be blank")
 
         if isinstance(value, str):
             if value.strip(' ') == '':
@@ -33,6 +31,9 @@ class PresenceValidator(BaseValidator):
 
 
 class InclusionValidator(BaseValidator):
+    """validates that the values are included in a given set
+    :param candidate: candidates, an object implements `__contains__`
+    """
 
     def __init__(self, candidate):
         self._candidate = candidate
@@ -44,6 +45,9 @@ class InclusionValidator(BaseValidator):
 
 
 class ExclusionValidator(BaseValidator):
+    """validates that the values are not included in a given set
+    :param candidate
+    """
 
     def __init__(self, candidate):
         self._candidate = candidate
@@ -55,6 +59,10 @@ class ExclusionValidator(BaseValidator):
 
 
 class PatternValidator(BaseValidator):
+    """validates the values by testing whether they match a given regular
+    expression
+    :param pattern: string type regex
+    """
 
     def __init__(self, pattern):
         self._pattern = re.compile(pattern)
@@ -66,6 +74,8 @@ class PatternValidator(BaseValidator):
 
 
 class NumericalityValidator(BaseValidator):
+    """validates that the value have only numeric values
+    """
 
     NUM_REGEX = re.compile(r'[+-]?\d+')
 
@@ -79,8 +89,6 @@ class NumericalityValidator(BaseValidator):
             self._even = kwargs.get('even')
 
     def __call__(self, instance, value):
-        if isinstance(value, bytes):
-            value = decode(value)
         if isinstance(value, str):
             if hasattr(self, '_only_integer') and self._only_integer:
                 if not self.NUM_REGEX.match(value.strip()):
@@ -102,27 +110,27 @@ class NumericalityValidator(BaseValidator):
 
 
 class RangeValidator(BaseValidator):
+    """validates that the value whether in the range
+    :param interval: accept key `gt` `ge` `lt` `le` `eq`
+    """
 
-    def __init__(self, kwargs):
-        self._gt = kwargs.get('gt', float('-INF'))
-        self._ge = kwargs.get('ge', float('-INF'))
-        self._eq = kwargs.get('eq')
-        self._lt = kwargs.get('lt', float('INF'))
-        self._le = kwargs.get('le', float('INF'))
+    def __init__(self, interval):
+        self._gt = interval.get('gt', float('-INF'))
+        self._ge = interval.get('ge', float('-INF'))
+        self._lt = interval.get('lt', float('INF'))
+        self._le = interval.get('le', float('INF'))
+        self._eq = interval.get('eq')
 
     def __call__(self, instance, value):
         if self._eq and self._eq != value:
-            raise ValidationError(
-                "must be equal to {}".formate(self._eq))
+            raise ValidationError("must be equal to {}".formate(self._eq))
 
         if not self._ge <= value:
             raise ValidationError(
-                "value must be greater than or equal to {}".format(
-                    self._ge))
+                "value must be greater than or equal to {}".format(self._ge))
         if not self._le >= value:
             raise ValidationError(
-                "value must be less than or equal to {}".format(
-                                      self._le))
+                "value must be less than or equal to {}".format(self._le))
 
         if not self._gt < value:
             raise ValidationError(
@@ -135,14 +143,17 @@ class RangeValidator(BaseValidator):
 
 
 class LengthValidator(BaseValidator):
+    """validates that the value length
+    :param len_interval: accept key `minimum` `maximum` `in` `eq`
+    """
 
-    def __init__(self, kwargs):
-        self._minimum = kwargs.get('minimum', 0)
-        self._maximum = kwargs.get('maximum', float('INF'))
-        _in = kwargs.get('in')
+    def __init__(self, len_interval):
+        self._minimum = len_interval.get('minimum', 0)
+        self._maximum = len_interval.get('maximum', float('INF'))
+        _in = len_interval.get('in')
         if _in is not None:
             self._minimum, self._maximum = _in
-        self._equal = kwargs.get('equal')
+        self._equal = len_interval.get('eq')
 
     def __call__(self, instance, value):
         length = len(value)
@@ -158,6 +169,8 @@ class LengthValidator(BaseValidator):
 
 
 class UniquenessValidator(BaseValidator):
+    """validates that the value is unique in db
+    """
 
     def __init__(self, status):
         self._status = status
@@ -193,6 +206,8 @@ class ValidatorDispatcher(object):
 
 
 class validates(object): # noqa
+    """decorator
+    """
 
     def __init__(self, **kwargs):
         self._chain = ValidatorDispatcher.dispathcer(kwargs)
@@ -206,4 +221,5 @@ class validates(object): # noqa
             for validate in self._chain:
                 value = validate(instance, value)
             return func(instance, value)
+
         return wrapper
