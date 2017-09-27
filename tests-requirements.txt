@@ -2,5 +2,4 @@
 pytest
 pytest-mock
 flexmock==0.9.7
-mock
 psycopg2
