@@ -52,6 +52,18 @@ class Migrator(object):
 
         self.run_migration_list(path, migrations, pretend)
 
+        output_buffer = []
+        conn = self.get_repository().get_connection()
+        tables = conn.select('show tables')
+        for table_mapping in tables:
+            _, table_name = table_mapping.popitem()
+            sql = conn.select('show create table {}'.format(table_name))[0]
+            output_buffer.append(sql['Create Table'])
+
+        dump_path = os.path.abspath(os.path.join(path, '../schema.sql'))
+        with open(dump_path, 'w') as fd:
+            fd.write('\n\n'.join(output_buffer))
+
     def run_migration_list(self, path, migrations, pretend=False):
         """
         Run a list of migrations.

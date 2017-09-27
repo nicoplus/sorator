@@ -30,6 +30,7 @@ class MigratorTestCase(OratorTestCase):
         resolver = flexmock(DatabaseManager({}))
         connection = flexmock()
         connection.should_receive('transaction').twice().and_return(connection)
+        connection.should_receive('select').and_return([])
         resolver.should_receive('connection').and_return(connection)
 
         migrator = flexmock(
@@ -72,6 +73,7 @@ class MigratorTestCase(OratorTestCase):
         resolver = flexmock(DatabaseManager({}))
         connection = flexmock()
         connection.should_receive('transaction').never()
+        connection.should_receive('select').and_return([])
         resolver.should_receive('connection').and_return(connection)
 
         migrator = flexmock(
@@ -115,6 +117,7 @@ class MigratorTestCase(OratorTestCase):
         resolver_mock.should_receive('connection').and_return({})
         resolver = flexmock(DatabaseManager({}))
         connection = flexmock(Connection(None))
+        connection.should_receive('select').and_return([])
         connection.should_receive('get_logged_queries').twice().and_return([])
         resolver.should_receive('connection').with_args(None).and_return(connection)
 
@@ -154,6 +157,9 @@ class MigratorTestCase(OratorTestCase):
         resolver_mock = flexmock(DatabaseManager)
         resolver_mock.should_receive('connection').and_return(None)
         resolver = flexmock(DatabaseManager({}))
+        connection = flexmock()
+        connection.should_receive('select').and_return([])
+        resolver.should_receive('connection').and_return(connection)
 
         migrator = flexmock(
             Migrator(
@@ -182,6 +188,7 @@ class MigratorTestCase(OratorTestCase):
         resolver = flexmock(DatabaseManager({}))
         connection = flexmock()
         connection.should_receive('transaction').twice().and_return(connection)
+        connection.should_receive('select').and_return([])
         resolver.should_receive('connection').and_return(connection)
 
         migrator = flexmock(
@@ -223,6 +230,7 @@ class MigratorTestCase(OratorTestCase):
         resolver = flexmock(DatabaseManager({}))
         connection = flexmock()
         connection.should_receive('transaction').never()
+        connection.should_receive('select').and_return([])
         resolver.should_receive('connection').and_return(connection)
 
         migrator = flexmock(
@@ -266,6 +274,7 @@ class MigratorTestCase(OratorTestCase):
         resolver = flexmock(DatabaseManager({}))
         connection = flexmock(Connection(None))
         connection.should_receive('get_logged_queries').twice().and_return([])
+        connection.should_receive('select').and_return([])
         resolver.should_receive('connection').with_args(None).and_return(connection)
 
         migrator = flexmock(
@@ -318,6 +327,59 @@ class MigratorTestCase(OratorTestCase):
         migrator.get_repository().should_receive('get_last').once().and_return([])
 
         migrator.rollback(os.getcwd())
+
+    def test_schema_dump(self):
+        resolver_mock = flexmock(DatabaseManager)
+        resolver_mock.should_receive('connection').and_return({})
+        resolver = flexmock(DatabaseManager({}))
+        connection = flexmock()
+        table = flexmock()
+        table.should_receive('popitem').and_return((None, 'test_table'))
+        connection.should_receive('transaction').twice().and_return(connection)
+        connection.should_receive('select').with_args('show tables').\
+            once().and_return([table])
+        connection.should_receive('select').\
+            with_args('show create table test_table').once().and_return([{
+                'Create Table': ''
+            }])
+        resolver.should_receive('connection').and_return(connection)
+
+        migrator = flexmock(
+            Migrator(
+                flexmock(
+                    DatabaseMigrationRepository(
+                        resolver,
+                        'migrations'
+                    )
+                ),
+                resolver
+            )
+        )
+
+        g = flexmock(glob)
+        g.should_receive('glob').with_args(os.path.join(os.getcwd(), '[0-9]*_*.py')).and_return([
+            os.path.join(os.getcwd(), '2_bar.py'),
+            os.path.join(os.getcwd(), '1_foo.py'),
+            os.path.join(os.getcwd(), '3_baz.py')
+        ])
+
+        migrator.get_repository().should_receive('get_ran').once().and_return(['1_foo'])
+        migrator.get_repository().should_receive('get_next_batch_number').once().and_return(1)
+        migrator.get_repository().should_receive('log').once().with_args('2_bar', 1)
+        migrator.get_repository().should_receive('log').once().with_args('3_baz', 1)
+        bar_mock = flexmock(MigrationStub())
+        bar_mock.set_connection(connection)
+        bar_mock.should_receive('up').once()
+        baz_mock = flexmock(MigrationStub())
+        baz_mock.set_connection(connection)
+        baz_mock.should_receive('up').once()
+        migrator.should_receive('_resolve').with_args(os.getcwd(), '2_bar').once().and_return(bar_mock)
+        migrator.should_receive('_resolve').with_args(os.getcwd(), '3_baz').once().and_return(baz_mock)
+
+        migrator.run(os.getcwd())
+        dump_path = os.path.abspath(os.path.join(os.getcwd(), '../schema.sql'))
+        assert os.path.exists(dump_path)
+        os.remove(dump_path)
 
 
 class MigrationStub(Migration):
