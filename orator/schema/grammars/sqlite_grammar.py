@@ -298,7 +298,7 @@ class SQLiteSchemaGrammar(SchemaGrammar):
         return super(SQLiteSchemaGrammar, self)._get_dbal_column_type(type_)
 
     def _get_all_table(self):
-        return '.tables'
+        return 'SELECT name FROM sqlite_master WHERE type="table";'
 
     def _get_table_structure(self, table):
-        return '.schema %s' % table
+        return 'SELECT sql as "Create Table" FROM sqlite_master WHERE name="%s";' % table
