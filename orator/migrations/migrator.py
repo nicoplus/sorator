@@ -52,12 +52,15 @@ class Migrator(object):
 
         self.run_migration_list(path, migrations, pretend)
 
-        output_buffer = []
         conn = self.get_repository().get_connection()
-        tables = conn.select('show tables')
+        if conn.name == 'pgsql':
+            return
+        output_buffer = []
+        grammar = conn.get_default_schema_grammar()
+        tables = conn.select(grammar._get_all_table())
         for table_mapping in tables:
             _, table_name = table_mapping.popitem()
-            sql = conn.select('show create table {}'.format(table_name))[0]
+            sql = conn.select(grammar._get_table_structure(table_name))[0]
             output_buffer.append(sql['Create Table'])
 
         dump_path = os.path.abspath(os.path.join(path, '../schema.sql'))

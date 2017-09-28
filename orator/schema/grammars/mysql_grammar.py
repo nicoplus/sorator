@@ -286,3 +286,9 @@ class MySQLSchemaGrammar(SchemaGrammar):
             return value
 
         return '`%s`' % value.replace('`', '``')
+
+    def _get_all_table(self):
+        return 'show tables'
+
+    def _get_table_structure(self, table):
+        return 'show create table %s' % table

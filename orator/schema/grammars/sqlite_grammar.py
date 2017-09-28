@@ -296,3 +296,9 @@ class SQLiteSchemaGrammar(SchemaGrammar):
             return 'string'
 
         return super(SQLiteSchemaGrammar, self)._get_dbal_column_type(type_)
+
+    def _get_all_table(self):
+        return '.tables'
+
+    def _get_table_structure(self, table):
+        return '.schema %s' % table
