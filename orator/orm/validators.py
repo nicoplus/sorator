@@ -192,7 +192,8 @@ class ValidatorDispatcher(object):
         'pattern': PatternValidator,
         'length': LengthValidator,
         'numericality': NumericalityValidator,
-        'uniqueness': UniquenessValidator
+        'uniqueness': UniquenessValidator,
+        'range': RangeValidator
     }
 
     @classmethod
