@@ -168,13 +168,13 @@ class ValidatorTestCase(OratorTestCase):
     def test_UniquenessValidator(self):
         with self.assertRaises(ValidationError):
             fake_obj = mock.MagicMock()
-            fake_obj.where_exist.return_value = True
+            fake_obj.where.limit.get.return_value = True
             validator = UniquenessValidator(True)
             validator.func_name = 'validate_name'
             validator(fake_obj, '123')
 
         fake_obj = mock.MagicMock()
-        fake_obj.where_exist.return_value = False
+        fake_obj.where.limit.get.return_value = False
         validator = UniquenessValidator(True)
         validator.func_name = 'validate_name'
         validator(fake_obj, '123')
