@@ -67,6 +67,7 @@ class ModelValidateTestCase(OratorTestCase):
             t.validate_name('invalid')
         with self.assertRaises(ValueError):
             t.save()
+        self.assertIsNotNone(t.errors)
         self.assertIsNotNone(t.save({'run_validation': False}))
 
 
@@ -166,15 +167,24 @@ class ValidatorTestCase(OratorTestCase):
         validator(self.user, 1)
 
     def test_UniquenessValidator(self):
-        with self.assertRaises(ValidationError):
-            fake_obj = mock.MagicMock()
-            fake_obj.where.limit.get.return_value = True
+
+        class QueryBuilder:
+            def __init__(self, rv):
+                self.rv = rv
+
+            def limit(self, *args, **kwargs):
+                return self
+
+            def get(self, *args, **kwargs):
+                return self.rv
+
+        with mock.patch.object(User, 'where', return_value=QueryBuilder(True)):
+            with self.assertRaises(ValidationError):
+                validator = UniquenessValidator(True)
+                validator.func_name = 'validate_name'
+                validator(User(), '123')
+
+        with mock.patch.object(User, 'where', return_value=QueryBuilder(False)):
             validator = UniquenessValidator(True)
             validator.func_name = 'validate_name'
-            validator(fake_obj, '123')
-
-        fake_obj = mock.MagicMock()
-        fake_obj.where.limit.get.return_value = False
-        validator = UniquenessValidator(True)
-        validator.func_name = 'validate_name'
-        validator(fake_obj, '123')
+            validator(User(), '123')
