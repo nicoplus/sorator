@@ -24,6 +24,7 @@ class MissingPackage(ConnectorException):
         if len(supported_packages) == 1:
             message += '"%s" package' % supported_packages[0]
         else:
-            message += 'one of the following packages: "%s"' % ('", "'.join(supported_packages))
-            
+            message += 'one of the following packages: "%s"' % (
+                '", "'.join(supported_packages))
+
         super(MissingPackage, self).__init__(message)

@@ -32,7 +32,8 @@ class SQLiteSchemaManager(SchemaManager):
             default = None
 
         if default is not None:
-            # SQLite returns strings wrapped in single quotes, so we need to strip them
+            # SQLite returns strings wrapped in single quotes, so we need to
+            # strip them
             default = re.sub("^'(.*)'$", '\\1', default)
 
         notnull = bool(table_column['notnull'])
@@ -52,7 +53,9 @@ class SQLiteSchemaManager(SchemaManager):
                 if ',' not in table_column['length']:
                     table_column['length'] += ',0'
 
-                precision, scale = tuple(map(lambda x: x.strip(), table_column['length'].split(',')))
+                precision, scale = tuple(
+                    map(lambda x: x.strip(),
+                        table_column['length'].split(',')))
 
             length = None
 
@@ -98,12 +101,14 @@ class SQLiteSchemaManager(SchemaManager):
                     'non_unique': not bool(index['unique'])
                 }
 
-                info = self._connection.select('PRAGMA INDEX_INFO (\'%s\')' % key_name)
+                info = self._connection.select(
+                    'PRAGMA INDEX_INFO (\'%s\')' % key_name)
                 for row in info:
                     idx['column_name'] = row['name']
                     index_buffer.append(idx)
 
-        return super(SQLiteSchemaManager, self)._get_portable_table_indexes_list(index_buffer, table_name)
+        return super(SQLiteSchemaManager, self).\
+            _get_portable_table_indexes_list(index_buffer, table_name)
 
     def _get_portable_table_foreign_keys_list(self, table_foreign_keys):
         foreign_keys = OrderedDict()
@@ -113,13 +118,16 @@ class SQLiteSchemaManager(SchemaManager):
             name = value.get('constraint_name', None)
 
             if name is None:
-                name = '%s_%s_%s' % (value['from'], value['table'], value['to'])
+                name = '%s_%s_%s' % (
+                    value['from'], value['table'], value['to'])
 
             if name not in foreign_keys:
-                if 'on_delete' not in value or value['on_delete'] == 'RESTRICT':
+                if 'on_delete' not in value or\
+                        value['on_delete'] == 'RESTRICT':
                     value['on_delete'] = None
 
-                if 'on_update' not in value or value['on_update'] == 'RESTRICT':
+                if 'on_update' not in value or\
+                        value['on_update'] == 'RESTRICT':
                     value['on_update'] = None
 
                 foreign_keys[name] = {

@@ -24,7 +24,8 @@ class PostgresQueryProcessor(QueryProcessor):
         :return: The inserted row id
         :rtype: int
         """
-        result = query.get_connection().select_from_write_connection(sql, values)
+        result = query.get_connection().\
+            select_from_write_connection(sql, values)
 
         id = result[0][0]
 

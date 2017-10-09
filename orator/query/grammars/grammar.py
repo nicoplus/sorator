@@ -2,7 +2,6 @@
 
 import re
 from ...support.grammar import Grammar
-from ..builder import QueryBuilder
 from ...utils import basestring
 
 
@@ -33,9 +32,11 @@ class QueryGrammar(Grammar):
         sql = {}
 
         for component in self._select_components:
-            # To compile the query, we'll spin through each component of the query and
-            # see if that component exists. If it does we'll just call the compiler
-            # function for the component which is responsible for making the SQL.
+            # To compile the query, we'll spin through each component of
+            # the query and see if that component exists.
+            # If it does we'll just call the compiler
+            # function for the component which is responsible for making the
+            # SQL.
             component_value = getattr(query, component)
             if component_value is not None:
                 method = '_compile_%s' % component.replace('_', '')
@@ -54,9 +55,10 @@ class QueryGrammar(Grammar):
                                                column)
 
     def _compile_columns(self, query, columns):
-        # If the query is actually performing an aggregating select, we will let that
-        # compiler handle the building of the select clauses, as it will need some
-        # more syntax that is best handled by that function to keep things neat.
+        # If the query is actually performing an aggregating select,
+        # we will let that compiler handle the building of the select clauses,
+        # as it will need some more syntax that is best handled by
+        # that function to keep things neat.
         if query.aggregate_ is not None:
             return
 
@@ -78,9 +80,11 @@ class QueryGrammar(Grammar):
         for join in joins:
             table = self.wrap_table(join.table)
 
-            # First we need to build all of the "on" clauses for the join. There may be many
-            # of these clauses so we will need to iterate through each one and build them
-            # separately, then we'll join them up into a single string when we're done.
+            # First we need to build all of the "on" clauses for the join.
+            # There may be many of these clauses so we will need to iterate
+            # through each one and build them
+            # separately, then we'll join them up into a single string when
+            # we're done.
             clauses = []
 
             for clause in join.clauses:
@@ -89,18 +93,23 @@ class QueryGrammar(Grammar):
             for binding in join.bindings:
                 query.add_binding(binding, 'join')
 
-            # Once we have constructed the clauses, we'll need to take the boolean connector
-            # off of the first clause as it obviously will not be required on that clause
-            # because it leads the rest of the clauses, thus not requiring any boolean.
+            # Once we have constructed the clauses,
+            # we'll need to take the boolean connector
+            # off of the first clause as it obviously will not be required
+            # on that clause
+            # because it leads the rest of the clauses, thus not requiring any
+            # boolean.
             clauses[0] = self._remove_leading_boolean(clauses[0])
 
             clauses = ' '.join(clauses)
 
             type = join.type
 
-            # Once we have everything ready to go, we will just concatenate all the parts to
-            # build the final join statement SQL for the query and we can then return the
-            # final clause back to the callers as a single, stringified join statement.
+            # Once we have everything ready to go, we will just concatenate
+            # all the parts to build the final join statement SQL for the query
+            # and we can then return the
+            # final clause back to the callers as a single, stringified join
+            # statement.
 
             sql.append('%s JOIN %s ON %s' % (type.upper(), table, clauses))
 
@@ -123,18 +132,21 @@ class QueryGrammar(Grammar):
         if query.wheres is None:
             return ''
 
-        # Each type of where clauses has its own compiler function which is responsible
-        # for actually creating the where clauses SQL. This helps keep the code nice
-        # and maintainable since each clause has a very small method that it uses.
+        # Each type of where clauses has its own compiler function
+        # which is responsible for actually creating the where clauses SQL.
+        # This helps keep the code nice and maintainable
+        # since each clause has a very small method that it uses.
         for where in query.wheres:
             method = '_where_%s' % where['type']
 
             sql.append('%s %s' % (where['boolean'].upper(),
                                   getattr(self, method)(query, where)))
 
-        # If we actually have some where clauses, we will strip off the first boolean
-        # operator, which is added by the query builders for convenience so we can
-        # avoid checking for the first clauses in each of the compilers methods.
+        # If we actually have some where clauses,
+        # we will strip off the first boolean operator,
+        # which is added by the query builders for convenience so we can
+        # avoid checking for the first clauses in each of the compilers
+        # methods.
         if len(sql) > 0:
             sql = ' '.join(sql)
 
@@ -245,8 +257,10 @@ class QueryGrammar(Grammar):
         return 'HAVING %s' % re.sub('and |or ', '', sql, 1, re.I)
 
     def _compile_having(self, having):
-        # If the having clause is "raw", we can just return the clause straight away
-        # without doing any more processing on it. Otherwise, we will compile the
+        # If the having clause is "raw",
+        # we can just return the clause straight away
+        # without doing any more processing on it.
+        # Otherwise,we will compile the
         # clause into SQL based on the components that make it up from builder.
         if having['type'] == 'raw':
             return '%s %s' % (having['boolean'].upper(), having['sql'])
@@ -269,7 +283,8 @@ class QueryGrammar(Grammar):
         for order in orders:
             if order.get('sql'):
                 compiled.append(re.sub('( desc| asc)( |$)',
-                                       lambda m: '%s%s' % (m.group(1).upper(), m.group(2)),
+                                       lambda m: '%s%s' % (
+                                           m.group(1).upper(), m.group(2)),
                                        order['sql'],
                                        re.I))
             else:
@@ -322,9 +337,11 @@ class QueryGrammar(Grammar):
         :return: The compiled statement
         :rtype: str
         """
-        # Essentially we will force every insert to be treated as a batch insert which
-        # simply makes creating the SQL easier for us since we can utilize the same
-        # basic routine regardless of an amount of records given to us to insert.
+        # Essentially we will force every insert to be treated as
+        # a batch insert which simply makes creating the SQL easier for us
+        # since we can utilize the same
+        # basic routine regardless of an amount of records given to us to
+        # insert.
         table = self.wrap_table(query.from__)
 
         if not isinstance(values, list):
@@ -332,9 +349,11 @@ class QueryGrammar(Grammar):
 
         columns = self.columnize(values[0].keys())
 
-        # We need to build a list of parameter place-holders of values that are bound
-        # to the query. Each insert should have the exact same amount of parameter
-        # bindings so we can just go off the first list of values in this array.
+        # We need to build a list of parameter place-holders of values
+        # that are bound to the query.
+        # Each insert should have the exact same amount of parameter
+        # bindings so we can just go off the first list of values in this
+        # array.
         parameters = self.parameterize(values[0].values())
 
         value = ['(%s)' % parameters] * len(values)
@@ -349,9 +368,11 @@ class QueryGrammar(Grammar):
     def compile_update(self, query, values):
         table = self.wrap_table(query.from__)
 
-        # Each one of the columns in the update statements needs to be wrapped in the
-        # keyword identifiers, also a place-holder needs to be created for each of
-        # the values in the list of bindings so we can make the sets statements.
+        # Each one of the columns in the update statements needs to
+        # be wrapped in the keyword identifiers,
+        # also a place-holder needs to be created for each of
+        # the values in the list of bindings so we can make the sets
+        # statements.
         columns = []
 
         for key, value in values.items():
@@ -359,20 +380,24 @@ class QueryGrammar(Grammar):
 
         columns = ', '.join(columns)
 
-        # If the query has any "join" clauses, we will setup the joins on the builder
-        # and compile them so we can attach them to this update, as update queries
-        # can get join statements to attach to other tables when they're needed.
+        # If the query has any "join" clauses,
+        # we will setup the joins on the builder
+        # and compile them so we can attach them to this update,
+        # as update queries can get join statements to attach to other tables
+        # when they're needed.
         if query.joins:
             joins = ' %s' % self._compile_joins(query, query.joins)
         else:
             joins = ''
 
-        # Of course, update queries may also be constrained by where clauses so we'll
-        # need to compile the where clauses and attach it to the query so only the
-        # intended records are updated by the SQL statements we generate to run.
+        # Of course, update queries may also be constrained by where clauses
+        # so we'll need to compile the where clauses and attach it to the query
+        # so only the intended records are updated by the SQL statements
+        # we generate to run.
         where = self._compile_wheres(query)
 
-        return ('UPDATE %s%s SET %s %s' % (table, joins, columns, where)).strip()
+        return ('UPDATE %s%s SET %s %s' %
+                (table, joins, columns, where)).strip()
 
     def compile_delete(self, query):
         table = self.wrap_table(query.from__)
@@ -407,5 +432,3 @@ class QueryGrammar(Grammar):
 
     def _remove_leading_boolean(self, value):
         return re.sub('and | or ', '', value, 1, re.I)
-
-

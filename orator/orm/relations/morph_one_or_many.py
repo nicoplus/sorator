@@ -24,7 +24,8 @@ class MorphOneOrMany(HasOneOrMany):
         self._morph_type = morph_type
         self._morph_name = parent.get_morph_name()
 
-        super(MorphOneOrMany, self).__init__(query, parent, foreign_key, local_key)
+        super(MorphOneOrMany, self).\
+            __init__(query, parent, foreign_key, local_key)
 
     def add_constraints(self):
         """
@@ -44,7 +45,8 @@ class MorphOneOrMany(HasOneOrMany):
 
         :rtype: Builder
         """
-        query = super(MorphOneOrMany, self).get_relation_count_query(query, parent)
+        query = super(MorphOneOrMany, self).get_relation_count_query(
+            query, parent)
 
         return query.where(self._morph_type, self._morph_name)
 
@@ -73,7 +75,8 @@ class MorphOneOrMany(HasOneOrMany):
 
     def find_or_new(self, id, columns=None):
         """
-        Find a model by its primary key or return new instance of the related model.
+        Find a model by its primary key or return new instance of
+        the related model.
 
         :param id: The primary key
         :type id: mixed
@@ -96,7 +99,8 @@ class MorphOneOrMany(HasOneOrMany):
 
     def first_or_new(self, _attributes=None, **attributes):
         """
-        Get the first related model record matching the attributes or instantiate it.
+        Get the first related model record matching the attributes or
+        instantiate it.
 
         :param attributes:  The attributes
         :type attributes: dict
@@ -135,7 +139,8 @@ class MorphOneOrMany(HasOneOrMany):
 
     def update_or_create(self, attributes, values=None):
         """
-        Create or update a related record matching the attributes, and fill it with values.
+        Create or update a related record matching the attributes,
+        and fill it with values.
 
         :param attributes: The attributes
         :type attributes: dict
@@ -177,7 +182,8 @@ class MorphOneOrMany(HasOneOrMany):
         """
         Set the foreign ID and type for creation a related model.
         """
-        model.set_attribute(self.get_plain_foreign_key(), self.get_parent_key())
+        model.set_attribute(self.get_plain_foreign_key(),
+                            self.get_parent_key())
 
         model.set_attribute(self.get_plain_morph_type(), self._morph_name)
 

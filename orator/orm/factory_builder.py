@@ -57,7 +57,8 @@ class FactoryBuilder(object):
             results.save()
         else:
             if self._resolver:
-                results.each(lambda r: r.set_connection_resolver(self._resolver))
+                results.each(
+                    lambda r: r.set_connection_resolver(self._resolver))
 
             for result in results:
                 result.save()

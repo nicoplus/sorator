@@ -9,12 +9,15 @@ from .schema_manager import SchemaManager
 class PostgresSchemaManager(SchemaManager):
 
     def _get_portable_table_column_definition(self, table_column):
-        if table_column['type'].lower() == 'varchar' or table_column['type'] == 'bpchar':
-            length = re.sub('.*\(([0-9]*)\).*', '\\1', table_column['complete_type'])
+        if table_column['type'].lower() == 'varchar' or \
+                table_column['type'] == 'bpchar':
+            length = re.sub('.*\(([0-9]*)\).*', '\\1',
+                            table_column['complete_type'])
             table_column['length'] = length
 
         autoincrement = False
-        match = re.match("^nextval\('?(.*)'?(::.*)?\)$", str(table_column['default']))
+        match = re.match("^nextval\('?(.*)'?(::.*)?\)$",
+                         str(table_column['default']))
         if match:
             table_column['sequence'] = match.group(1)
             table_column['default'] = None
@@ -73,7 +76,8 @@ class PostgresSchemaManager(SchemaManager):
         elif db_type in ['float', 'float4', 'float8',
                          'double', 'double precision',
                          'real', 'decimal', 'money', 'numeric']:
-            match = re.match('([A-Za-z]+\(([0-9]+),([0-9]+)\))', table_column['complete_type'])
+            match = re.match('([A-Za-z]+\(([0-9]+),([0-9]+)\))',
+                             table_column['complete_type'])
             if match:
                 precision = match.group(1)
                 scale = match.group(2)
@@ -108,9 +112,10 @@ class PostgresSchemaManager(SchemaManager):
         for row in table_indexes:
             col_numbers = row['indkey'].split(' ')
             col_numbers_sql = 'IN (%s)' % ', '.join(col_numbers)
-            column_name_sql = 'SELECT attnum, attname FROM pg_attribute ' \
-                              'WHERE attrelid=%s AND attnum %s ORDER BY attnum ASC;'\
-                              % (row['indrelid'], col_numbers_sql)
+            column_name_sql = ('SELECT attnum, attname FROM pg_attribute '
+                               'WHERE attrelid=%s AND attnum %s '
+                               'ORDER BY attnum ASC;') % (
+                                   row['indrelid'], col_numbers_sql)
 
             index_columns = self._connection.select(column_name_sql)
 
@@ -126,21 +131,25 @@ class PostgresSchemaManager(SchemaManager):
                             'where': row['where']
                         })
 
-        return super(PostgresSchemaManager, self)._get_portable_table_indexes_list(buffer, table_name)
+        return super(PostgresSchemaManager, self).\
+            _get_portable_table_indexes_list(buffer, table_name)
 
     def _get_portable_table_foreign_key_definition(self, table_foreign_key):
         on_update = ''
         on_delete = ''
 
-        match = re.match('ON UPDATE ([a-zA-Z0-9]+( (NULL|ACTION|DEFAULT))?)', table_foreign_key['condef'])
+        match = re.match('ON UPDATE ([a-zA-Z0-9]+( (NULL|ACTION|DEFAULT))?)',
+                         table_foreign_key['condef'])
         if match:
             on_update = match.group(1)
 
-        match = re.match('ON DELETE ([a-zA-Z0-9]+( (NULL|ACTION|DEFAULT))?)', table_foreign_key['condef'])
+        match = re.match('ON DELETE ([a-zA-Z0-9]+( (NULL|ACTION|DEFAULT))?)',
+                         table_foreign_key['condef'])
         if match:
             on_delete = match.group(1)
 
-        values = re.match('FOREIGN KEY \((.+)\) REFERENCES (.+)\((.+)\)', table_foreign_key['condef'])
+        values = re.match('FOREIGN KEY \((.+)\) REFERENCES (.+)\((.+)\)',
+                          table_foreign_key['condef'])
         if values:
             local_columns = [c.strip() for c in values.group(1).split(',')]
             foreign_columns = [c.strip() for c in values.group(3).split(',')]

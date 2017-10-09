@@ -35,17 +35,21 @@ class Platform(object):
 
                 if type in ['integer', 'bigint', 'smallint']:
                     default = ' DEFAULT %s' % field['default']
-                elif type in ['datetime', 'datetimetz'] \
-                        and field['default'] in [self.get_current_timestamp_sql(), 'NOW', 'now']:
+                elif type in ['datetime', 'datetimetz'] and\
+                    field['default'] in [self.get_current_timestamp_sql(),
+                                         'NOW', 'now']:
                     default = ' DEFAULT %s' % self.get_current_timestamp_sql()
-                elif type in ['time'] \
-                        and field['default'] in [self.get_current_time_sql(), 'NOW', 'now']:
+                elif type in ['time'] and\
+                    field['default'] in [self.get_current_time_sql(),
+                                         'NOW', 'now']:
                     default = ' DEFAULT %s' % self.get_current_time_sql()
-                elif type in ['date'] \
-                        and field['default'] in [self.get_current_date_sql(), 'NOW', 'now']:
+                elif type in ['date'] and\
+                    field['default'] in [self.get_current_date_sql(),
+                                         'NOW', 'now']:
                     default = ' DEFAULT %s' % self.get_current_date_sql()
                 elif type in ['boolean']:
-                    default = ' DEFAULT \'%s\'' % self.convert_booleans(field['default'])
+                    default = ' DEFAULT \'%s\'' % self.convert_booleans(
+                        field['default'])
 
         return default
 
@@ -67,7 +71,8 @@ class Platform(object):
         :param definition: The check definition
         :type definition: dict
 
-        :return: DBMS specific SQL code portion needed to set a CHECK constraint.
+        :return: DBMS specific SQL code portion needed to
+        set a CHECK constraint.
         :rtype: str
         """
         constraints = []
@@ -76,10 +81,12 @@ class Platform(object):
                 constraints.append('CHECK (%s)' % def_)
             else:
                 if 'min' in def_:
-                    constraints.append('CHECK (%s >= %s)' % (field, def_['min']))
+                    constraints.append('CHECK (%s >= %s)' %
+                                       (field, def_['min']))
 
                 if 'max' in def_:
-                    constraints.append('CHECK (%s <= %s)' % (field, def_['max']))
+                    constraints.append('CHECK (%s <= %s)' %
+                                       (field, def_['max']))
 
         return ', '.join(constraints)
 
@@ -136,7 +143,8 @@ class Platform(object):
 
     def get_foreign_key_declaration_sql(self, foreign_key):
         """
-        Obtain DBMS specific SQL code portion needed to set the FOREIGN KEY constraint
+        Obtain DBMS specific SQL code portion needed to
+        set the FOREIGN KEY constraint
         of a field declaration to be used in statements like CREATE TABLE.
 
         :param foreign_key: The foreign key
@@ -160,17 +168,23 @@ class Platform(object):
         :rtype: str
         """
         query = ''
-        if self.supports_foreign_key_on_update() and foreign_key.has_option('on_update'):
-            query += ' ON UPDATE %s' % self.get_foreign_key_referential_action_sql(foreign_key.get_option('on_update'))
+        if self.supports_foreign_key_on_update() and\
+                foreign_key.has_option('on_update'):
+            query += ' ON UPDATE %s' %\
+                self.get_foreign_key_referential_action_sql(
+                    foreign_key.get_option('on_update'))
 
         if foreign_key.has_option('on_delete'):
-            query += ' ON DELETE %s' % self.get_foreign_key_referential_action_sql(foreign_key.get_option('on_delete'))
+            query += ' ON DELETE %s' %\
+                self.get_foreign_key_referential_action_sql(
+                    foreign_key.get_option('on_delete'))
 
         return query
 
     def get_foreign_key_referential_action_sql(self, action):
         """
-        Returns the given referential action in uppercase if valid, otherwise throws an exception.
+        Returns the given referential action in uppercase if valid,
+        otherwise throws an exception.
 
         :param action: The action
         :type action: str
@@ -178,14 +192,16 @@ class Platform(object):
         :rtype: str
         """
         action = action.upper()
-        if action not in ['CASCADE', 'SET NULL', 'NO ACTION', 'RESTRICT', 'SET DEFAULT']:
+        if action not in ['CASCADE', 'SET NULL',
+                          'NO ACTION', 'RESTRICT', 'SET DEFAULT']:
             raise DBALException('Invalid foreign key action: %s' % action)
 
         return action
 
     def get_foreign_key_base_declaration_sql(self, foreign_key):
         """
-        Obtains DBMS specific SQL code portion needed to set the FOREIGN KEY constraint
+        Obtains DBMS specific SQL code portion needed to
+        set the FOREIGN KEY constraint
         of a field declaration to be used in statements like CREATE TABLE.
 
         :param foreign_key: The foreign key
@@ -206,7 +222,8 @@ class Platform(object):
             raise DBALException('Incomplete definition. "foreign" required.')
 
         if not foreign_key.get_foreign_table_name():
-            raise DBALException('Incomplete definition. "foreign_table" required.')
+            raise DBALException(
+                'Incomplete definition. "foreign_table" required.')
 
         sql += '%s) REFERENCES %s (%s)'\
                % (', '.join(foreign_key.get_quoted_local_columns(self)),
@@ -227,7 +244,8 @@ class Platform(object):
     def get_sql_type_declaration(self, column):
         internal_type = column['type']
 
-        return getattr(self, 'get_%s_type_declaration_sql' % internal_type)(column)
+        return getattr(self, 'get_%s_type_declaration_sql' %
+                       internal_type)(column)
 
     def get_column_declaration_list_sql(self, fields):
         """
@@ -248,11 +266,13 @@ class Platform(object):
 
             charset = field.get('charset', '')
             if charset:
-                charset = ' ' + self.get_column_charset_declaration_sql(charset)
+                charset = ' ' + \
+                    self.get_column_charset_declaration_sql(charset)
 
             collation = field.get('collation', '')
             if charset:
-                charset = ' ' + self.get_column_collation_declaration_sql(charset)
+                charset = ' ' + \
+                    self.get_column_collation_declaration_sql(charset)
 
             notnull = field.get('notnull', '')
             if notnull:
@@ -269,7 +289,8 @@ class Platform(object):
             check = field.get('check', '')
 
             type_decl = self.get_sql_type_declaration(field)
-            column_def = type_decl + charset + default + notnull + unique + check + collation
+            column_def = type_decl + charset + default + \
+                notnull + unique + check + collation
 
         return name + ' ' + column_def
 
@@ -300,7 +321,8 @@ class Platform(object):
         if column['length'] > self.get_varchar_max_length():
             return self.get_clob_type_declaration_sql(column)
 
-        return self.get_varchar_type_declaration_sql_snippet(column['length'], fixed)
+        return self.get_varchar_type_declaration_sql_snippet(
+            column['length'], fixed)
 
     def get_binary_type_declaration_sql(self, column):
         if 'length' not in column:
@@ -311,7 +333,8 @@ class Platform(object):
         if column['length'] > self.get_binary_max_length():
             return self.get_blob_type_declaration_sql(column)
 
-        return self.get_binary_type_declaration_sql_snippet(column['length'], fixed)
+        return self.get_binary_type_declaration_sql_snippet(
+            column['length'], fixed)
 
     def get_varchar_type_declaration_sql_snippet(self, length, fixed):
         raise NotImplementedError('VARCHARS not supported by Platform')
@@ -413,9 +436,11 @@ class Platform(object):
         if index.is_primary():
             return self.get_create_primary_key_sql(index, table)
 
-        query = 'CREATE %sINDEX %s ON %s' % (self.get_create_index_sql_flags(index), name, table)
-        query += ' (%s)%s' % (self.get_index_field_declaration_list_sql(columns),
-                              self.get_partial_index_sql(index))
+        query = 'CREATE %sINDEX %s ON %s' % (
+            self.get_create_index_sql_flags(index), name, table)
+        query += ' (%s)%s' %\
+            (self.get_index_field_declaration_list_sql(columns),
+             self.get_partial_index_sql(index))
 
         return query
 
@@ -460,8 +485,8 @@ class Platform(object):
         :rtype: str
         """
         return 'ALTER TABLE %s ADD PRIMARY KEY (%s)'\
-               % (table,
-                  self.get_index_field_declaration_list_sql(index.get_quoted_columns(self)))
+               % (table, self.get_index_field_declaration_list_sql(
+                   index.get_quoted_columns(self)))
 
     def get_create_foreign_key_sql(self, foreign_key, table):
         """
@@ -472,7 +497,8 @@ class Platform(object):
         if isinstance(table, Table):
             table = table.get_quoted_name(self)
 
-        query = 'ALTER TABLE %s ADD %s' % (table, self.get_foreign_key_declaration_sql(foreign_key))
+        query = 'ALTER TABLE %s ADD %s' % (
+            table, self.get_foreign_key_declaration_sql(foreign_key))
 
         return query
 
@@ -547,7 +573,8 @@ class Platform(object):
 
             # column_data['comment'] = self.get_column_comment(column)
 
-            if column_data['type'] == 'string' and  column_data['length'] is None:
+            if column_data['type'] == 'string' and\
+                    column_data['length'] is None:
                 column_data['length'] = 255
 
             if column.get_name() in options['primary']:
@@ -587,14 +614,18 @@ class Platform(object):
 
         if options.get('unique_constraints'):
             for name, definition in options['unique_constraints'].items():
-                column_list_sql += ', %s' % self.get_unique_constraint_declaration_sql(name, definition)
+                column_list_sql += ', %s' %\
+                    self.get_unique_constraint_declaration_sql(
+                        name, definition)
 
         if options.get('primary'):
-            column_list_sql += ', PRIMARY KEY(%s)' % ', '.join(options['primary'])
+            column_list_sql += ', PRIMARY KEY(%s)' % ', '.join(
+                options['primary'])
 
         if options.get('indexes'):
             for index, definition in options['indexes']:
-                column_list_sql += ', %s' % self.get_index_declaration_sql(index, definition)
+                column_list_sql += ', %s' % self.get_index_declaration_sql(
+                    index, definition)
 
         query = 'CREATE TABLE %s (%s' % (table_name, column_list_sql)
 
@@ -608,16 +639,17 @@ class Platform(object):
 
         if options.get('foreign_keys'):
             for definition in options['foreign_keys']:
-                sql.append(self.get_create_foreign_key_sql(definition, table_name))
+                sql.append(self.get_create_foreign_key_sql(
+                    definition, table_name))
 
         return sql
 
-
     def quote_identifier(self, string):
         """
-        Quotes a string so that it can be safely used as a table or column name,
-        even if it is a reserved word of the platform. This also detects identifier
-        chains separated by dot and quotes them independently.
+        Quotes a string so that it can be safely used as
+        a table or column name, even if it is a reserved word of the platform.
+        This also detects identifier chains separated by dot and
+        quotes them independently.
 
         :param string: The identifier name to be quoted.
         :type string: str
@@ -644,7 +676,7 @@ class Platform(object):
         """
         c = self.get_identifier_quote_character()
 
-        return '%s%s%s' % (c, string.replace(c, c+c), c)
+        return '%s%s%s' % (c, string.replace(c, c + c), c)
 
     def get_identifier_quote_character(self):
         return '"'

@@ -126,7 +126,8 @@ class Factory(object):
 
     def create_as(self, klass, name, **attributes):
         """
-        Create an instance of the given model and type and persist it to the database.
+        Create an instance of the given model and type and persist it
+        to the database.
 
         :param klass: The class
         :type klass: class
@@ -222,7 +223,8 @@ class Factory(object):
 
         :return: orator.orm.factory_builder.FactoryBuilder
         """
-        return FactoryBuilder(klass, name, self._definitions, self._faker, self._resolver)
+        return FactoryBuilder(klass, name, self._definitions,
+                              self._faker, self._resolver)
 
     def build(self, klass, name='default', amount=None):
         """

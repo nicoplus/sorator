@@ -33,8 +33,8 @@ class Fluent(object):
     def __init__(self, **attributes):
         self._attributes = {}
 
-        for key, value in attributes.items():
-            self._attributes[key] = value
+        for key, val in attributes.items():
+            self._attributes[key] = val
 
     def get(self, key, default=None):
         return self._attributes.get(key, value(default))

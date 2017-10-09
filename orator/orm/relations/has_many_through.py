@@ -38,7 +38,9 @@ class HasManyThrough(Relation):
         self._set_join()
 
         if self._constraints:
-            self._query.where('%s.%s' % (parent_table, self._first_key), '=', self._far_parent.get_key())
+            self._query.where(
+                '%s.%s' % (parent_table, self._first_key), '=',
+                self._far_parent.get_key())
 
     def get_relation_count_query(self, query, parent):
         """
@@ -57,7 +59,8 @@ class HasManyThrough(Relation):
 
         key = self.wrap('%s.%s' % (parent_table, self._first_key))
 
-        return query.where(self.get_has_compare_key(), '=', QueryExpression(key))
+        return query.where(self.get_has_compare_key(),
+                           '=', QueryExpression(key))
 
     def _set_join(self, query=None):
         """
@@ -68,7 +71,8 @@ class HasManyThrough(Relation):
 
         foreign_key = '%s.%s' % (self._related.get_table(), self._second_key)
 
-        query.join(self._parent.get_table(), self.get_qualified_parent_key_name(), '=', foreign_key)
+        query.join(self._parent.get_table(),
+                   self.get_qualified_parent_key_name(), '=', foreign_key)
 
     def add_eager_constraints(self, models):
         """
@@ -78,7 +82,8 @@ class HasManyThrough(Relation):
         """
         table = self._parent.get_table()
 
-        self._query.where_in('%s.%s' % (table, self._first_key), self.get_keys(models))
+        self._query.where_in('%s.%s' %
+                             (table, self._first_key), self.get_keys(models))
 
     def init_relation(self, models, relation):
         """
@@ -88,7 +93,8 @@ class HasManyThrough(Relation):
         :type relation:  str
         """
         for model in models:
-            model.set_relation(relation, Result(self._related.new_collection(), self, model))
+            model.set_relation(relation, Result(
+                self._related.new_collection(), self, model))
 
         return models
 
@@ -106,7 +112,8 @@ class HasManyThrough(Relation):
             key = model.get_key()
 
             if key in dictionary:
-                value = Result(self._related.new_collection(dictionary[key]), self, model)
+                value = Result(self._related.new_collection(
+                    dictionary[key]), self, model)
             else:
                 value = Result(self._related.new_collection(), self, model)
 
@@ -174,7 +181,8 @@ class HasManyThrough(Relation):
         if columns == ['*'] or columns is None:
             columns = ['%s.*' % self._related.get_table()]
 
-        return columns + ['%s.%s' % (self._parent.get_table(), self._first_key)]
+        return columns + ['%s.%s' %
+                          (self._parent.get_table(), self._first_key)]
 
     def get_has_compare_key(self):
         return self._far_parent.get_qualified_key_name()

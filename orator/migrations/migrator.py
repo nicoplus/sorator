@@ -108,7 +108,8 @@ class Migrator(object):
 
         self._repository.log(migration_file, batch)
 
-        self._note(decode('[<info>OK</>] <info>Migrated</info> ') + '<fg=cyan>%s</>' % migration_file)
+        self._note(decode('[<info>OK</>] <info>Migrated</info> ') +
+                   '<fg=cyan>%s</>' % migration_file)
 
     def rollback(self, path, pretend=False):
         """
@@ -181,7 +182,9 @@ class Migrator(object):
 
         self._repository.delete(migration)
 
-        self._note(decode('[<info>OK</>] <info>Rolled back</info> ') + '<fg=cyan>%s</>' % migration_file)
+        self._note(decode(
+            '[<info>OK</>] <info>Rolled back</info> ') + '<fg=cyan>%s</>' %
+                   migration_file)
 
     def _get_migration_files(self, path):
         """
@@ -196,7 +199,8 @@ class Migrator(object):
         if not files:
             return []
 
-        files = list(map(lambda f: os.path.basename(f).replace('.py', ''), files))
+        files = list(map(
+            lambda f: os.path.basename(f).replace('.py', ''), files))
 
         files = sorted(files)
 

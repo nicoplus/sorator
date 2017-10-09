@@ -2,7 +2,8 @@
 
 import threading
 import logging
-from .connections.connection_resolver_interface import ConnectionResolverInterface
+from .connections.connection_resolver_interface import \
+    ConnectionResolverInterface
 from .connectors.connection_factory import ConnectionFactory
 from .exceptions import ArgumentError
 

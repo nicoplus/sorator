@@ -35,7 +35,8 @@ class SoftDeletes(object):
         Perform the actual delete query on this model instance.
         """
         if self.__force_deleting__:
-            return self.with_trashed().where(self.get_key_name(), self.get_key()).force_delete()
+            return self.with_trashed().where(
+                self.get_key_name(), self.get_key()).force_delete()
 
         return self._run_soft_delete()
 
@@ -99,7 +100,8 @@ class SoftDeletes(object):
 
         column = instance.get_qualified_deleted_at_column()
 
-        return instance.new_query_without_scope(SoftDeletingScope()).where_not_null(column)
+        return instance.new_query_without_scope(
+            SoftDeletingScope()).where_not_null(column)
 
     @classmethod
     def restoring(cls, callback):

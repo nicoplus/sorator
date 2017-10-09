@@ -31,11 +31,12 @@ class MorphToMany(BelongsToMany):
         self._name = name
         self._inverse = inverse
         self._morph_type = name + '_type'
-        self._morph_name = query.get_model().get_morph_name() if inverse else parent.get_morph_name()
+        self._morph_name = query.get_model().get_morph_name(
+        ) if inverse else parent.get_morph_name()
 
         super(MorphToMany, self).__init__(
-                query, parent, table,
-                foreign_key, other_key, relation_name
+            query, parent, table,
+            foreign_key, other_key, relation_name
         )
 
     def _set_where(self):
@@ -47,7 +48,8 @@ class MorphToMany(BelongsToMany):
         """
         super(MorphToMany, self)._set_where()
 
-        self._query.where('%s.%s' % (self._table, self._morph_type), self._morph_name)
+        self._query.where('%s.%s' %
+                          (self._table, self._morph_type), self._morph_name)
 
     def get_relation_count_query(self, query, parent):
         """
@@ -58,9 +60,11 @@ class MorphToMany(BelongsToMany):
 
         :rtype: orator.orm.Builder
         """
-        query = super(MorphToMany, self).get_relation_count_query(query, parent)
+        query = super(MorphToMany, self).get_relation_count_query(
+            query, parent)
 
-        return query.where('%s.%s' % (self._table, self._morph_type), self._morph_name)
+        return query.where('%s.%s' %
+                           (self._table, self._morph_type), self._morph_name)
 
     def add_eager_constraints(self, models):
         """
@@ -70,7 +74,8 @@ class MorphToMany(BelongsToMany):
         """
         super(MorphToMany, self).add_eager_constraints(models)
 
-        self._query.where('%s.%s' % (self._table, self._morph_type), self._morph_name)
+        self._query.where('%s.%s' %
+                          (self._table, self._morph_type), self._morph_name)
 
     def _create_attach_record(self, id, timed):
         """

@@ -10,8 +10,8 @@ from warnings import warn
 from six import add_metaclass
 from collections import OrderedDict
 from ..utils import basestring, deprecated
-from ..exceptions.orm import MassAssignmentError, RelatedClassNotFound, ValidationError
-from ..query import QueryBuilder
+from ..exceptions.orm import (MassAssignmentError, RelatedClassNotFound,
+                              ValidationError)
 from .builder import Builder
 from .collection import Collection
 from .relations import (
@@ -177,7 +177,8 @@ class Model(object):
     @classmethod
     def _boot_columns(cls):
         connection = cls.resolve_connection()
-        columns = connection.get_schema_manager().list_table_columns(cls.__table__ or inflection.tableize(cls.__name__))
+        columns = connection.get_schema_manager().list_table_columns(
+            cls.__table__ or inflection.tableize(cls.__name__))
         cls.__columns__ = list(columns.keys())
 
     @classmethod
@@ -186,7 +187,7 @@ class Model(object):
         Boot the mixins
         """
         for mixin in cls.__bases__:
-            #if mixin == Model:
+            # if mixin == Model:
             #    continue
 
             method = 'boot_%s' % inflection.underscore(mixin.__name__)
@@ -194,7 +195,7 @@ class Model(object):
                 getattr(mixin, method)(cls)
 
     @classmethod
-    def add_global_scope(cls, scope, implementation = None):
+    def add_global_scope(cls, scope, implementation=None):
         """
         Register a new global scope on the model.
 
@@ -214,7 +215,8 @@ class Model(object):
         elif isinstance(scope, Scope):
             cls._global_scopes[cls][scope.__class__] = scope
         else:
-            raise Exception('Global scope must be an instance of Scope or a callable')
+            raise Exception(
+                'Global scope must be an instance of Scope or a callable')
 
     @classmethod
     def has_global_scope(cls, scope):
@@ -315,7 +317,8 @@ class Model(object):
         :rtype: dict
         """
         if self.__fillable__ and not self.__unguarded__:
-            return {x: attributes[x] for x in attributes if x in self.__fillable__}
+            return {x: attributes[x]
+                    for x in attributes if x in self.__fillable__}
 
         return attributes
 
@@ -480,7 +483,8 @@ class Model(object):
     @classmethod
     def update_or_create(cls, attributes, values=None):
         """
-        Create or update a record matching the attributes, and fill it with values.
+        Create or update a record matching the attributes,
+        and fill it with values.
 
         :param attributes: The instance attributes
         :type attributes: dict
@@ -826,15 +830,20 @@ class Model(object):
 
         type_column, id_column = self.get_morphs(name, type_column, id_column)
 
-        # If the type value is null it is probably safe to assume we're eager loading
-        # the relationship. When that is the case we will pass in a dummy query as
-        # there are multiple types in the morph and we can't use single queries.
+        # If the type value is null it is probably safe to assume
+        # we're eager loading the relationship.
+        # When that is the case we will pass in a dummy query as
+        # there are multiple types in the morph and we can't use single
+        # queries.
         if not hasattr(self, type_column):
-            return MorphTo(self.new_query(), self, id_column, None, type_column, name)
+            return MorphTo(self.new_query(), self, id_column,
+                           None, type_column, name)
 
-        # If we are not eager loading the relationship we will essentially treat this
-        # as a belongs-to style relationship since morph-to extends that class and
-        # we will pass in the appropriate values so that it behaves as expected.
+        # If we are not eager loading the relationship
+        # we will essentially treat this as a belongs-to style relationship
+        # since morph-to extends that class and
+        # we will pass in the appropriate values so that it behaves as
+        # expected.
         klass = self.get_actual_class_for_morph(getattr(self, type_column))
 
         instance = klass()
@@ -1066,7 +1075,8 @@ class Model(object):
 
         query = instance.new_query()
 
-        rel = BelongsToMany(query, self, table, foreign_key, other_key, relation)
+        rel = BelongsToMany(query, self, table,
+                            foreign_key, other_key, relation)
 
         if _wrapped:
             warn('Using belongs_to_many method directly is deprecated. '
@@ -1141,7 +1151,8 @@ class Model(object):
 
         return rel
 
-    def morphed_by_many(self, related, name, table=None, foreign_key=None, other_key=None, relation=None, _wrapped=False):
+    def morphed_by_many(self, related, name, table=None, foreign_key=None,
+                        other_key=None, relation=None, _wrapped=False):
         """
         Define a polymorphic many-to-many relationship.
 
@@ -1171,7 +1182,9 @@ class Model(object):
         if not other_key:
             other_key = name + '_id'
 
-        return self.morph_to_many(related, name, table, foreign_key, other_key, True, relation, _wrapped)
+        return self.morph_to_many(
+            related, name, table, foreign_key,
+            other_key, True, relation, _wrapped)
 
     def _get_related(self, related, as_instance=False):
         """
@@ -1287,7 +1300,8 @@ class Model(object):
         if hasattr(self, '_do_perform_delete_on_model'):
             return self._do_perform_delete_on_model()
 
-        return self.new_query().where(self.get_key_name(), self.get_key()).delete()
+        return self.new_query().\
+            where(self.get_key_name(), self.get_key()).delete()
 
     @classmethod
     def saving(cls, callback):
@@ -1384,7 +1398,8 @@ class Model(object):
         :type callback: callable
         """
         if cls.__dispatcher__:
-            cls.__dispatcher__.listen('%s: %s' % (event, cls.__name__), callback)
+            cls.__dispatcher__.listen(
+                '%s: %s' % (event, cls.__name__), callback)
 
     @classmethod
     def get_observable_events(cls):
@@ -1473,7 +1488,8 @@ class Model(object):
 
         :return: None
         """
-        setattr(self, column, getattr(self, column) + (amount if method == 'increment' else amount * -1))
+        setattr(self, column, getattr(self, column) +
+                (amount if method == 'increment' else amount * -1))
 
         self.sync_original_attribute(column)
 
@@ -1529,7 +1545,8 @@ class Model(object):
             validator_key = 'validate_{}'.format(attr)
             if validator_key in self.__validators__:
                 try:
-                    self.__cleaned_data__[attr] = getattr(self, validator_key)(value)
+                    self.__cleaned_data__[attr] = getattr(
+                        self, validator_key)(value)
                 except ValidationError as e:
                     self.__errors__[attr] = e.detail
                 continue
@@ -1712,8 +1729,9 @@ class Model(object):
         if not self.__dispatcher__:
             return True
 
-        # We will append the names of the class to the event to distinguish it from
-        # other model events that are fired, allowing us to listen on each model
+        # We will append the names of the class to the event to distinguish it
+        # from other model events that are fired,
+        # allowing us to listen on each model
         # event set individually instead of catching event for all the models.
         event = '%s: %s' % (event, self.__class__.__name__)
 
@@ -1761,10 +1779,12 @@ class Model(object):
         """
         time = self.fresh_timestamp()
 
-        if not self.is_dirty(self.UPDATED_AT) and self._should_set_timestamp(self.UPDATED_AT):
+        if not self.is_dirty(self.UPDATED_AT) and\
+                self._should_set_timestamp(self.UPDATED_AT):
             self.set_updated_at(time)
 
-        if not self._exists and not self.is_dirty(self.CREATED_AT) and self._should_set_timestamp(self.CREATED_AT):
+        if not self._exists and not self.is_dirty(self.CREATED_AT) and\
+                self._should_set_timestamp(self.CREATED_AT):
             self.set_created_at(time)
 
     def _should_set_timestamp(self, timestamp):
@@ -1868,10 +1888,6 @@ class Model(object):
         )
 
         return builder.set_model(self).with_(*self._with)
-
-    @classmethod
-    def query(cls):
-        return cls().new_query()
 
     def new_orm_builder(self, query):
         """
@@ -2250,7 +2266,7 @@ class Model(object):
         mutated_attributes = self._get_mutated_attributes()
 
         for key in self.get_dates():
-            if not key in attributes or key in mutated_attributes:
+            if key not in attributes or key in mutated_attributes:
                 continue
 
             attributes[key] = self._format_date(attributes[key])
@@ -2261,8 +2277,9 @@ class Model(object):
 
             attributes[key] = self._mutate_attribute_for_dict(key)
 
-        # Next we will handle any casts that have been setup for this model and cast
-        # the values to their appropriate type. If the attribute has a mutator we
+        # Next we will handle any casts that have been setup for this model
+        # and cast the values to their appropriate type.
+        # If the attribute has a mutator we
         # will not perform the cast on those attributes to avoid any confusion.
         for key, value in self.__casts__.items():
             if key not in attributes or key in mutated_attributes:
@@ -2270,8 +2287,9 @@ class Model(object):
 
             attributes[key] = self._cast_attribute(key, attributes[key])
 
-        # Here we will grab all of the appended, calculated attributes to this model
-        # as these attributes are not really in the attributes array, but are run
+        # Here we will grab all of the appended, calculated attributes to
+        # this model as these attributes are not really in
+        # the attributes array, but are run
         # when we need to array or JSON the model for convenience to the coder.
         for key in self._get_dictable_appends():
             attributes[key] = self._mutate_attribute_for_dict(key)
@@ -2295,7 +2313,8 @@ class Model(object):
         if not self.__appends__:
             return []
 
-        return self._get_dictable_items(dict(zip(self.__appends__, self.__appends__)))
+        return self._get_dictable_items(
+            dict(zip(self.__appends__, self.__appends__)))
 
     def relations_to_dict(self):
         """
@@ -2338,9 +2357,12 @@ class Model(object):
         :rtype: dict
         """
         if len(self.__visible__) > 0:
-            return {x: values[x] for x in values.keys() if x in self.__visible__}
+            return {x: values[x]
+                    for x in values.keys() if x in self.__visible__}
 
-        return {x: values[x] for x in values.keys() if x not in self.__hidden__ and not x.startswith('_')}
+        return {x: values[x]
+                for x in values.keys()
+                if x not in self.__hidden__ and not x.startswith('_')}
 
     def get_attribute(self, key, original=None):
         """
@@ -2405,7 +2427,8 @@ class Model(object):
         relations = relations or super(Model, self).__getattribute__(method)
 
         if not isinstance(relations, Relation):
-            raise RuntimeError('Relationship method must return an object of type Relation')
+            raise RuntimeError(
+                'Relationship method must return an object of type Relation')
 
         self._relations[method] = relations
 
@@ -2516,7 +2539,8 @@ class Model(object):
             return str(value)
         elif type in ['bool', 'boolean']:
             return bool(value)
-        elif type in ['dict', 'list', 'json'] and isinstance(value, basestring):
+        elif (type in ['dict', 'list', 'json'] and
+              isinstance(value, basestring)):
             return json.loads(value)
         else:
             return value
@@ -2540,13 +2564,15 @@ class Model(object):
 
         :rtype: str
         """
-        date_format = self.get_connection().get_query_grammar().get_date_format()
+        date_format = self.get_connection().\
+            get_query_grammar().get_date_format()
 
         if isinstance(value, pendulum.Pendulum):
             value = value.in_timezone('UTC')
             return value.format(date_format)
 
-        if isinstance(value, datetime.date) and not isinstance(value, (datetime.datetime)):
+        if isinstance(value, datetime.date) and not isinstance(
+                value, (datetime.datetime)):
             value = pendulum.date.instance(value)
 
             return value.format(date_format)
@@ -2565,7 +2591,8 @@ class Model(object):
         if isinstance(value, (int, float)):
             return pendulum.from_timestamp(value)
 
-        if isinstance(value, datetime.date) and not isinstance(value, (datetime.datetime)):
+        if isinstance(value, datetime.date) and not isinstance(
+                value, (datetime.datetime)):
             return pendulum.date.instance(value)
 
         return pendulum.instance(value)
@@ -2634,7 +2661,8 @@ class Model(object):
                 self.get_updated_at_column()
             ]
 
-            attributes = {x: self._attributes[x] for x in self._attributes if x not in except_}
+            attributes = {x: self._attributes[x]
+                          for x in self._attributes if x not in except_}
 
             instance = self.new_instance(attributes)
 
@@ -2898,7 +2926,8 @@ class Model(object):
         return self.get_attribute(item)
 
     def __setattr__(self, key, value):
-        if key in ['_attributes', '_exists', '_relations', '_original'] or key.startswith('__'):
+        if key in ['_attributes', '_exists', '_relations',
+                   '_original'] or key.startswith('__'):
             return object.__setattr__(self, key, value)
 
         if self._has_set_mutator(key):

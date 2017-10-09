@@ -99,7 +99,8 @@ class SchemaGrammar(Grammar):
 
         sql = 'ALTER TABLE %s ADD CONSTRAINT %s ' % (table, command.index)
 
-        sql += 'FOREIGN KEY (%s) REFERENCES %s (%s)' % (columns, on, on_columns)
+        sql += 'FOREIGN KEY (%s) REFERENCES %s (%s)' % (columns,
+                                                        on, on_columns)
 
         if command.get('on_delete'):
             sql += ' ON DELETE %s' % command.on_delete
@@ -152,7 +153,8 @@ class SchemaGrammar(Grammar):
         """
         Get all of the commands with a given name.
         """
-        return list(filter(lambda value: value.name == name, blueprint.get_commands()))
+        return list(filter(lambda value: value.name ==
+                           name, blueprint.get_commands()))
 
     def _get_type(self, column):
         """
@@ -224,7 +226,8 @@ class SchemaGrammar(Grammar):
         table_diff = self._get_changed_diff(blueprint, schema)
 
         if table_diff:
-            sql = schema.get_database_platform().get_alter_table_sql(table_diff)
+            sql = schema.get_database_platform().\
+                get_alter_table_sql(table_diff)
 
             if isinstance(sql, list):
                 return sql
@@ -245,9 +248,11 @@ class SchemaGrammar(Grammar):
 
         :rtype: orator.dbal.TableDiff
         """
-        table = schema.list_table_details(self.get_table_prefix() + blueprint.get_table())
+        table = schema.list_table_details(
+            self.get_table_prefix() + blueprint.get_table())
 
-        return Comparator().diff_table(table, self._get_table_with_column_changes(blueprint, table))
+        return Comparator().diff_table(
+            table, self._get_table_with_column_changes(blueprint, table))
 
     def _get_table_with_column_changes(self, blueprint, table):
         """
@@ -272,7 +277,8 @@ class SchemaGrammar(Grammar):
                     method = 'set_%s' % option
 
                     if hasattr(column, method):
-                        getattr(column, method)(self._map_fluent_value(option, value))
+                        getattr(column, method)(
+                            self._map_fluent_value(option, value))
 
         return table
 

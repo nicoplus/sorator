@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from .grammar import SchemaGrammar
-from ..blueprint import Blueprint
-from ...query.expression import QueryExpression
-from ...support.fluent import Fluent
 
 
 class MySQLSchemaGrammar(SchemaGrammar):
@@ -96,7 +93,8 @@ class MySQLSchemaGrammar(SchemaGrammar):
 
         table = self.wrap_table(blueprint)
 
-        return 'ALTER TABLE %s ADD %s %s(%s)' % (table, type, command.index, columns)
+        return 'ALTER TABLE %s ADD %s %s(%s)' % (
+            table, type, command.index, columns)
 
     def compile_drop(self, blueprint, command, _):
         return 'DROP TABLE %s' % self.wrap_table(blueprint)
@@ -272,7 +270,8 @@ class MySQLSchemaGrammar(SchemaGrammar):
         """
         Get the column change options.
         """
-        options = super(MySQLSchemaGrammar, self)._get_column_change_options(fluent)
+        options = super(MySQLSchemaGrammar,
+                        self)._get_column_change_options(fluent)
 
         if fluent.type == 'enum':
             options['extra'] = {

@@ -56,7 +56,8 @@ class AbstractAsset(object):
 
     def _is_identifier_quoted(self, identifier):
         return len(identifier) > 0\
-            and (identifier[0] == '`' or identifier[0] == '"' or identifier[0] == '[')
+            and (identifier[0] == '`' or identifier[0] == '"' or
+                 identifier[0] == '[')
 
     def _trim_quotes(self, identifier):
         return re.sub('[`"\[\]]', '', identifier)
@@ -78,7 +79,8 @@ class AbstractAsset(object):
 
     def _generate_identifier_name(self, columns, prefix='', max_size=30):
         """
-        Generates an identifier from a list of column names obeying a certain string length.
+        Generates an identifier from a list of column names
+        obeying a certain string length.
         """
         hash = ''
         for column in columns:

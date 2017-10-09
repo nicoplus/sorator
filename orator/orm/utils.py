@@ -137,7 +137,8 @@ class scope(classmethod):
         if not self._owner:
             return self._method(self._owner, *args, **kwargs)
         else:
-            return getattr(self._owner.query(), self._method.__name__)(*args, **kwargs)
+            return getattr(self._owner.query(),
+                           self._method.__name__)(*args, **kwargs)
 
 
 # Relations decorators
@@ -242,7 +243,8 @@ class morph_one(relation):
 
     relation_class = MorphOne
 
-    def __init__(self, name, type_column=None, id_column=None, local_key=None, relation=None):
+    def __init__(self, name, type_column=None, id_column=None,
+                 local_key=None, relation=None):
         if isinstance(name, (types.FunctionType, types.MethodType)):
             raise RuntimeError('morph_one relation requires a name')
 
@@ -360,9 +362,11 @@ class has_many_through(relation):
 
     relation_class = HasManyThrough
 
-    def __init__(self, through, first_key=None, second_key=None, relation=None):
+    def __init__(self, through, first_key=None,
+                 second_key=None, relation=None):
         if isinstance(through, (types.FunctionType, types.MethodType)):
-            raise RuntimeError('has_many_through relation requires the through parameter')
+            raise RuntimeError(
+                'has_many_through relation requires the through parameter')
 
         self._through = through
         self._first_key = first_key
@@ -388,7 +392,8 @@ class morph_many(relation):
 
     relation_class = MorphMany
 
-    def __init__(self, name, type_column=None, id_column=None, local_key=None, relation=None):
+    def __init__(self, name, type_column=None, id_column=None,
+                 local_key=None, relation=None):
         if isinstance(name, (types.FunctionType, types.MethodType)):
             raise RuntimeError('morph_many relation requires a name')
 
@@ -458,7 +463,8 @@ class morph_to_many(relation):
 
     relation_class = MorphToMany
 
-    def __init__(self, name, table=None, foreign_key=None, other_key=None, relation=None):
+    def __init__(self, name, table=None, foreign_key=None,
+                 other_key=None, relation=None):
         if isinstance(name, (types.FunctionType, types.MethodType)):
             raise RuntimeError('morph_to_many relation required a name')
 
@@ -488,7 +494,8 @@ class morphed_by_many(relation):
 
     relation_class = MorphToMany
 
-    def __init__(self, name, table=None, foreign_key=None, other_key=None, relation=None):
+    def __init__(self, name, table=None, foreign_key=None,
+                 other_key=None, relation=None):
         if isinstance(foreign_key, (types.FunctionType, types.MethodType)):
             raise RuntimeError('morphed_by_many relation requires a name')
 

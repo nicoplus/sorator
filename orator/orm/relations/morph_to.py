@@ -36,7 +36,8 @@ class MorphTo(BelongsTo):
         self._dictionary = {}
         self._with_trashed = False
 
-        super(MorphTo, self).__init__(query, parent, foreign_key, other_key, relation)
+        super(MorphTo, self).\
+            __init__(query, parent, foreign_key, other_key, relation)
 
     def add_eager_constraints(self, models):
         """
@@ -87,7 +88,8 @@ class MorphTo(BelongsTo):
         self._parent.set_attribute(self._foreign_key, model.get_key())
         self._parent.set_attribute(self._morph_type, model.get_morph_name())
 
-        return self._parent.set_relation(self._relation, Result(model, self, self._parent))
+        return self._parent.set_relation(
+            self._relation, Result(model, self, self._parent))
 
     def get_eager(self):
         """

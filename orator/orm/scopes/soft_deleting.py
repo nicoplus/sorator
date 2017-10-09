@@ -140,6 +140,7 @@ class SoftDeletingScope(Scope):
 
         builder.without_global_scope(self)
 
-        builder.get_query().where_not_null(model.get_qualified_deleted_at_column())
+        builder.get_query().where_not_null(
+            model.get_qualified_deleted_at_column())
 
         return builder

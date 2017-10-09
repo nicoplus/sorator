@@ -31,15 +31,18 @@ class SQLiteQueryGrammar(QueryGrammar):
 
         # If there is only one row to insert, we just use the normal grammar
         if len(values) == 1:
-            return super(SQLiteQueryGrammar, self).compile_insert(query, values)
+            return super(SQLiteQueryGrammar,
+                         self).compile_insert(query, values)
 
         names = self.columnize(values[0].keys())
 
         columns = []
 
-        # SQLite requires us to build the multi-row insert as a listing of select with
-        # unions joining them together. So we'll build out this list of columns and
-        # then join them all together with select unions to complete the queries.
+        # SQLite requires us to build the multi-row insert
+        # as a listing of select with unions joining them together.
+        # So we'll build out this list of columns and
+        # then join them all together with select unions to complete the
+        # queries.
         for column in values[0].keys():
             columns.append('%s AS %s' % (self.get_marker(), self.wrap(column)))
 
@@ -59,7 +62,8 @@ class SQLiteQueryGrammar(QueryGrammar):
         :rtype: str
         """
         sql = {
-            'DELETE FROM sqlite_sequence WHERE name = %s' % self.get_marker(): [query.from__]
+            'DELETE FROM sqlite_sequence WHERE name = %s' % self.get_marker():
+            [query.from__]
         }
 
         sql['DELETE FROM %s' % self.wrap_table(query.from__)] = []

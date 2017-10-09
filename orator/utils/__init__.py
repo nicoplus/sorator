@@ -11,11 +11,11 @@ PY33 = sys.version_info >= (3, 3)
 if PY2:
     import imp
 
-    long = long
-    unicode = unicode
-    basestring = basestring
+    long = long # noqa
+    unicode = unicode # noqa
+    basestring = basestring # noqa
 
-    reduce = reduce
+    reduce = reduce # noqa
 
     from urllib import quote_plus, unquote_plus, quote, unquote
     from urlparse import parse_qsl
@@ -30,10 +30,10 @@ else:
     unicode = str
     basestring = str
 
-    from functools import reduce
+    from functools import reduce # noqa
 
-    from urllib.parse import (quote_plus, unquote_plus,
-                              parse_qsl, quote, unquote)
+    from urllib.parse import (quote_plus, unquote_plus, # noqa
+                              parse_qsl, quote, unquote) # noqa
 
     if PY33:
         from importlib import machinery
@@ -52,7 +52,7 @@ else:
                 return mod
 
 
-from .helpers import mkdir_p, value
+from .helpers import mkdir_p, value # noqa
 
 
 class Null(object):

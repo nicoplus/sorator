@@ -1,3 +1,3 @@
 # -*- coding: utf-8 -*-
 
-from .collection import Collection
+from .collection import Collection # noqa

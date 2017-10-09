@@ -1,3 +1,3 @@
 # -*- coding: utf-8 -*-
 
-from .seeder import Seeder
+from .seeder import Seeder # noqa

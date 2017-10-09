@@ -19,9 +19,9 @@ class ResetCommand(BaseCommand):
         """
         Executes the command.
         """
-        if not self.confirm_to_proceed(
-            '<question>Are you sure you want to reset all of the migrations?:</question> '
-        ):
+        prompt_msg = ('<question>Are you sure you want to '
+                      'reset all of the migrations?:</question> ')
+        if not self.confirm_to_proceed(prompt_msg):
             return
 
         database = self.option('database')

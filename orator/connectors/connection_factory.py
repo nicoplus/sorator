@@ -47,7 +47,8 @@ class ConnectionFactory(object):
         )
 
     def _create_read_write_connection(self, config):
-        connection = self._create_single_connection(self._get_write_config(config))
+        connection = self._create_single_connection(
+            self._get_write_config(config))
 
         connection.set_read_connection(self._create_read_connection(config))
 
@@ -102,7 +103,8 @@ class ConnectionFactory(object):
     def register_connection(cls, name, connection):
         cls.CONNECTIONS[name] = connection
 
-    def _create_connection(self, driver, connection, database, prefix='', config=None):
+    def _create_connection(self, driver, connection,
+                           database, prefix='', config=None):
         if config is None:
             config = {}
 

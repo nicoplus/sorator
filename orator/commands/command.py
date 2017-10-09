@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
-from cleo import Command as BaseCommand, InputOption, ListInput
+from cleo import Command as BaseCommand, InputOption
 from orator import DatabaseManager
 import yaml
 
@@ -97,7 +97,8 @@ class Command(BaseCommand):
         """
         config = self._get_config(config_file)
 
-        self.resolver = DatabaseManager(config.get('databases', config.get('DATABASES', {})))
+        self.resolver = DatabaseManager(config.get(
+            'databases', config.get('DATABASES', {})))
 
         return True
 

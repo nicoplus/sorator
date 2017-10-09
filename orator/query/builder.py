@@ -126,7 +126,8 @@ class QueryBuilder(object):
         else:
             raise ArgumentError('Invalid subselect')
 
-        return self.select_raw('(%s) AS %s' % (query, self._grammar.wrap(as_)), bindings)
+        return self.select_raw('(%s) AS %s' % (
+            query, self._grammar.wrap(as_)), bindings)
 
     def add_select(self, *column):
         """
@@ -328,7 +329,8 @@ class QueryBuilder(object):
         """
         Add a where clause to the query
 
-        :param column: The column of the where clause, can also be a QueryBuilder instance for sub where
+        :param column: The column of the where clause, can also be
+        a QueryBuilder instance for sub where
         :type column: str or QueryBuilder
 
         :param operator: The operator of the where clause
@@ -343,9 +345,11 @@ class QueryBuilder(object):
         :return: The current QueryBuilder instance
         :rtype: QueryBuilder
         """
-        # If the column is an array, we will assume it is an array of key-value pairs
-        # and can add them each as a where clause. We will maintain the boolean we
-        # received when the method was called and pass it into the nested where.
+        # If the column is an array, we will assume it is an array of
+        # key-value pairs and can add them each as a where clause.
+        # We will maintain the boolean we
+        # received when the method was called and pass it into the nested
+        # where.
         if isinstance(column, dict):
             nested = self.new_query()
             for key, value in column.items():
@@ -644,18 +648,23 @@ class QueryBuilder(object):
         return self.where_not_null(column, 'or')
 
     def where_date(self, column, operator, value, boolean='and'):
-        return self._add_date_based_where('date', column, operator, value, boolean)
+        return self._add_date_based_where(
+            'date', column, operator, value, boolean)
 
     def where_day(self, column, operator, value, boolean='and'):
-        return self._add_date_based_where('day', column, operator, value, boolean)
+        return self._add_date_based_where(
+            'day', column, operator, value, boolean)
 
     def where_month(self, column, operator, value, boolean='and'):
-        return self._add_date_based_where('month', column, operator, value, boolean)
+        return self._add_date_based_where(
+            'month', column, operator, value, boolean)
 
     def where_year(self, column, operator, value, boolean='and'):
-        return self._add_date_based_where('year', column, operator, value, boolean)
+        return self._add_date_based_where(
+            'year', column, operator, value, boolean)
 
-    def _add_date_based_where(self, type, column, operator, value, boolean='and'):
+    def _add_date_based_where(
+            self, type, column, operator, value, boolean='and'):
         self.wheres.append({
             'type': type,
             'column': column,
@@ -1188,7 +1197,8 @@ class QueryBuilder(object):
             for result in self.get(columns):
                 results[result[key]] = result[column]
         else:
-            results = Collection(list(map(lambda x: x[column], self.get(columns))))
+            results = Collection(
+                list(map(lambda x: x[column], self.get(columns))))
 
         return results
 
@@ -1263,7 +1273,7 @@ class QueryBuilder(object):
         """
         if not columns and self.distinct_:
             columns = self.columns
-        
+
         if not columns:
             columns = ['*']
 
@@ -1291,9 +1301,6 @@ class QueryBuilder(object):
         :return: The max
         :rtype: int
         """
-        if not column:
-            columns = ['*']
-
         return self.aggregate('max', *[column])
 
     def sum(self, column):
@@ -1351,7 +1358,8 @@ class QueryBuilder(object):
         self.columns = previous_columns
 
         if len(results) > 0:
-            return dict((k.lower(), v) for k, v in results[0].items())['aggregate']
+            return dict((k.lower(), v)
+                        for k, v in results[0].items())['aggregate']
 
     def insert(self, _values=None, **values):
         """
@@ -1410,7 +1418,8 @@ class QueryBuilder(object):
 
         values = self._clean_bindings(values.values())
 
-        return self._processor.process_insert_get_id(self, sql, values, sequence)
+        return self._processor.process_insert_get_id(
+            self, sql, values, sequence)
 
     def update(self, _values=None, **values):
         """
@@ -1549,7 +1558,8 @@ class QueryBuilder(object):
         :return: The cleaned bindings
         :rtype: list
         """
-        return list(filter(lambda b: not isinstance(b, QueryExpression), bindings))
+        return list(filter(lambda b: not isinstance(
+            b, QueryExpression), bindings))
 
     def raw(self, value):
         """

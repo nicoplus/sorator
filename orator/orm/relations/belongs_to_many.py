@@ -21,7 +21,8 @@ class BelongsToMany(Relation):
     _pivot_columns = []
     _pivot_wheres = []
 
-    def __init__(self, query, parent, table, foreign_key, other_key, relation_name=None):
+    def __init__(self, query, parent, table, foreign_key,
+                 other_key, relation_name=None):
         """
         :param query: A Builder instance
         :type query: Builder
@@ -61,7 +62,8 @@ class BelongsToMany(Relation):
         """
         Set a where clause for a pivot table column.
 
-        :param column: The column of the where clause, can also be a QueryBuilder instance for sub where
+        :param column: The column of the where clause,
+        can also be a QueryBuilder instance for sub where
         :type column: str|Builder
 
         :param operator: The operator of the where clause
@@ -78,13 +80,15 @@ class BelongsToMany(Relation):
         """
         self._pivot_wheres.append([column, operator, value, boolean])
 
-        return self._query.where('%s.%s' % (self._table, column), operator, value, boolean)
+        return self._query.where('%s.%s' % (
+            self._table, column), operator, value, boolean)
 
     def or_where_pivot(self, column, operator=None, value=None):
         """
         Set an or where clause for a pivot table column.
 
-        :param column: The column of the where clause, can also be a QueryBuilder instance for sub where
+        :param column: The column of the where clause,
+        can also be a QueryBuilder instance for sub where
         :type column: str|Builder
 
         :param operator: The operator of the where clause
@@ -159,7 +163,8 @@ class BelongsToMany(Relation):
         :type models: list
         """
         for model in models:
-            pivot = self.new_existing_pivot(self._clean_pivot_attributes(model))
+            pivot = self.new_existing_pivot(
+                self._clean_pivot_attributes(model))
 
             model.set_relation('pivot', pivot)
 
@@ -208,7 +213,8 @@ class BelongsToMany(Relation):
 
         self._set_join(query)
 
-        return super(BelongsToMany, self).get_relation_count_query(query, parent)
+        return super(BelongsToMany, self).get_relation_count_query(
+            query, parent)
 
     def get_relation_count_query_for_self_join(self, query, parent):
         """
@@ -221,14 +227,16 @@ class BelongsToMany(Relation):
         """
         query.select(QueryExpression('COUNT(*)'))
 
-        table_prefix = self._query.get_query().get_connection().get_table_prefix()
+        table_prefix = self._query.get_query().\
+            get_connection().get_table_prefix()
 
         hash_ = self.get_relation_count_hash()
         query.from_('%s AS %s%s' % (self._table, table_prefix, hash_))
 
         key = self.wrap(self.get_qualified_parent_key_name())
 
-        return query.where('%s.%s' % (hash_, self._foreign_key), '=', QueryExpression(key))
+        return query.where('%s.%s' % (
+            hash_, self._foreign_key), '=', QueryExpression(key))
 
     def get_relation_count_hash(self):
         """
@@ -265,7 +273,8 @@ class BelongsToMany(Relation):
         for column in defaults + self._pivot_columns:
             value = '%s.%s AS pivot_%s' % (self._table, column, column)
             if value not in columns:
-                columns.append('%s.%s AS pivot_%s' % (self._table, column, column))
+                columns.append('%s.%s AS pivot_%s' %
+                               (self._table, column, column))
 
         return columns
 
@@ -330,7 +339,8 @@ class BelongsToMany(Relation):
         :type relation:  str
         """
         for model in models:
-            model.set_relation(relation, Result(self._related.new_collection(), self, model))
+            model.set_relation(relation, Result(
+                self._related.new_collection(), self, model))
 
         return models
 
@@ -348,9 +358,11 @@ class BelongsToMany(Relation):
             key = model.get_key()
 
             if key in dictionary:
-                collection = Result(self._related.new_collection(dictionary[key]), self, model)
+                collection = Result(self._related.new_collection(
+                    dictionary[key]), self, model)
             else:
-                collection = Result(self._related.new_collection(), self, model)
+                collection = Result(
+                    self._related.new_collection(), self, model)
 
             model.set_relation(relation, collection)
 
@@ -443,7 +455,8 @@ class BelongsToMany(Relation):
 
     def find_or_new(self, id, columns=None):
         """
-        Find a model by its primary key or return new instance of the related model.
+        Find a model by its primary key or return new instance of
+        the related model.
 
         :param id: The primary key
         :type id: mixed
@@ -461,7 +474,8 @@ class BelongsToMany(Relation):
 
     def first_or_new(self, _attributes=None, **attributes):
         """
-        Get the first related model record matching the attributes or instantiate it.
+        Get the first related model record matching the attributes or
+        instantiate it.
 
         :param attributes:  The attributes
         :type attributes: dict
@@ -477,9 +491,11 @@ class BelongsToMany(Relation):
 
         return instance
 
-    def first_or_create(self, _attributes=None, _joining=None, _touch=True, **attributes):
+    def first_or_create(self, _attributes=None,
+                        _joining=None, _touch=True, **attributes):
         """
-        Get the first related model record matching the attributes or create it.
+        Get the first related model record matching the attributes or
+        create it.
 
         :param attributes:  The attributes
         :type attributes: dict
@@ -495,9 +511,11 @@ class BelongsToMany(Relation):
 
         return instance
 
-    def update_or_create(self, attributes, values=None, joining=None, touch=True):
+    def update_or_create(self, attributes, values=None,
+                         joining=None, touch=True):
         """
-        Create or update a related record matching the attributes, and fill it with values.
+        Create or update a related record matching the attributes,
+        and fill it with values.
 
         :param attributes: The attributes
         :type attributes: dict
@@ -521,7 +539,8 @@ class BelongsToMany(Relation):
 
         return instance
 
-    def create(self, _attributes=None, _joining=None, _touch=True, **attributes):
+    def create(self, _attributes=None, _joining=None,
+               _touch=True, **attributes):
         """
         Create a new instance of the related model.
 
@@ -619,7 +638,8 @@ class BelongsToMany(Relation):
                 self.attach(id, attributes, touch)
 
                 changes['attached'].append(id)
-            elif len(attributes) > 0 and self.update_existing_pivot(id, attributes, touch):
+            elif (len(attributes) > 0 and
+                  self.update_existing_pivot(id, attributes, touch)):
                 changes['updated'].append(id)
 
         return changes
@@ -765,7 +785,8 @@ class BelongsToMany(Relation):
         return self.get_related().touches(self._guess_inverse_relation())
 
     def _guess_inverse_relation(self):
-        return inflection.camelize(inflection.pluralize(self.get_parent().__class__.__name__))
+        return inflection.camelize(inflection.pluralize(
+            self.get_parent().__class__.__name__))
 
     def _new_pivot_query(self):
         """
@@ -796,7 +817,8 @@ class BelongsToMany(Relation):
         """
         Create a new pivot model instance.
         """
-        pivot = self._related.new_pivot(self._parent, attributes, self._table, exists)
+        pivot = self._related.new_pivot(
+            self._parent, attributes, self._table, exists)
 
         return pivot.set_pivot_keys(self._foreign_key, self._other_key)
 
@@ -832,7 +854,9 @@ class BelongsToMany(Relation):
         """
         Get the related model's update at column at
         """
-        return {self._related.get_updated_at_column(): self._related.fresh_timestamp()}
+        key = self._related.get_updated_at_column()
+        value = self._related.fresh_timestamp()
+        return {key: value}
 
     def get_has_compare_key(self):
         """

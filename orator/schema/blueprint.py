@@ -522,16 +522,16 @@ class Blueprint(object):
         :rtype: Fluent
         """
         return self._add_column('boolean', column)
-    
+
     def enum(self, column, allowed):
         """
         Create a new enum column on the table.
-        
+
         :param column: The column
         :type column: str
-        
+
         :type allowed: list
-        
+
         :rtype: Fluent
         """
         return self._add_column('enum', column, allowed=allowed)
@@ -695,7 +695,8 @@ class Blueprint(object):
         if not isinstance(columns, list):
             columns = [columns]
 
-        index = '%s_%s_%s' % (self._table, '_'.join([str(column) for column in columns]), type)
+        index = '%s_%s_%s' % (self._table, '_'.join(
+            [str(column) for column in columns]), type)
 
         return index.lower().replace('-', '_').replace('.', '_')
 
@@ -780,7 +781,8 @@ class Blueprint(object):
         return self._commands
 
     def get_added_columns(self):
-        return list(filter(lambda column: not column.get('change'), self._columns))
+        return list(
+            filter(lambda column: not column.get('change'), self._columns))
 
     def get_changed_columns(self):
         return list(filter(lambda column: column.get('change'), self._columns))

@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from ..collection import Collection
 from .relation import Relation
 from .result import Result
 
@@ -38,7 +37,8 @@ class HasOneOrMany(Relation):
 
         :type models: list
         """
-        return self._query.where_in(self._foreign_key, self.get_keys(models, self._local_key))
+        return self._query.where_in(
+            self._foreign_key, self.get_keys(models, self._local_key))
 
     def match_one(self, models, results, relation):
         """
@@ -98,7 +98,8 @@ class HasOneOrMany(Relation):
             key = model.get_attribute(self._local_key)
 
             if key in dictionary:
-                value = Result(self._get_relation_value(dictionary, key, type_), self, model)
+                value = Result(self._get_relation_value(
+                    dictionary, key, type_), self, model)
             else:
                 if type_ == 'one':
                     value = Result(None, self, model)
@@ -155,7 +156,8 @@ class HasOneOrMany(Relation):
 
         :rtype: Model
         """
-        model.set_attribute(self.get_plain_foreign_key(), self.get_parent_key())
+        model.set_attribute(self.get_plain_foreign_key(),
+                            self.get_parent_key())
 
         if model.save():
             return model
@@ -175,7 +177,8 @@ class HasOneOrMany(Relation):
 
     def find_or_new(self, id, columns=None):
         """
-        Find a model by its primary key or return new instance of the related model.
+        Find a model by its primary key or return new instance of
+        the related model.
 
         :param id: The primary key
         :type id: mixed
@@ -192,13 +195,15 @@ class HasOneOrMany(Relation):
 
         if instance is None:
             instance = self._related.new_instance()
-            instance.set_attribute(self.get_plain_foreign_key(), self.get_parent_key())
+            instance.set_attribute(
+                self.get_plain_foreign_key(), self.get_parent_key())
 
         return instance
 
     def first_or_new(self, _attributes=None, **attributes):
         """
-        Get the first related model record matching the attributes or instantiate it.
+        Get the first related model record matching the attributes or
+        instantiate it.
 
         :param attributes:  The attributes
         :type attributes: dict
@@ -212,7 +217,8 @@ class HasOneOrMany(Relation):
 
         if instance is None:
             instance = self._related.new_instance()
-            instance.set_attribute(self.get_plain_foreign_key(), self.get_parent_key())
+            instance.set_attribute(
+                self.get_plain_foreign_key(), self.get_parent_key())
 
         return instance
 
@@ -237,7 +243,8 @@ class HasOneOrMany(Relation):
 
     def update_or_create(self, attributes, values=None):
         """
-        Create or update a related record matching the attributes, and fill it with values.
+        Create or update a related record matching the attributes,
+        and fill it with values.
 
         :param attributes: The attributes
         :type attributes: dict
@@ -269,7 +276,8 @@ class HasOneOrMany(Relation):
 
         instance = self._related.new_instance(attributes)
 
-        instance.set_attribute(self.get_plain_foreign_key(), self.get_parent_key())
+        instance.set_attribute(
+            self.get_plain_foreign_key(), self.get_parent_key())
 
         instance.save()
 
@@ -304,7 +312,8 @@ class HasOneOrMany(Relation):
             attributes.update(_attributes)
 
         if self._related.uses_timestamps():
-            attributes[self.get_related_updated_at()] = self._related.fresh_timestamp()
+            attributes[self.get_related_updated_at()] = \
+                self._related.fresh_timestamp()
 
         return self._query.update(attributes)
 

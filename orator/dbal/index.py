@@ -10,7 +10,8 @@ class Index(AbstractAsset):
     An abstraction class for an index.
     """
 
-    def __init__(self, name, columns, is_unique=False, is_primary=False, flags=None, options=None):
+    def __init__(self, name, columns, is_unique=False,
+                 is_primary=False, flags=None, options=None):
         """
         Constructor.
 
@@ -112,7 +113,8 @@ class Index(AbstractAsset):
 
     def spans_columns(self, column_names):
         """
-        Checks if this index exactly spans the given column names in the correct order.
+        Checks if this index exactly spans the given column names
+        in the correct order.
 
         :type column_names: list
 
@@ -124,7 +126,8 @@ class Index(AbstractAsset):
 
         for i in range(number_of_columns):
             column = self._trim_quotes(columns[i].lower())
-            if i >= len(column_names) or column != self._trim_quotes(column_names[i].lower()):
+            if (i >= len(column_names) or
+                    column != self._trim_quotes(column_names[i].lower())):
                 same_columns = False
 
         return same_columns
@@ -139,8 +142,10 @@ class Index(AbstractAsset):
 
         :rtype: bool
         """
-        # allow the other index to be equally large only. It being larger is an option
-        # but it creates a problem with scenarios of the kind PRIMARY KEY(foo,bar) UNIQUE(foo)
+        # allow the other index to be equally large only.
+        # It being larger is an option
+        # but it creates a problem with scenarios of the kind PRIMARY
+        # KEY(foo,bar) UNIQUE(foo)
         if len(other.get_columns()) != len(self.get_columns()):
             return False
 
@@ -152,11 +157,12 @@ class Index(AbstractAsset):
             return False
 
         if self.is_simple_index():
-            # this is a special case: If the current key is neither primary or unique,
-            # any unique or primary key will always have the same effect
-            # for the index and there cannot be any constraint overlaps.
-            # This means a primary or unique index can always fulfill
-            # the requirements of just an index that has no constraints.
+            # this is a special case: If the current key is neither primary or
+            # unique, any unique or primary key will always have
+            # the same effect for the index and there cannot be any
+            # constraint overlaps. This means a primary or unique index
+            # can always fulfill the requirements of just an index
+            # that has no constraints.
             return True
 
         if other.is_primary() != self.is_primary():
@@ -177,7 +183,7 @@ class Index(AbstractAsset):
         :rtype: bool
         """
         if (self.has_option('where') and other.has_option('where')
-            and self.get_option('where') == other.get_option('where')):
+                and self.get_option('where') == other.get_option('where')):
             return True
 
         if not self.has_option('where') and not other.has_option('where'):
@@ -201,7 +207,9 @@ class Index(AbstractAsset):
             return False
 
         same_columns = self.spans_columns(other.get_columns())
-        if same_columns and (self.is_primary() or self.is_unique()) and self.same_partial_index(other):
+        if same_columns and (
+                self.is_primary() or self.is_unique()
+        ) and self.same_partial_index(other):
             return True
 
         return False

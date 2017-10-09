@@ -40,9 +40,11 @@ class StatusCommand(BaseCommand):
         migrations = []
         for migration in migrator._get_migration_files(path):
             if migration in ran:
-                migrations.append(['<fg=cyan>%s</>' % migration, '<info>Yes</>'])
+                migrations.append(['<fg=cyan>%s</>' %
+                                   migration, '<info>Yes</>'])
             else:
-                migrations.append(['<fg=cyan>%s</>' % migration, '<fg=red>No</>'])
+                migrations.append(['<fg=cyan>%s</>' %
+                                   migration, '<fg=red>No</>'])
 
         if migrations:
             table = self.table(

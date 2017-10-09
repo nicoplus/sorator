@@ -19,9 +19,9 @@ class MigrateCommand(BaseCommand):
     """
 
     def handle(self):
-        if not self.confirm_to_proceed(
-            '<question>Are you sure you want to proceed with the migration?</question> '
-        ):
+        prompt_msg = ('<question>Are you sureyou want '
+                      'to proceed with the migration?</question> ')
+        if not self.confirm_to_proceed(prompt_msg):
             return
 
         database = self.option('database')
@@ -43,8 +43,8 @@ class MigrateCommand(BaseCommand):
         for note in migrator.get_notes():
             self.line(note)
 
-        # If the "seed" option has been given, we will rerun the database seed task
-        # to repopulate the database.
+        # If the "seed" option has been given,
+        # we will rerun the database seed task to repopulate the database.
         if self.option('seed'):
             options = [
                 ('--force', self.option('force'))

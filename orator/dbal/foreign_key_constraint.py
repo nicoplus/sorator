@@ -50,7 +50,8 @@ class ForeignKeyConstraint(AbstractAsset):
         self._foreign_column_names = OrderedDict()
         if foreign_column_names:
             for column_name in foreign_column_names:
-                self._foreign_column_names[column_name] = Identifier(column_name)
+                self._foreign_column_names[column_name] = Identifier(
+                    column_name)
 
         self._options = options or {}
 
@@ -93,8 +94,8 @@ class ForeignKeyConstraint(AbstractAsset):
         Returns the quoted representation of the referencing table column names
         the foreign key constraint is associated with.
 
-        But only if they were defined with one or the referencing table column name
-        is a keyword reserved by the platform.
+        But only if they were defined with one or
+        referencing table column name is a keyword reserved by the platform.
         Otherwise the plain unquoted value as inserted is returned.
 
         :param platform: The platform to use for quotation.
@@ -126,8 +127,8 @@ class ForeignKeyConstraint(AbstractAsset):
         Returns the quoted representation of the referencing table column names
         the foreign key constraint is associated with.
 
-        But only if they were defined with one or the referencing table column name
-        is a keyword reserved by the platform.
+        But only if they were defined with one or
+        referencing table column name is a keyword reserved by the platform.
         Otherwise the plain unquoted value as inserted is returned.
 
         :param platform: The platform to use for quotation.
@@ -186,7 +187,8 @@ class ForeignKeyConstraint(AbstractAsset):
         Returns the quoted representation of the referenced table column names
         the foreign key constraint is associated with.
 
-        But only if they were defined with one or the referenced table column name
+        But only if they were defined with one or
+        referenced table column name
         is a keyword reserved by the platform.
         Otherwise the plain unquoted value as inserted is returned.
 
@@ -243,7 +245,8 @@ class ForeignKeyConstraint(AbstractAsset):
         Returns the referential action for a given database operation
         on the referenced table the foreign key constraint is associated with.
 
-        :param event: Name of the database operation/event to return the referential action for.
+        :param event: Name of the database operation/event to
+        return the referential action for.
         :type event: str
 
         :rtype: str or None
@@ -258,7 +261,8 @@ class ForeignKeyConstraint(AbstractAsset):
 
     def intersects_index_columns(self, index):
         """
-        Checks whether this foreign key constraint intersects the given index columns.
+        Checks whether this foreign key constraint intersects
+        the given index columns.
 
         Returns `true` if at least one of this foreign key's local columns
         matches one of the given index's columns, `false` otherwise.

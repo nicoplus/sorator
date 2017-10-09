@@ -50,7 +50,8 @@ class Pivot(Model):
         """
         query.where(self.__foreign_key, self.get_attribute(self.__foreign_key))
 
-        return query.where(self.__other_key, self.get_attribute(self.__other_key))
+        return query.where(
+            self.__other_key, self.get_attribute(self.__other_key))
 
     def delete(self):
         """
@@ -70,7 +71,8 @@ class Pivot(Model):
 
         query = self.new_query().where(self.__foreign_key, foreign)
 
-        return query.where(self.__other_key, self.get_attribute(self.__other_key))
+        return query.where(
+            self.__other_key, self.get_attribute(self.__other_key))
 
     def has_timestamps_attributes(self):
         """

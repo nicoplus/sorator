@@ -49,6 +49,7 @@ class SQLiteConnection(Connection):
         bindings = super(SQLiteConnection, self).prepare_bindings(bindings)
 
         if PY2:
-            return map(lambda x: decode(x) if isinstance(x, str) else x, bindings)
+            return map(lambda x: decode(x) if isinstance(
+                x, str) else x, bindings)
 
         return bindings

@@ -7,35 +7,37 @@ from pygments.util import get_choice_opt
 
 
 COMMAND_COLORS = {
-    Token:              ('',            ''),
+    Token: ('', ''),
 
-    Whitespace:         ('fg=white',   'fg=black;options=bold'),
-    Comment:            ('fg=white',   'fg=black;options=bold'),
-    Comment.Preproc:    ('fg=cyan',        'fg=cyan;options=bold'),
-    Keyword:            ('fg=blue',    'fg=blue;options=bold'),
-    Keyword.Type:       ('fg=cyan',        'fg=cyan;options=bold'),
-    Operator.Word:      ('fg=magenta',      'fg=magenta;options=bold'),
-    Name.Builtin:       ('fg=cyan',        'fg=cyan;options=bold'),
-    Name.Function:      ('fg=green',   'fg=green;option=bold'),
-    Name.Namespace:     ('fg=cyan;options=underline',      'fg=cyan;options=bold,underline'),
-    Name.Class:         ('fg=green;options=underline', 'fg=green;options=bold,underline'),
-    Name.Exception:     ('fg=cyan',        'fg=cyan;options=bold'),
-    Name.Decorator:     ('fg=black;options=bold',    'fg=white'),
-    Name.Variable:      ('fg=red',     'fg=red;options=bold'),
-    Name.Constant:      ('fg=red',     'fg=red;options=bold'),
-    Name.Attribute:     ('fg=cyan',        'fg=cyan;options=bold'),
-    Name.Tag:           ('fg=blue;options=bold',        'fg=blue;options=bold'),
-    String:             ('fg=yellow',       'fg=yellow'),
-    Number:             ('fg=blue',    'fg=blue;options=bold'),
+    Whitespace: ('fg=white', 'fg=black;options=bold'),
+    Comment: ('fg=white', 'fg=black;options=bold'),
+    Comment.Preproc: ('fg=cyan', 'fg=cyan;options=bold'),
+    Keyword: ('fg=blue', 'fg=blue;options=bold'),
+    Keyword.Type: ('fg=cyan', 'fg=cyan;options=bold'),
+    Operator.Word: ('fg=magenta', 'fg=magenta;options=bold'),
+    Name.Builtin: ('fg=cyan', 'fg=cyan;options=bold'),
+    Name.Function: ('fg=green', 'fg=green;option=bold'),
+    Name.Namespace: ('fg=cyan;options=underline',
+                     'fg=cyan;options=bold,underline'),
+    Name.Class: ('fg=green;options=underline',
+                 'fg=green;options=bold,underline'),
+    Name.Exception: ('fg=cyan', 'fg=cyan;options=bold'),
+    Name.Decorator: ('fg=black;options=bold', 'fg=white'),
+    Name.Variable: ('fg=red', 'fg=red;options=bold'),
+    Name.Constant: ('fg=red', 'fg=red;options=bold'),
+    Name.Attribute: ('fg=cyan', 'fg=cyan;options=bold'),
+    Name.Tag: ('fg=blue;options=bold', 'fg=blue;options=bold'),
+    String: ('fg=yellow', 'fg=yellow'),
+    Number: ('fg=blue', 'fg=blue;options=bold'),
 
-    Generic.Deleted:    ('fg=red;options=bold',        'fg=red;options=bold'),
-    Generic.Inserted:   ('fg=green',  'fg=green;options=bold'),
-    Generic.Heading:    ('options=bold',         'option=bold'),
-    Generic.Subheading: ('fg=magenta;options=bold',   'fg=magenta;options=bold'),
-    Generic.Prompt:     ('options=bold',         'options=bold'),
-    Generic.Error:      ('fg=red;options=bold',        'fg=red;options=bold'),
+    Generic.Deleted: ('fg=red;options=bold', 'fg=red;options=bold'),
+    Generic.Inserted: ('fg=green', 'fg=green;options=bold'),
+    Generic.Heading: ('options=bold', 'option=bold'),
+    Generic.Subheading: ('fg=magenta;options=bold', 'fg=magenta;options=bold'),
+    Generic.Prompt: ('options=bold', 'options=bold'),
+    Generic.Error: ('fg=red;options=bold', 'fg=red;options=bold'),
 
-    Error:              ('fg=red;options=bold,underline',      'fg=red;options=bold,underline'),
+    Error: ('fg=red;options=bold,underline', 'fg=red;options=bold,underline'),
 }
 
 
@@ -79,7 +81,8 @@ class CommandFormatter(Formatter):
 
     def _write_lineno(self, outfile):
         self._lineno += 1
-        outfile.write("%s%04d: " % (self._lineno != 1 and '\n' or '', self._lineno))
+        outfile.write("%s%04d: " %
+                      (self._lineno != 1 and '\n' or '', self._lineno))
 
     def _get_color(self, ttype):
         # self.colorscheme is a dict containing usually generic types, so we

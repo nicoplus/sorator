@@ -42,7 +42,8 @@ class JoinClause(object):
         return self.where_null(column, 'or')
 
     def where_not_null(self, column, boolean='and'):
-        return self.on(column, 'IS', QueryExpression('NOT NULL'), boolean, False)
+        return self.on(column, 'IS', QueryExpression(
+            'NOT NULL'), boolean, False)
 
     def or_where_not_null(self, column):
         return self.where_not_null(column, 'or')

@@ -170,5 +170,3 @@ class ConnectionInterface(object):
 
     def pretend(self):
         raise NotImplementedError()
-
-

@@ -58,16 +58,21 @@ class MySQLPlatform(Platform):
         else:
             database = 'DATABASE()'
 
-        return 'SELECT COLUMN_NAME AS field, COLUMN_TYPE AS type, IS_NULLABLE AS `null`, ' \
-               'COLUMN_KEY AS `key`, COLUMN_DEFAULT AS `default`, EXTRA AS extra, COLUMN_COMMENT AS comment, ' \
-               'CHARACTER_SET_NAME AS character_set, COLLATION_NAME AS collation ' \
-               'FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = %s AND TABLE_NAME = \'%s\''\
-               % (database, table)
+        return ('SELECT COLUMN_NAME AS field, COLUMN_TYPE AS type, '
+                'IS_NULLABLE AS `null`, COLUMN_KEY AS `key`, '
+                'COLUMN_DEFAULT AS `default`, EXTRA AS extra, '
+                'COLUMN_COMMENT AS comment, '
+                'CHARACTER_SET_NAME AS character_set, '
+                'COLLATION_NAME AS collation '
+                'FROM information_schema.COLUMNS '
+                'WHERE TABLE_SCHEMA = %s AND TABLE_NAME = \'%s\'' %
+                (database, table))
 
     def get_list_table_indexes_sql(self, table, current_database=None):
         sql = """
-            SELECT TABLE_NAME AS `Table`, NON_UNIQUE AS Non_Unique, INDEX_NAME AS Key_name,
-            SEQ_IN_INDEX AS Seq_in_index, COLUMN_NAME AS Column_Name, COLLATION AS Collation,
+            SELECT TABLE_NAME AS `Table`, NON_UNIQUE AS Non_Unique,
+            INDEX_NAME AS Key_name, SEQ_IN_INDEX AS Seq_in_index,
+            COLUMN_NAME AS Column_Name, COLLATION AS Collation,
             CARDINALITY AS Cardinality, SUB_PART AS Sub_Part, PACKED AS Packed,
             NULLABLE AS `Null`, INDEX_TYPE AS Index_Type, COMMENT AS Comment
             FROM information_schema.STATISTICS WHERE TABLE_NAME = '%s'
@@ -79,16 +84,19 @@ class MySQLPlatform(Platform):
         return sql % table
 
     def get_list_table_foreign_keys_sql(self, table, database=None):
-        sql = ("SELECT DISTINCT k.`CONSTRAINT_NAME`, k.`COLUMN_NAME`, k.`REFERENCED_TABLE_NAME`, "
-               "k.`REFERENCED_COLUMN_NAME` /*!50116 , c.update_rule, c.delete_rule */ "
+        sql = ("SELECT DISTINCT k.`CONSTRAINT_NAME`, k.`COLUMN_NAME`,"
+               "k.`REFERENCED_TABLE_NAME`, k.`REFERENCED_COLUMN_NAME` "
+               "/*!50116 , c.update_rule, c.delete_rule */ "
                "FROM information_schema.key_column_usage k /*!50116 "
                "INNER JOIN information_schema.referential_constraints c ON "
                "  c.constraint_name = k.constraint_name AND "
-               "  c.table_name = '%s' */ WHERE k.table_name = '%s'" % (table, table))
+               "  c.table_name = '%s' */ WHERE k.table_name = '%s'" %
+               (table, table))
 
         if database:
-            sql += " AND k.table_schema = '%s' /*!50116 AND c.constraint_schema = '%s' */"\
-                   % (database, database)
+            sql += (" AND k.table_schema = '%s' "
+                    "/*!50116 AND c.constraint_schema = '%s' */" %
+                    (database, database))
 
         sql += " AND k.`REFERENCED_COLUMN_NAME` IS NOT NULL"
 
@@ -103,11 +111,11 @@ class MySQLPlatform(Platform):
 
         :rtype: list
         """
-        column_sql = []
         query_parts = []
 
         if diff.new_name is not False:
-            query_parts.append('RENAME TO %s' % diff.get_new_name().get_quoted_name(self))
+            query_parts.append('RENAME TO %s' %
+                               diff.get_new_name().get_quoted_name(self))
 
         # Added columns?
 
@@ -117,24 +125,30 @@ class MySQLPlatform(Platform):
             column = column_diff.column
             column_dict = column.to_dict()
 
-            # Don't propagate default value changes for unsupported column types.
+            # Don't propagate default value changes for unsupported column
+            # types.
             if column_diff.has_changed('default') \
                     and len(column_diff.changed_properties) == 1 \
-                    and (column_dict['type'] == 'text' or column_dict['type'] == 'blob'):
+                    and (column_dict['type'] == 'text' or
+                         column_dict['type'] == 'blob'):
                 continue
 
-            query_parts.append('CHANGE %s %s'
-                               % (column_diff.get_old_column_name().get_quoted_name(self),
-                                  self.get_column_declaration_sql(column.get_quoted_name(self), column_dict)))
+            query = 'CHANGE %s %s' % (column_diff.get_old_column_name().
+                                      get_quoted_name(self),
+                                      self.get_column_declaration_sql(
+                                      column.get_quoted_name(self), column_dict
+                                      ))
+            query_parts.append(query)
 
         for old_column_name, column in diff.renamed_columns.items():
             column_dict = column.to_dict()
             old_column_name = Identifier(old_column_name)
-            query_parts.append('CHANGE %s %s'
-                               % (self.quote(old_column_name.get_quoted_name(self)),
-                                  self.get_column_declaration_sql(
-                                      self.quote(column.get_quoted_name(self)),
-                                      column_dict)))
+            query = 'CHANGE %s %s' % (
+                self.quote(old_column_name.get_quoted_name(self)),
+                self.get_column_declaration_sql(
+                    self.quote(column.get_quoted_name(self)),
+                    column_dict))
+            query_parts.append(query)
 
         sql = []
 
@@ -162,16 +176,18 @@ class MySQLPlatform(Platform):
         return 'INT ' + self._get_common_integer_type_declaration_sql(column)
 
     def get_bigint_type_declaration_sql(self, column):
-        return 'BIGINT ' + self._get_common_integer_type_declaration_sql(column)
+        return 'BIGINT ' + \
+            self._get_common_integer_type_declaration_sql(column)
 
     def get_smallint_type_declaration_sql(self, column):
-        return 'SMALLINT ' + self._get_common_integer_type_declaration_sql(column)
+        return 'SMALLINT ' + \
+            self._get_common_integer_type_declaration_sql(column)
 
     def get_guid_type_declaration_sql(self, column):
         return 'UUID'
 
     def get_datetime_type_declaration_sql(self, column):
-        if 'version' in column and column['version'] == True:
+        if 'version' in column and column['version']:
             return 'TIMESTAMP'
 
         return 'DATETIME'
@@ -237,7 +253,8 @@ class MySQLPlatform(Platform):
         return 'LONGTEXT'
 
     def get_decimal_type_declaration_sql(self, column):
-        decl = super(MySQLPlatform, self).get_decimal_type_declaration_sql(column)
+        decl = super(
+            MySQLPlatform, self).get_decimal_type_declaration_sql(column)
 
         return decl + self.get_unsigned_declaration(column)
 
