@@ -266,8 +266,8 @@ class PostgresPlatform(Platform):
             from_column = None
 
         if from_column:
-            from_column_type = self.INTERNAL_TYPE_MAPPING[from_column.get_type(
-            )]
+            from_column_type = self.INTERNAL_TYPE_MAPPING[
+                from_column.get_type()]
 
             if from_column_type in ['blob', 'binary']:
                 return False

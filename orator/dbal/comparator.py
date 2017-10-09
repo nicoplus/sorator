@@ -89,8 +89,8 @@ class Comparator(object):
 
         from_fkeys = OrderedDict(
             [(k, v) for k, v in table1.get_foreign_keys().items()])
-        to_fkeys = OrderedDict([(k, v)
-                                for k, v in table2.get_foreign_keys().items()])
+        to_fkeys = OrderedDict(
+            [(k, v) for k, v in table2.get_foreign_keys().items()])
 
         for key1, constraint1 in table1.get_foreign_keys().items():
             for key2, constraint2 in table2.get_foreign_keys().items():
@@ -98,10 +98,11 @@ class Comparator(object):
                     del from_fkeys[key1]
                     del to_fkeys[key2]
                 else:
-                    if (constraint1.get_name().lower() ==
-                            constraint2.get_name().lower()):
-                        table_differences.changed_foreign_keys.append(
-                            constraint2)
+                    name1 = constraint1.get_name().lower()
+                    name2 = constraint2.get_name().lower()
+                    if name1 == name2:
+                        table_differences.changed_foreign_keys.\
+                            append(constraint2)
                         changes += 1
                         del from_fkeys[key1]
                         del to_fkeys[key2]
@@ -205,10 +206,10 @@ class Comparator(object):
         if key1_unquoted_local_columns != key2_unquoted_local_columns:
             return True
 
-        key1_unquoted_foreign_columns = [
-            c.lower() for c in key1.get_unquoted_foreign_columns()]
-        key2_unquoted_foreign_columns = [
-            c.lower() for c in key2.get_unquoted_foreign_columns()]
+        key1_unquoted_foreign_columns = [c.lower() for c in
+                                         key1.get_unquoted_foreign_columns()]
+        key2_unquoted_foreign_columns = [c.lower() for c in
+                                         key2.get_unquoted_foreign_columns()]
 
         if key1_unquoted_foreign_columns != key2_unquoted_foreign_columns:
             return True

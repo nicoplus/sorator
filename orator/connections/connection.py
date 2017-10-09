@@ -551,7 +551,7 @@ class Connection(ConnectionInterface):
                 raise
         else:
             self.rollback()
-            raise exc_type
+            raise (exc_type, exc_val, exc_tb)
 
     @property
     def server_version(self):

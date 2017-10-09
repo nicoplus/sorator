@@ -38,9 +38,9 @@ class HasManyThrough(Relation):
         self._set_join()
 
         if self._constraints:
-            self._query.where('%s.%s' % (
-                parent_table, self._first_key), '=',
-                              self._far_parent.get_key())
+            self._query.where(
+                '%s.%s' % (parent_table, self._first_key), '=',
+                self._far_parent.get_key())
 
     def get_relation_count_query(self, query, parent):
         """

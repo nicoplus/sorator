@@ -199,8 +199,8 @@ class Migrator(object):
         if not files:
             return []
 
-        files = list(map(lambda f: os.path.basename(
-            f).replace('.py', ''), files))
+        files = list(map(
+            lambda f: os.path.basename(f).replace('.py', ''), files))
 
         files = sorted(files)
 

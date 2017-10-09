@@ -2360,8 +2360,9 @@ class Model(object):
             return {x: values[x]
                     for x in values.keys() if x in self.__visible__}
 
-        return {x: values[x] for x in values.keys(
-        ) if x not in self.__hidden__ and not x.startswith('_')}
+        return {x: values[x]
+                for x in values.keys()
+                if x not in self.__hidden__ and not x.startswith('_')}
 
     def get_attribute(self, key, original=None):
         """

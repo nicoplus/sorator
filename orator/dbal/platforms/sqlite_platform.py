@@ -169,8 +169,8 @@ class SQLitePlatform(Platform):
         query = super(SQLitePlatform, self).\
             get_advanced_foreign_key_options_sql(foreign_key)
 
-        deferrable = foreign_key.has_option(
-            'deferrable') and foreign_key.get_option('deferrable') is not False
+        deferrable = foreign_key.has_option('deferrable') and \
+            foreign_key.get_option('deferrable') is not False
         if deferrable:
             query += ' DEFERRABLE'
         else:
@@ -178,8 +178,8 @@ class SQLitePlatform(Platform):
 
         query += ' INITIALLY'
 
-        deferred = foreign_key.has_option(
-            'deferred') and foreign_key.get_option('deferred') is not False
+        deferred = foreign_key.has_option('deferred') and \
+            foreign_key.get_option('deferred') is not False
         if deferred:
             query += ' DEFERRED'
         else:
@@ -282,8 +282,8 @@ class SQLitePlatform(Platform):
                     or column_diff.column.get_type().lower() != 'integer':
                 continue
 
-            if not column_diff.has_changed(
-                    'type') and not column_diff.has_changed('unsigned'):
+            if not column_diff.has_changed('type') and not \
+                    column_diff.has_changed('unsigned'):
                 del diff.changed_columns[old_column_name]
 
                 continue

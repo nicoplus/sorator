@@ -24,8 +24,8 @@ class MorphOneOrMany(HasOneOrMany):
         self._morph_type = morph_type
         self._morph_name = parent.get_morph_name()
 
-        super(MorphOneOrMany, self).__init__(
-            query, parent, foreign_key, local_key)
+        super(MorphOneOrMany, self).\
+            __init__(query, parent, foreign_key, local_key)
 
     def add_constraints(self):
         """

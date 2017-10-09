@@ -126,8 +126,8 @@ class Index(AbstractAsset):
 
         for i in range(number_of_columns):
             column = self._trim_quotes(columns[i].lower())
-            if i >= len(column_names) or column != self._trim_quotes(
-                    column_names[i].lower()):
+            if (i >= len(column_names) or
+                    column != self._trim_quotes(column_names[i].lower())):
                 same_columns = False
 
         return same_columns
@@ -207,8 +207,9 @@ class Index(AbstractAsset):
             return False
 
         same_columns = self.spans_columns(other.get_columns())
-        if same_columns and (self.is_primary() or self.is_unique()
-                             ) and self.same_partial_index(other):
+        if same_columns and (
+                self.is_primary() or self.is_unique()
+        ) and self.same_partial_index(other):
             return True
 
         return False

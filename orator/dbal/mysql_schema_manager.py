@@ -19,8 +19,8 @@ class MySQLSchemaManager(SchemaManager):
         if 'length' in table_column:
             length = table_column['length']
         else:
-            if type_match and type_match.group(
-                    2) and ',' not in type_match.group(2):
+            if type_match and type_match.group(2) and \
+                    ',' not in type_match.group(2):
                 length = int(type_match.group(2))
             else:
                 length = 0
@@ -39,8 +39,8 @@ class MySQLSchemaManager(SchemaManager):
         if db_type in ['char', 'binary']:
             fixed = True
         elif db_type in ['float', 'double', 'real', 'decimal', 'numeric']:
-            match = re.match(
-                '([A-Za-z]+\(([0-9]+),([0-9]+)\))', table_column['type'])
+            match = re.match('([A-Za-z]+\(([0-9]+),([0-9]+)\))',
+                             table_column['type'])
             if match:
                 precision = match.group(1)
                 scale = match.group(2)

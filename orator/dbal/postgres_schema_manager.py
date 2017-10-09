@@ -9,8 +9,8 @@ from .schema_manager import SchemaManager
 class PostgresSchemaManager(SchemaManager):
 
     def _get_portable_table_column_definition(self, table_column):
-        if table_column['type'].lower(
-        ) == 'varchar' or table_column['type'] == 'bpchar':
+        if table_column['type'].lower() == 'varchar' or \
+                table_column['type'] == 'bpchar':
             length = re.sub('.*\(([0-9]*)\).*', '\\1',
                             table_column['complete_type'])
             table_column['length'] = length

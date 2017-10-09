@@ -312,8 +312,8 @@ class HasOneOrMany(Relation):
             attributes.update(_attributes)
 
         if self._related.uses_timestamps():
-            attributes[self.get_related_updated_at(
-            )] = self._related.fresh_timestamp()
+            attributes[self.get_related_updated_at()] = \
+                self._related.fresh_timestamp()
 
         return self._query.update(attributes)
 

@@ -854,8 +854,9 @@ class BelongsToMany(Relation):
         """
         Get the related model's update at column at
         """
-        return {self._related.get_updated_at_column(
-        ): self._related.fresh_timestamp()}
+        key = self._related.get_updated_at_column()
+        value = self._related.fresh_timestamp()
+        return {key: value}
 
     def get_has_compare_key(self):
         """
