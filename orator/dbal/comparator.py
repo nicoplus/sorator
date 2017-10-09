@@ -48,8 +48,8 @@ class Comparator(object):
                                          table2.get_column(column_name),
                                          changed_properties)
                 column_diff.from_column = column
-                table_differences.changed_columns[column.get_name(
-                )] = column_diff
+                table_differences.\
+                    changed_columns[column.get_name()] = column_diff
                 changes += 1
 
         self.detect_column_renamings(table_differences)
