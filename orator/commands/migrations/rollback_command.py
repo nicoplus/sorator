@@ -19,9 +19,9 @@ class RollbackCommand(BaseCommand):
         """
         Executes the command.
         """
-        if not self.confirm_to_proceed(
-            '<question>Are you sure you want to rollback the last migration?:</question> '
-        ):
+        prompt_msg = ('<question>Are you sure you want to rollback '
+                      'the last migration?:</question> ')
+        if not self.confirm_to_proceed(prompt_msg):
             return
 
         database = self.option('database')

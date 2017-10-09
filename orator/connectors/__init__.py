@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from .connector import Connector
-from .mysql_connector import MySQLConnector
-from .postgres_connector import PostgresConnector
-from .sqlite_connector import SQLiteConnector
+from .connector import Connector # noqa
+from .mysql_connector import MySQLConnector # noqa
+from .postgres_connector import PostgresConnector # noqa
+from .sqlite_connector import SQLiteConnector # noqa

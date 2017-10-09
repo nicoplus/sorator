@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from orator import Model
-
 
 class Migration(object):
 

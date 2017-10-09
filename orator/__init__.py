@@ -2,8 +2,8 @@
 
 __version__ = '0.10.0'
 
-from .orm import Model, SoftDeletes, Collection, accessor, mutator, scope
-from .database_manager import DatabaseManager
-from .query.expression import QueryExpression
-from .schema import Schema
-from .pagination import Paginator, LengthAwarePaginator
+from .orm import Model, SoftDeletes, Collection, accessor, mutator, scope # noqa
+from .database_manager import DatabaseManager # noqa
+from .query.expression import QueryExpression # noqa
+from .schema import Schema # noqa
+from .pagination import Paginator, LengthAwarePaginator # noqa

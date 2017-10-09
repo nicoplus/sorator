@@ -32,7 +32,8 @@ class MySQLQueryProcessor(QueryProcessor):
                 if hasattr(cursor, 'lastrowid'):
                     id = cursor.lastrowid
                 else:
-                    id = query.get_connection().statement('SELECT LAST_INSERT_ID()')
+                    id = query.get_connection().statement(
+                        'SELECT LAST_INSERT_ID()')
         else:
             query.get_connection().insert(sql, values)
 
@@ -40,7 +41,8 @@ class MySQLQueryProcessor(QueryProcessor):
             if hasattr(cursor, 'lastrowid'):
                 id = cursor.lastrowid
             else:
-                id = query.get_connection().statement('SELECT LAST_INSERT_ID()')
+                id = query.get_connection().statement(
+                    'SELECT LAST_INSERT_ID()')
 
         if isinstance(id, int):
             return id

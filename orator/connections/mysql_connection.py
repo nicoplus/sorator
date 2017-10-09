@@ -59,7 +59,8 @@ class MySQLConnection(Connection):
 
     def _get_cursor_query(self, query, bindings):
         if not hasattr(self._cursor, '_last_executed') or self._pretending:
-            return super(MySQLConnection, self)._get_cursor_query(query, bindings)
+            return super(MySQLConnection, self)._get_cursor_query(
+                query, bindings)
 
         if PY2:
             return self._cursor._last_executed.decode()

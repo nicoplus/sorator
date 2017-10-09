@@ -3,8 +3,6 @@
 from collections import OrderedDict
 from .table_diff import TableDiff
 from .column_diff import ColumnDiff
-from .index import Index
-from .foreign_key_constraint import ForeignKeyConstraint
 
 
 class Comparator(object):
@@ -42,14 +40,16 @@ class Comparator(object):
                 continue
 
             # See if column has changed properties in table2
-            changed_properties = self.diff_column(column, table2.get_column(column_name))
+            changed_properties = self.diff_column(
+                column, table2.get_column(column_name))
 
             if changed_properties:
                 column_diff = ColumnDiff(column.get_name(),
                                          table2.get_column(column_name),
                                          changed_properties)
                 column_diff.from_column = column
-                table_differences.changed_columns[column.get_name()] = column_diff
+                table_differences.changed_columns[column.get_name(
+                )] = column_diff
                 changes += 1
 
         self.detect_column_renamings(table_differences)
@@ -59,7 +59,8 @@ class Comparator(object):
 
         # See if all the fields in table1 exist in table2
         for index_name, index in table2_indexes.items():
-            if (index.is_primary() and not table1.has_primary_key()) or table1.has_index(index_name):
+            if (index.is_primary() and not table1.has_primary_key()) or\
+                    table1.has_index(index_name):
                 continue
 
             table_differences.added_indexes[index_name] = index
@@ -68,7 +69,8 @@ class Comparator(object):
         # See if there are any removed fields in table2
         for index_name, index in table1_indexes.items():
             if (index.is_primary() and not table2.has_primary_key())\
-                    or (not index.is_primary() and not table2.has_index(index_name)):
+                    or (not index.is_primary() and
+                        not table2.has_index(index_name)):
                 table_differences.removed_indexes[index_name] = index
                 changes += 1
                 continue
@@ -85,8 +87,10 @@ class Comparator(object):
 
         self.detect_index_renamings(table_differences)
 
-        from_fkeys = OrderedDict([(k, v) for k, v in table1.get_foreign_keys().items()])
-        to_fkeys = OrderedDict([(k, v) for k, v in table2.get_foreign_keys().items()])
+        from_fkeys = OrderedDict(
+            [(k, v) for k, v in table1.get_foreign_keys().items()])
+        to_fkeys = OrderedDict([(k, v)
+                                for k, v in table2.get_foreign_keys().items()])
 
         for key1, constraint1 in table1.get_foreign_keys().items():
             for key2, constraint2 in table2.get_foreign_keys().items():
@@ -94,8 +98,10 @@ class Comparator(object):
                     del from_fkeys[key1]
                     del to_fkeys[key2]
                 else:
-                    if constraint1.get_name().lower() == constraint2.get_name().lower():
-                        table_differences.changed_foreign_keys.append(constraint2)
+                    if (constraint1.get_name().lower() ==
+                            constraint2.get_name().lower()):
+                        table_differences.changed_foreign_keys.append(
+                            constraint2)
                         changes += 1
                         del from_fkeys[key1]
                         del to_fkeys[key2]
@@ -121,13 +127,15 @@ class Comparator(object):
         """
         rename_candidates = {}
 
-        for added_column_name, added_column in table_differences.added_columns.items():
+        added_columns = table_differences.added_columns
+        for added_column_name, added_column in added_columns.items():
             for removed_column in table_differences.removed_columns.values():
                 if len(self.diff_column(added_column, removed_column)) == 0:
                     if added_column.get_name() not in rename_candidates:
                         rename_candidates[added_column.get_name()] = []
 
-                    rename_candidates[added_column.get_name()].append((removed_column, added_column, added_column_name))
+                    rename_candidates[added_column.get_name()].append(
+                        (removed_column, added_column, added_column_name))
 
         for candidate_columns in rename_candidates.values():
             if len(candidate_columns) == 1:
@@ -135,8 +143,9 @@ class Comparator(object):
                 removed_column_name = removed_column.get_name().lower()
                 added_column_name = added_column.get_name().lower()
 
-                if removed_column_name not in table_differences.renamed_columns:
-                    table_differences.renamed_columns[removed_column_name] = added_column
+                renamed_columns = table_differences.renamed_columns
+                if removed_column_name not in renamed_columns:
+                    renamed_columns[removed_column_name] = added_column
                     del table_differences.added_columns[added_column_name]
                     del table_differences.removed_columns[removed_column_name]
 
@@ -153,17 +162,19 @@ class Comparator(object):
 
         # Gather possible rename candidates by comparing
         # each added and removed index based on semantics.
-        for added_index_name, added_index in table_differences.added_indexes.items():
+        added_indexes = table_differences.added_indexes
+        for added_index_name, added_index in added_indexes.items():
             for removed_index in table_differences.removed_indexes.values():
                 if not self.diff_index(added_index, removed_index):
                     if added_index.get_name() not in rename_candidates:
                         rename_candidates[added_index.get_name()] = []
 
-                    rename_candidates[added_index.get_name()].append((removed_index, added_index, added_index_name))
+                    rename_candidates[added_index.get_name()].append(
+                        (removed_index, added_index, added_index_name))
 
         for candidate_indexes in rename_candidates.values():
-            # If the current rename candidate contains exactly one semantically equal index,
-            # we can safely rename it.
+            # If the current rename candidate contains exactly one semantically
+            # equal index, we can safely rename it.
             # Otherwise it is unclear if a rename action is really intended,
             # therefore we let those ambiguous indexes be added/dropped.
             if len(candidate_indexes) == 1:
@@ -172,8 +183,9 @@ class Comparator(object):
                 removed_index_name = removed_index.get_name().lower()
                 added_index_name = added_index.get_name().lower()
 
-                if not removed_index_name in table_differences.renamed_indexes:
-                    table_differences.renamed_indexes[removed_index_name] = added_index
+                renamed_indexes = table_differences.renamed_indexes
+                if removed_index_name not in renamed_indexes:
+                    renamed_indexes[removed_index_name] = added_index
                     del table_differences.added_indexes[added_index_name]
                     del table_differences.removed_indexes[removed_index_name]
 
@@ -185,19 +197,24 @@ class Comparator(object):
 
         :rtype: bool
         """
-        key1_unquoted_local_columns = [c.lower() for c in key1.get_unquoted_local_columns()]
-        key2_unquoted_local_columns = [c.lower() for c in key2.get_unquoted_local_columns()]
+        key1_unquoted_local_columns = [c.lower() for c in
+                                       key1.get_unquoted_local_columns()]
+        key2_unquoted_local_columns = [c.lower() for c in
+                                       key2.get_unquoted_local_columns()]
 
         if key1_unquoted_local_columns != key2_unquoted_local_columns:
             return True
 
-        key1_unquoted_foreign_columns = [c.lower() for c in key1.get_unquoted_foreign_columns()]
-        key2_unquoted_foreign_columns = [c.lower() for c in key2.get_unquoted_foreign_columns()]
+        key1_unquoted_foreign_columns = [
+            c.lower() for c in key1.get_unquoted_foreign_columns()]
+        key2_unquoted_foreign_columns = [
+            c.lower() for c in key2.get_unquoted_foreign_columns()]
 
         if key1_unquoted_foreign_columns != key2_unquoted_foreign_columns:
             return True
 
-        if key1.get_unqualified_foreign_table_name() != key2.get_unqualified_foreign_table_name():
+        if key1.get_unqualified_foreign_table_name(
+        ) != key2.get_unqualified_foreign_table_name():
             return True
 
         if key1.on_update() != key2.on_update():
@@ -227,8 +244,10 @@ class Comparator(object):
                 changed_properties.append(prop)
 
         if properties1['default'] != properties2['default']\
-                or (properties1['default'] is None and properties2['default'] is not None)\
-                or (properties2['default'] is None and properties1['default'] is not None):
+                or (properties1['default'] is None and
+                    properties2['default'] is not None)\
+                or (properties2['default'] is None and
+                    properties1['default'] is not None):
             changed_properties.append('default')
 
         if properties1['type'] == 'string' and properties1['type'] != 'guid'\

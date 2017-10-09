@@ -197,9 +197,10 @@ class Builder(object):
         """
         models = self.get_models(columns)
 
-        # If we actually found models we will also eager load any relationships that
-        # have been specified as needing to be eager loaded, which will solve the
-        # n+1 query issue for the developers to avoid running a lot of queries.
+        # If we actually found models we will also eager load any
+        # relationships that have been specified as needing to be eager loaded,
+        # which will solve the n+1 query issue for the developers to
+        # avoid running a lot of queries.
         if len(models) > 0:
             models = self.eager_load_relations(models)
 
@@ -236,9 +237,11 @@ class Builder(object):
         for results in self.apply_scopes().get_query().chunk(count):
             models = self._model.hydrate(results, connection)
 
-            # If we actually found models we will also eager load any relationships that
-            # have been specified as needing to be eager loaded, which will solve the
-            # n+1 query issue for the developers to avoid running a lot of queries.
+            # If we actually found models we will also eager load any
+            # relationships that have been specified as needing to be
+            # eager loaded, which will solve the
+            # n+1 query issue for the developers to avoid running a lot of
+            # queries.
             if len(models) > 0:
                 models = self.eager_load_relations(models)
 
@@ -299,7 +302,8 @@ class Builder(object):
         per_page = per_page or self._model.get_per_page()
         self._query.for_page(page, per_page)
 
-        return LengthAwarePaginator(self.get(columns).all(), total, per_page, page)
+        return LengthAwarePaginator(
+            self.get(columns).all(), total, per_page, page)
 
     def simple_paginate(self, per_page=None, current_page=None, columns=None):
         """
@@ -535,7 +539,8 @@ class Builder(object):
         """
         Add a where clause to the query
 
-        :param column: The column of the where clause, can also be a QueryBuilder instance for sub where
+        :param column: The column of the where clause, can also be a
+        QueryBuilder instance for sub where
         :type column: str|Builder
 
         :param operator: The operator of the where clause
@@ -561,7 +566,8 @@ class Builder(object):
         """
         Add an "or where" clause to the query.
 
-        :param column: The column of the where clause, can also be a QueryBuilder instance for sub where
+        :param column: The column of the where clause, can also be a
+        QueryBuilder instance for sub where
         :type column: str or Builder
 
         :param operator: The operator of the where clause
@@ -658,16 +664,19 @@ class Builder(object):
 
         relation = self._get_has_relation_query(relation)
 
-        query = relation.get_relation_count_query(relation.get_related().new_query(), self)
+        query = relation.get_relation_count_query(
+            relation.get_related().new_query(), self)
 
         # TODO: extra query
         if extra:
             if callable(extra):
                 extra(query)
 
-        return self._add_has_where(query.apply_scopes(), relation, operator, count, boolean)
+        return self._add_has_where(
+            query.apply_scopes(), relation, operator, count, boolean)
 
-    def _has_nested(self, relations, operator='>=', count=1, boolean='and', extra=None):
+    def _has_nested(self, relations, operator='>=',
+                    count=1, boolean='and', extra=None):
         """
         Add nested relationship count conditions to the query.
 
@@ -768,7 +777,8 @@ class Builder(object):
 
     def or_where_has(self, relation, extra, operator='>=', count=1):
         """
-        Add a relationship count condition to the query with where clauses and an "or".
+        Add a relationship count condition to the query with where clauses and
+        an "or".
 
         :param relation: The relation to count
         :type relation: str
@@ -807,14 +817,18 @@ class Builder(object):
 
         :rtype: Builder
         """
-        self._merge_model_defined_relation_wheres_to_has_query(has_query, relation)
+        self._merge_model_defined_relation_wheres_to_has_query(
+            has_query, relation)
 
         if isinstance(count, basestring) and count.isdigit():
             count = QueryExpression(count)
 
-        return self.where(QueryExpression('(%s)' % has_query.to_sql()), operator, count, boolean)
+        return self.where(
+            QueryExpression('(%s)' % has_query.to_sql()),
+            operator, count, boolean)
 
-    def _merge_model_defined_relation_wheres_to_has_query(self, has_query, relation):
+    def _merge_model_defined_relation_wheres_to_has_query(
+            self, has_query, relation):
         """
         Merge the "wheres" from a relation query to a has query.
 
@@ -917,15 +931,17 @@ class Builder(object):
         """
         query = self.get_query()
 
-        # We will keep track of how many wheres are on the query before running the
-        # scope so that we can properly group the added scope constraints in the
+        # We will keep track of how many wheres are on the query
+        # before running the scope so that we can properly group
+        # the added scope constraints in the
         # query as their own isolated nested where statement and avoid issues.
         original_where_count = len(query.wheres)
 
         result = getattr(self._model, scope)(self, *args, **kwargs)
 
         if self._should_nest_wheres_for_scope(query, original_where_count):
-            self._nest_wheres_for_scope(query, [0, original_where_count, len(query.wheres)])
+            self._nest_wheres_for_scope(
+                query, [0, original_where_count, len(query.wheres)])
 
         return result or self
 
@@ -942,8 +958,9 @@ class Builder(object):
 
         query = builder.get_query()
 
-        # We will keep track of how many wheres are on the query before running the
-        # scope so that we can properly group the added scope constraints in the
+        # We will keep track of how many wheres are on the query
+        # before running the scope so that we can properly group
+        # the added scope constraints in the
         # query as their own isolated nested where statement and avoid issues.
         original_where_count = len(query.wheres)
 
@@ -952,13 +969,16 @@ class Builder(object):
         for scope in self._scopes.values():
             self._apply_scope(scope, builder)
 
-            # Again, we will keep track of the count each time we add where clauses so that
-            # we will properly isolate each set of scope constraints inside of their own
-            # nested where clause to avoid any conflicts or issues with logical order.
+            # Again, we will keep track of the count each time we add
+            # where clauses so that we will properly isolate each set of
+            # scope constraints inside of their own
+            # nested where clause to avoid any conflicts or issues with logical
+            # order.
             where_counts.append(len(query.wheres))
 
         if self._should_nest_wheres_for_scope(query, original_where_count):
-            self._nest_wheres_for_scope(query, Collection(where_counts).unique().all())
+            self._nest_wheres_for_scope(
+                query, Collection(where_counts).unique().all())
 
         return builder
 
@@ -986,7 +1006,8 @@ class Builder(object):
 
         :rtype: bool
         """
-        return original_where_count and len(query.wheres) > original_where_count
+        return original_where_count and len(
+            query.wheres) > original_where_count
 
     def _nest_wheres_for_scope(self, query, where_counts):
         """
@@ -995,16 +1016,18 @@ class Builder(object):
         :type query: QueryBuilder
         :type where_counts: list
         """
-        # Here, we totally remove all of the where clauses since we are going to
-        # rebuild them as nested queries by slicing the groups of wheres into
+        # Here, we totally remove all of the where clauses
+        # since we are going to rebuild them as nested queries
+        # by slicing the groups of wheres into
         # their own sections. This is to prevent any confusing logic order.
         wheres = query.wheres
 
         query.wheres = []
 
-        # We will take the first offset (typically 0) of where clauses and start
-        # slicing out every scope's where clauses into their own nested where
-        # groups for improved isolation of every scope's added constraints.
+        # We will take the first offset (typically 0) of where clauses and
+        # start slicing out every scope's where clauses into their own nested
+        # where groups for improved isolation of
+        # every scope's added constraints.
         previous_count = where_counts.pop(0)
 
         for where_count in where_counts:
@@ -1134,7 +1157,8 @@ class Builder(object):
         is_macro = False
 
         # New scope definition check
-        if hasattr(self._model, method) and isinstance(getattr(self._model, method), scope):
+        if hasattr(self._model, method) and isinstance(
+                getattr(self._model, method), scope):
             is_scope = True
             attribute = getattr(self._model, method)
             scope_method = method
@@ -1177,4 +1201,3 @@ class Builder(object):
         new.set_model(self._model)
 
         return new
-

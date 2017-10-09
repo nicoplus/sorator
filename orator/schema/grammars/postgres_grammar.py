@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from .grammar import SchemaGrammar
-from ..blueprint import Blueprint
-from ...query.expression import QueryExpression
-from ...support.fluent import Fluent
 
 
 class PostgresSchemaGrammar(SchemaGrammar):
@@ -99,7 +96,8 @@ class PostgresSchemaGrammar(SchemaGrammar):
         return 'DROP TABLE IF EXISTS %s' % self.wrap_table(blueprint)
 
     def compile_drop_column(self, blueprint, command, connection):
-        columns = self.prefix_list('DROP COLUMN', self.wrap_list(command.columns))
+        columns = self.prefix_list(
+            'DROP COLUMN', self.wrap_list(command.columns))
 
         table = self.wrap_table(blueprint)
 
@@ -127,7 +125,8 @@ class PostgresSchemaGrammar(SchemaGrammar):
     def compile_rename(self, blueprint, command, _):
         from_ = self.wrap_table(blueprint)
 
-        return 'ALTER TABLE %s RENAME TO %s' % (from_, self.wrap_table(command.to))
+        return 'ALTER TABLE %s RENAME TO %s' % (
+            from_, self.wrap_table(command.to))
 
     def _type_char(self, column):
         return "CHAR(%s)" % column.length
@@ -174,7 +173,8 @@ class PostgresSchemaGrammar(SchemaGrammar):
     def _type_enum(self, column):
         allowed = list(map(lambda a: "'%s'" % a, column.allowed))
 
-        return 'VARCHAR(255) CHECK ("%s" IN (%s))' % (column.name, ', '.join(allowed))
+        return 'VARCHAR(255) CHECK ("%s" IN (%s))' % (
+            column.name, ', '.join(allowed))
 
     def _type_json(self, column):
         return 'JSON'
@@ -190,7 +190,8 @@ class PostgresSchemaGrammar(SchemaGrammar):
 
     def _type_timestamp(self, column):
         if column.use_current:
-            return 'TIMESTAMP(6) WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP(6)'
+            return ('TIMESTAMP(6) WITHOUT TIME ZONE '
+                    'DEFAULT CURRENT_TIMESTAMP(6)')
 
         return 'TIMESTAMP(6) WITHOUT TIME ZONE'
 

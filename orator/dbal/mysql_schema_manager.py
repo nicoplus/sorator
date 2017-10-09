@@ -19,7 +19,8 @@ class MySQLSchemaManager(SchemaManager):
         if 'length' in table_column:
             length = table_column['length']
         else:
-            if type_match and type_match.group(2) and ',' not in type_match.group(2):
+            if type_match and type_match.group(
+                    2) and ',' not in type_match.group(2):
                 length = int(type_match.group(2))
             else:
                 length = 0
@@ -38,7 +39,8 @@ class MySQLSchemaManager(SchemaManager):
         if db_type in ['char', 'binary']:
             fixed = True
         elif db_type in ['float', 'double', 'real', 'decimal', 'numeric']:
-            match = re.match('([A-Za-z]+\(([0-9]+),([0-9]+)\))', table_column['type'])
+            match = re.match(
+                '([A-Za-z]+\(([0-9]+),([0-9]+)\))', table_column['type'])
             if match:
                 precision = match.group(1)
                 scale = match.group(2)
@@ -55,7 +57,8 @@ class MySQLSchemaManager(SchemaManager):
             length = MySQLPlatform.LENGTH_LIMIT_BLOB
         elif db_type == 'mediumblob':
             length = MySQLPlatform.LENGTH_LIMIT_MEDIUMBLOB
-        elif db_type in ['tinyint', 'smallint', 'mediumint', 'int', 'bigint', 'year']:
+        elif db_type in ['tinyint', 'smallint', 'mediumint',
+                         'int', 'bigint', 'year']:
             length = None
         elif db_type == 'enum':
             length = None
@@ -72,7 +75,8 @@ class MySQLSchemaManager(SchemaManager):
             'default': table_column.get('default'),
             'precision': None,
             'scale': None,
-            'autoincrement': table_column['extra'].find('auto_increment') != -1,
+            'autoincrement':
+                table_column['extra'].find('auto_increment') != -1,
             'extra': extra,
         }
 
@@ -100,10 +104,11 @@ class MySQLSchemaManager(SchemaManager):
                 v['flags'] = {'FULLTEXT': True}
             else:
                 v['flags'] = {'SPATIAL': True}
-                
+
             new.append(v)
-            
-        return super(MySQLSchemaManager, self)._get_portable_table_indexes_list(new, table_name)
+
+        return super(MySQLSchemaManager, self).\
+            _get_portable_table_indexes_list(new, table_name)
 
     def _get_portable_table_foreign_keys_list(self, table_foreign_keys):
         foreign_keys = OrderedDict()
@@ -113,10 +118,12 @@ class MySQLSchemaManager(SchemaManager):
             name = value.get('constraint_name', '')
 
             if name not in foreign_keys:
-                if 'delete_rule' not in value or value['delete_rule'] == 'RESTRICT':
+                if 'delete_rule' not in value or\
+                        value['delete_rule'] == 'RESTRICT':
                     value['delete_rule'] = ''
 
-                if 'update_rule' not in value or value['update_rule'] == 'RESTRICT':
+                if 'update_rule' not in value or\
+                        value['update_rule'] == 'RESTRICT':
                     value['update_rule'] = ''
 
                 foreign_keys[name] = {
@@ -129,7 +136,8 @@ class MySQLSchemaManager(SchemaManager):
                 }
 
             foreign_keys[name]['local'].append(value['column_name'])
-            foreign_keys[name]['foreign'].append(value['referenced_column_name'])
+            foreign_keys[name]['foreign'].append(
+                value['referenced_column_name'])
 
         result = []
         for constraint in foreign_keys.values():

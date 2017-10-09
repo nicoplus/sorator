@@ -56,7 +56,8 @@ class PostgresQueryGrammar(QueryGrammar):
 
         where = self._compile_update_wheres(query)
 
-        return ('UPDATE %s SET %s%s %s' % (table, columns, from_, where)).strip()
+        return ('UPDATE %s SET %s%s %s' %
+                (table, columns, from_, where)).strip()
 
     def _compile_update_columns(self, values):
         """

@@ -17,7 +17,9 @@ install:
   - if [[ $MYSQL_PACKAGE == 'pymysql' ]]; then pip install pymysql; fi
   - if [[ $MYSQL_PACKAGE == 'mysqlclient' ]]; then pip install mysqlclient; fi
 
-script: pytest tests
+script:
+  - flake8 orator
+  - pytest tests
 
 before_script:
   - psql -c 'create database orator_test;' -U postgres

@@ -42,7 +42,8 @@ class SchemaBuilder(object):
         """
         column = column.lower()
 
-        return column in list(map(lambda x: x.lower(), self.get_column_listing(table)))
+        return column in list(
+            map(lambda x: x.lower(), self.get_column_listing(table)))
 
     def get_column_listing(self, table):
         """
@@ -55,9 +56,11 @@ class SchemaBuilder(object):
         """
         table = self._connection.get_table_prefix() + table
 
-        results = self._connection.select(self._grammar.compile_column_exists(table))
+        results = self._connection.select(
+            self._grammar.compile_column_exists(table))
 
-        return self._connection.get_post_processor().process_column_listing(results)
+        return self._connection.\
+            get_post_processor().process_column_listing(results)
 
     @contextmanager
     def table(self, table):

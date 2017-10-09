@@ -206,7 +206,7 @@ class ValidatorDispatcher(object):
         return chain
 
 
-class validates(object): # noqa
+class validates(object):  # noqa
     """decorator
     """
 

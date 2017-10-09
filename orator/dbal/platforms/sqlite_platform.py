@@ -71,7 +71,8 @@ class SQLitePlatform(Platform):
         :rtype: list
         """
         if not isinstance(diff.from_table, Table):
-            raise DBALException('Sqlite platform requires for alter table the table'
+            raise DBALException('Sqlite platform requires for'
+                                'alter table the table'
                                 'diff with reference to original table schema')
 
         sql = []
@@ -89,8 +90,9 @@ class SQLitePlatform(Platform):
         :rtype: list
         """
         if not isinstance(diff.from_table, Table):
-            raise DBALException('Sqlite platform requires for alter table the table'
-                                'diff with reference to original table schema')
+            raise DBALException('Sqlite platform requires for '
+                                'alter table the table diff with reference to '
+                                'original table schema')
 
         sql = []
 
@@ -103,7 +105,8 @@ class SQLitePlatform(Platform):
             if index.is_primary():
                 continue
 
-            sql.append(self.get_create_index_sql(index, table_name.get_quoted_name(self)))
+            sql.append(self.get_create_index_sql(
+                index, table_name.get_quoted_name(self)))
 
         return sql
 
@@ -111,7 +114,8 @@ class SQLitePlatform(Platform):
         if not create_flags:
             create_flags = self.CREATE_INDEXES | self.CREATE_FOREIGNKEYS
 
-        return super(SQLitePlatform, self).get_create_table_sql(table, create_flags)
+        return super(SQLitePlatform, self).get_create_table_sql(
+            table, create_flags)
 
     def _get_create_table_sql(self, table_name, columns, options=None):
         table_name = table_name.replace('.', '__')
@@ -119,7 +123,9 @@ class SQLitePlatform(Platform):
 
         if options.get('unique_constraints'):
             for name, definition in options['unique_constraints'].items():
-                query_fields += ', %s' % self.get_unique_constraint_declaration_sql(name, definition)
+                query_fields +=\
+                    ', %s' % self.get_unique_constraint_declaration_sql(
+                        name, definition)
 
         if options.get('primary'):
             key_columns = options['primary']
@@ -127,7 +133,8 @@ class SQLitePlatform(Platform):
 
         if options.get('foreign_keys'):
             for foreign_key in options['foreign_keys']:
-                query_fields += ', %s' % self.get_foreign_key_declaration_sql(foreign_key)
+                query_fields += ', %s' % self.get_foreign_key_declaration_sql(
+                    foreign_key)
 
         query = [
             'CREATE TABLE %s (%s)' % (table_name, query_fields)
@@ -150,7 +157,8 @@ class SQLitePlatform(Platform):
         return super(SQLitePlatform, self).get_foreign_key_declaration_sql(
             ForeignKeyConstraint(
                 foreign_key.get_quoted_local_columns(self),
-                foreign_key.get_quoted_foreign_table_name(self).replace('.', '__'),
+                foreign_key.get_quoted_foreign_table_name(
+                    self).replace('.', '__'),
                 foreign_key.get_quoted_foreign_columns(self),
                 foreign_key.get_name(),
                 foreign_key.get_options()
@@ -158,9 +166,11 @@ class SQLitePlatform(Platform):
         )
 
     def get_advanced_foreign_key_options_sql(self, foreign_key):
-        query = super(SQLitePlatform, self).get_advanced_foreign_key_options_sql(foreign_key)
+        query = super(SQLitePlatform, self).\
+            get_advanced_foreign_key_options_sql(foreign_key)
 
-        deferrable = foreign_key.has_option('deferrable') and foreign_key.get_option('deferrable') is not False
+        deferrable = foreign_key.has_option(
+            'deferrable') and foreign_key.get_option('deferrable') is not False
         if deferrable:
             query += ' DEFERRABLE'
         else:
@@ -168,7 +178,8 @@ class SQLitePlatform(Platform):
 
         query += ' INITIALLY'
 
-        deferred = foreign_key.has_option('deferred') and foreign_key.get_option('deferred') is not False
+        deferred = foreign_key.has_option(
+            'deferred') and foreign_key.get_option('deferred') is not False
         if deferred:
             query += ' DEFERRED'
         else:
@@ -200,7 +211,6 @@ class SQLitePlatform(Platform):
         columns = OrderedDict()
         old_column_names = OrderedDict()
         new_column_names = OrderedDict()
-        column_sql = []
         for column_name, column in table.get_columns().items():
             column_name = column_name.lower()
             columns[column_name] = column
@@ -222,7 +232,8 @@ class SQLitePlatform(Platform):
             columns[column.get_name().lower()] = column
 
             if old_column_name in new_column_names:
-                new_column_names[old_column_name] = column.get_quoted_name(self)
+                new_column_names[old_column_name] = column.get_quoted_name(
+                    self)
 
         for old_column_name, column_diff in diff.changed_columns.items():
             if old_column_name in columns:
@@ -231,12 +242,11 @@ class SQLitePlatform(Platform):
             columns[column_diff.column.get_name().lower()] = column_diff.column
 
             if old_column_name in new_column_names:
-                new_column_names[old_column_name] = column_diff.column.get_quoted_name(self)
+                new_column_names[old_column_name] = column_diff.\
+                    column.get_quoted_name(self)
 
         for column_name, column in diff.added_columns.items():
             columns[column_name.lower()] = column
-
-        table_sql = []
 
         data_table = Table('__temp__' + table.get_name())
         new_table = Table(table.get_quoted_name(self), columns,
@@ -272,7 +282,8 @@ class SQLitePlatform(Platform):
                     or column_diff.column.get_type().lower() != 'integer':
                 continue
 
-            if not column_diff.has_changed('type') and not column_diff.has_changed('unsigned'):
+            if not column_diff.has_changed(
+                    'type') and not column_diff.has_changed('unsigned'):
                 del diff.changed_columns[old_column_name]
 
                 continue
@@ -282,17 +293,16 @@ class SQLitePlatform(Platform):
             if from_column_type == 'smallint' or from_column_type == 'bigint':
                 del diff.changed_columns[old_column_name]
 
-        if any([not diff.renamed_columns, not diff.added_foreign_keys, not diff.added_indexes,
-                not diff.changed_columns, not diff.changed_foreign_keys, not diff.changed_indexes,
-                not diff.removed_columns, not diff.removed_foreign_keys, not diff.removed_indexes,
-                not diff.renamed_indexes]):
+        if any([not diff.renamed_columns, not diff.added_foreign_keys,
+                not diff.added_indexes, not diff.changed_columns,
+                not diff.changed_foreign_keys, not diff.changed_indexes,
+                not diff.removed_columns, not diff.removed_foreign_keys,
+                not diff.removed_indexes, not diff.renamed_indexes]):
             return False
 
         table = Table(diff.name)
 
         sql = []
-        table_sql = []
-        column_sql = []
 
         for column in diff.added_columns.values():
             field = {
@@ -303,21 +313,27 @@ class SQLitePlatform(Platform):
             field.update(column.to_dict())
 
             type_ = field['type']
-            if 'column_definition' in field or field['autoincrement'] or field['unique']:
+            if ('column_definition' in field or
+                    field['autoincrement'] or field['unique']):
                 return False
-            elif type_ == 'datetime' and field['default'] == self.get_current_timestamp_sql():
+            elif (type_ == 'datetime' and
+                  field['default'] == self.get_current_timestamp_sql()):
                 return False
-            elif type_ == 'date' and field['default'] == self.get_current_date_sql():
+            elif (type_ == 'date' and
+                  field['default'] == self.get_current_date_sql()):
                 return False
-            elif type_ == 'time' and field['default'] == self.get_current_time_sql():
+            elif (type_ == 'time' and
+                  field['default'] == self.get_current_time_sql()):
                 return False
 
             field['name'] = column.get_quoted_name(self)
             if field['type'].lower() == 'string' and field['length'] is None:
                 field['length'] = 255
 
-            sql.append('ALTER TABLE ' + table.get_quoted_name(self) +
-                       ' ADD COLUMN ' + self.get_column_declaration_sql(field['name'], field))
+            sql.append('ALTER TABLE ' +
+                       table.get_quoted_name(self) +
+                       ' ADD COLUMN ' +
+                       self.get_column_declaration_sql(field['name'], field))
 
         if diff.new_name is not False:
             new_table = Identifier(diff.new_name)
@@ -336,7 +352,8 @@ class SQLitePlatform(Platform):
         indexes = diff.from_table.get_indexes()
         column_names = self._get_column_names_in_altered_table(diff)
 
-        for key, index in OrderedDict([(k, v) for k, v in indexes.items()]).items():
+        for key, index in OrderedDict(
+                [(k, v) for k, v in indexes.items()]).items():
             for old_index_name, renamed_index in diff.renamed_indexes.items():
                 if key.lower() == old_index_name.lower():
                     del indexes[key]
@@ -478,35 +495,43 @@ class SQLitePlatform(Platform):
         return 'BOOLEAN'
 
     def get_integer_type_declaration_sql(self, column):
-        return 'INTEGER' + self._get_common_integer_type_declaration_sql(column)
+        return 'INTEGER' + \
+            self._get_common_integer_type_declaration_sql(column)
 
     def get_bigint_type_declaration_sql(self, column):
-        # SQLite autoincrement is implicit for INTEGER PKs, but not for BIGINT fields.
+        # SQLite autoincrement is implicit for INTEGER PKs, but not for BIGINT
+        # fields.
         if not column.get('autoincrement', False):
             return self.get_integer_type_declaration_sql(column)
 
         return 'BIGINT' + self._get_common_integer_type_declaration_sql(column)
 
     def get_tinyint_type_declaration_sql(self, column):
-        # SQLite autoincrement is implicit for INTEGER PKs, but not for TINYINT fields.
+        # SQLite autoincrement is implicit for INTEGER PKs, but not for TINYINT
+        # fields.
         if not column.get('autoincrement', False):
             return self.get_integer_type_declaration_sql(column)
 
-        return 'TINYINT' + self._get_common_integer_type_declaration_sql(column)
+        return 'TINYINT' + \
+            self._get_common_integer_type_declaration_sql(column)
 
     def get_smallint_type_declaration_sql(self, column):
-        # SQLite autoincrement is implicit for INTEGER PKs, but not for SMALLINT fields.
+        # SQLite autoincrement is implicit for INTEGER PKs, but not for
+        # SMALLINT fields.
         if not column.get('autoincrement', False):
             return self.get_integer_type_declaration_sql(column)
 
-        return 'SMALLINT' + self._get_common_integer_type_declaration_sql(column)
+        return 'SMALLINT' + \
+            self._get_common_integer_type_declaration_sql(column)
 
     def get_mediumint_type_declaration_sql(self, column):
-        # SQLite autoincrement is implicit for INTEGER PKs, but not for MEDIUMINT fields.
+        # SQLite autoincrement is implicit for INTEGER PKs, but not for
+        # MEDIUMINT fields.
         if not column.get('autoincrement', False):
             return self.get_integer_type_declaration_sql(column)
 
-        return 'MEDIUMINT' + self._get_common_integer_type_declaration_sql(column)
+        return 'MEDIUMINT' + \
+            self._get_common_integer_type_declaration_sql(column)
 
     def get_datetime_type_declaration_sql(self, column):
         return 'DATETIME'
@@ -518,7 +543,8 @@ class SQLitePlatform(Platform):
         return 'TIME'
 
     def _get_common_integer_type_declaration_sql(self, column):
-        # sqlite autoincrement is implicit for integer PKs, but not when the field is unsigned
+        # sqlite autoincrement is implicit for integer PKs, but not when the
+        # field is unsigned
         if not column.get('autoincrement', False):
             return ''
 

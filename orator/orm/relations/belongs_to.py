@@ -52,7 +52,8 @@ class BelongsTo(Relation):
             else:
                 table = self._related.get_table()
 
-                self._query.where('{}.{}'.format(table, self._other_key), '=', foreign_key)
+                self._query.where('{}.{}'.format(
+                    table, self._other_key), '=', foreign_key)
 
     def get_relation_count_query(self, query, parent):
         """
@@ -65,9 +66,11 @@ class BelongsTo(Relation):
         """
         query.select(QueryExpression('COUNT(*)'))
 
-        other_key = self.wrap('%s.%s' % (query.get_model().get_table(), self._other_key))
+        other_key = self.wrap('%s.%s' % (
+            query.get_model().get_table(), self._other_key))
 
-        return query.where(self.get_qualified_foreign_key(), '=', QueryExpression(other_key))
+        return query.where(self.get_qualified_foreign_key(),
+                           '=', QueryExpression(other_key))
 
     def add_eager_constraints(self, models):
         """
@@ -149,9 +152,11 @@ class BelongsTo(Relation):
 
         :rtype: orator.Model
         """
-        self._parent.set_attribute(self._foreign_key, model.get_attribute(self._other_key))
+        self._parent.set_attribute(
+            self._foreign_key, model.get_attribute(self._other_key))
 
-        return self._parent.set_relation(self._relation, Result(model, self, self._parent))
+        return self._parent.set_relation(
+            self._relation, Result(model, self, self._parent))
 
     def dissociate(self):
         """
@@ -161,7 +166,8 @@ class BelongsTo(Relation):
         """
         self._parent.set_attribute(self._foreign_key, None)
 
-        return self._parent.set_relation(self._relation, Result(None, self, self._parent))
+        return self._parent.set_relation(
+            self._relation, Result(None, self, self._parent))
 
     def update(self, _attributes=None, **attributes):
         """

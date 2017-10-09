@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from .grammar import SchemaGrammar
-from ..blueprint import Blueprint
-from ...query.expression import QueryExpression
-from ...support.fluent import Fluent
 
 
 class SQLiteSchemaGrammar(SchemaGrammar):
@@ -35,7 +32,8 @@ class SQLiteSchemaGrammar(SchemaGrammar):
             if foreign_keys:
                 sql.append('PRAGMA foreign_keys = OFF')
 
-        sql += super(SQLiteSchemaGrammar, self).compile_rename_column(blueprint, command, connection)
+        sql += super(SQLiteSchemaGrammar, self).compile_rename_column(
+            blueprint, command, connection)
 
         if foreign_keys:
             sql.append('PRAGMA foreign_keys = ON')
@@ -65,7 +63,8 @@ class SQLiteSchemaGrammar(SchemaGrammar):
             if foreign_keys:
                 sql.append('PRAGMA foreign_keys = OFF')
 
-        sql += super(SQLiteSchemaGrammar, self).compile_change(blueprint, command, connection)
+        sql += super(SQLiteSchemaGrammar,
+                     self).compile_change(blueprint, command, connection)
 
         if foreign_keys:
             sql.append('PRAGMA foreign_keys = ON')
@@ -78,7 +77,9 @@ class SQLiteSchemaGrammar(SchemaGrammar):
 
         :rtype: str
         """
-        return "SELECT * FROM sqlite_master WHERE type = 'table' AND name = %(marker)s" % {'marker': self.get_marker()}
+        result = ("SELECT * FROM sqlite_master WHERE type = 'table' "
+                  "AND name = %(marker)s" % {'marker': self.get_marker()})
+        return result
 
     def compile_column_exists(self, table):
         """
@@ -127,7 +128,8 @@ class SQLiteSchemaGrammar(SchemaGrammar):
 
         on_columns = self.columnize(references)
 
-        return ', FOREIGN KEY(%s) REFERENCES %s(%s)' % (columns, on, on_columns)
+        return ', FOREIGN KEY(%s) REFERENCES %s(%s)' % (
+            columns, on, on_columns)
 
     def _add_primary_keys(self, blueprint):
         primary = self._get_command_by_name(blueprint, 'primary')
@@ -156,7 +158,8 @@ class SQLiteSchemaGrammar(SchemaGrammar):
 
         table = self.wrap_table(blueprint)
 
-        return 'CREATE UNIQUE INDEX %s ON %s (%s)' % (command.index, table, columns)
+        return 'CREATE UNIQUE INDEX %s ON %s (%s)' % (
+            command.index, table, columns)
 
     def compile_index(self, blueprint, command, _):
         columns = self.columnize(command.columns)
@@ -195,7 +198,8 @@ class SQLiteSchemaGrammar(SchemaGrammar):
     def compile_rename(self, blueprint, command, _):
         from_ = self.wrap_table(blueprint)
 
-        return 'ALTER TABLE %s RENAME TO %s' % (from_, self.wrap_table(command.to))
+        return 'ALTER TABLE %s RENAME TO %s' % (
+            from_, self.wrap_table(command.to))
 
     def _type_char(self, column):
         return 'VARCHAR'
@@ -301,4 +305,5 @@ class SQLiteSchemaGrammar(SchemaGrammar):
         return 'SELECT name FROM sqlite_master WHERE type="table";'
 
     def _get_table_structure(self, table):
-        return 'SELECT sql as "Create Table" FROM sqlite_master WHERE name="%s";' % table
+        return ('SELECT sql as "Create Table" FROM sqlite_master '
+                'WHERE name="%s";' % table)

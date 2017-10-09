@@ -10,7 +10,8 @@ from ..utils import deprecated
 
 class LengthAwarePaginator(BasePaginator):
 
-    def __init__(self, items, total, per_page, current_page=None, options=None):
+    def __init__(self, items, total, per_page,
+                 current_page=None, options=None):
         """
         Constructor
 
@@ -36,7 +37,8 @@ class LengthAwarePaginator(BasePaginator):
         self.total = total
         self.per_page = per_page
         self.last_page = int(math.ceil(total / per_page))
-        self.current_page = self._set_current_page(current_page, self.last_page)
+        self.current_page = self._set_current_page(
+            current_page, self.last_page)
         if isinstance(items, Collection):
             self._items = items
         else:

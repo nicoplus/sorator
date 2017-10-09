@@ -1,3 +1,3 @@
 # -*- coding: utf-8 -*-
 
-from .builder import QueryBuilder
+from .builder import QueryBuilder # noqa

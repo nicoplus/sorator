@@ -35,4 +35,5 @@ class MySQLSchemaBuilder(SchemaBuilder):
 
         results = self._connection.select(sql, [database, table])
 
-        return self._connection.get_post_processor().process_column_listing(results)
+        return self._connection.\
+            get_post_processor().process_column_listing(results)

@@ -200,7 +200,8 @@ class Connection(ConnectionInterface):
 
         return cursor.fetchall()
 
-    def select_many(self, size, query, bindings=None, use_read_connection=True, abort=False):
+    def select_many(self, size, query, bindings=None,
+                    use_read_connection=True, abort=False):
         if self.pretending():
             yield []
         else:
@@ -213,7 +214,8 @@ class Connection(ConnectionInterface):
                 if self._caused_by_lost_connection(e) and not abort:
                     self.reconnect()
 
-                    for results in self.select_many(size, query, bindings, use_read_connection, True):
+                    for results in self.select_many(
+                            size, query, bindings, use_read_connection, True):
                         yield results
                 else:
                     raise
@@ -332,7 +334,8 @@ class Connection(ConnectionInterface):
 
         self._pretending = False
 
-    def _try_again_if_caused_by_lost_connection(self, e, query, bindings, callback, *args, **kwargs):
+    def _try_again_if_caused_by_lost_connection(
+            self, e, query, bindings, callback, *args, **kwargs):
         if self._caused_by_lost_connection(e):
             self.reconnect()
 
@@ -352,14 +355,15 @@ class Connection(ConnectionInterface):
                   'server closed the connection unexpectedly',
                   'SSL connection has been closed unexpectedly',
                   'Error writing data to the connection',
-                  'Resource deadlock avoided',]:
+                  'Resource deadlock avoided', ]:
             if s in message:
                 return True
 
         return False
 
     def disconnect(self):
-        connection_logger.debug('%s is disconnecting' % self.__class__.__name__)
+        connection_logger.debug('%s is disconnecting' %
+                                self.__class__.__name__)
         if self._connection:
             self._connection.close()
 
@@ -383,7 +387,8 @@ class Connection(ConnectionInterface):
 
     def log_query(self, query, bindings, time_=None):
         if self.pretending():
-            self._logged_queries.append(self._get_cursor_query(query, bindings))
+            self._logged_queries.append(
+                self._get_cursor_query(query, bindings))
 
         if not self._logging_queries:
             return
@@ -546,7 +551,7 @@ class Connection(ConnectionInterface):
                 raise
         else:
             self.rollback()
-            raise (exc_type, exc_val, exc_tb)
+            raise exc_type
 
     @property
     def server_version(self):

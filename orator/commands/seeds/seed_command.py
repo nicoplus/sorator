@@ -1,10 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import importlib
 import inflection
 import os
-from cleo import InputOption
-from orator import DatabaseManager
 from .base_command import BaseCommand
 from ...utils import load_module
 
@@ -25,9 +22,9 @@ class SeedCommand(BaseCommand):
         """
         Executes the command.
         """
-        if not self.confirm_to_proceed(
-            '<question>Are you sure you want to seed the database?:</question> '
-        ):
+        prompt_msg = ('<question>Are you sure you want '
+                      'to seed the database?:</question> ')
+        if not self.confirm_to_proceed(prompt_msg):
             return
 
         self.resolver.set_default_connection(self.option('database'))

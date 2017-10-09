@@ -8,7 +8,8 @@ try:
 
     # Fix for understanding Pendulum object
     import MySQLdb.converters
-    MySQLdb.converters.conversions[Pendulum] = MySQLdb.converters.DateTime2literal
+    MySQLdb.converters.conversions[Pendulum] = MySQLdb.converters.\
+        DateTime2literal
     MySQLdb.converters.conversions[Date] = MySQLdb.converters.Thing2Literal
 
     from MySQLdb.cursors import DictCursor as cursor_class
@@ -22,7 +23,8 @@ except ImportError as e:
 
         # Fix for understanding Pendulum object
         import pymysql.converters
-        pymysql.converters.conversions[Pendulum] = pymysql.converters.escape_datetime
+        pymysql.converters.conversions[Pendulum] = pymysql.converters.\
+            escape_datetime
         pymysql.converters.conversions[Date] = pymysql.converters.escape_date
 
         from pymysql.cursors import DictCursor as cursor_class
@@ -58,7 +60,7 @@ class BaseDictCursor(cursor_class):
         rows = self._result.fetch_row(size, self._fetch_type)
 
         return tuple(Record(r) for r in rows)
-    
+
     def _conv_row(self, row):
         # Overridden for pymysql
         return Record(super(BaseDictCursor, self)._conv_row(row))
@@ -118,7 +120,9 @@ class MySQLConnector(Connector):
     def get_server_version(self):
         version = self._connection.get_server_info()
 
-        version_parts = re.match('^(?P<major>\d+)(?:\.(?P<minor>\d+)(?:\.(?P<patch>\d+))?)?', version)
+        version_parts = re.match(
+            '^(?P<major>\d+)(?:\.(?P<minor>\d+)(?:\.(?P<patch>\d+))?)?',
+            version)
 
         major = int(version_parts.group('major'))
         minor = version_parts.group('minor') or 0

@@ -2,7 +2,6 @@
 
 from .platform import Platform
 from .keywords.postgresql_keywords import PostgreSQLKeywords
-from ..table import Table
 from ..column import Column
 from ..identifier import Identifier
 
@@ -58,9 +57,11 @@ class PostgresPlatform(Platform):
                     quote_ident(a.attname) AS field,
                     t.typname AS type,
                     format_type(a.atttypid, a.atttypmod) AS complete_type,
-                    (SELECT t1.typname FROM pg_catalog.pg_type t1 WHERE t1.oid = t.typbasetype) AS domain_type,
+                    (SELECT t1.typname FROM pg_catalog.pg_type t1
+                    WHERE t1.oid = t.typbasetype) AS domain_type,
                     (SELECT format_type(t2.typbasetype, t2.typtypmod) FROM
-                      pg_catalog.pg_type t2 WHERE t2.typtype = 'd' AND t2.oid = a.atttypid) AS domain_complete_type,
+                      pg_catalog.pg_type t2 WHERE t2.typtype = 'd' AND
+                      t2.oid = a.atttypid) AS domain_complete_type,
                     a.attnotnull AS isnotnull,
                     (SELECT 't'
                      FROM pg_index
@@ -74,7 +75,8 @@ class PostgresPlatform(Platform):
                         AND pg_attrdef.adnum=a.attnum
                     ) AS default,
                     (SELECT pg_description.description
-                        FROM pg_description WHERE pg_description.objoid = c.oid AND a.attnum = pg_description.objsubid
+                        FROM pg_description WHERE pg_description.objoid = c.oid
+                        AND a.attnum = pg_description.objsubid
                     ) AS comment
                     FROM pg_attribute a, pg_class c, pg_type t, pg_namespace n
                     WHERE %s
@@ -88,9 +90,9 @@ class PostgresPlatform(Platform):
 
     def get_list_table_indexes_sql(self, table):
         sql = """
-              SELECT quote_ident(relname) as relname, pg_index.indisunique, pg_index.indisprimary,
-                     pg_index.indkey, pg_index.indrelid,
-                     pg_get_expr(indpred, indrelid) AS where
+              SELECT quote_ident(relname) as relname, pg_index.indisunique,
+              pg_index.indisprimary, pg_index.indkey, pg_index.indrelid,
+              pg_get_expr(indpred, indrelid) AS where
               FROM pg_class, pg_index
               WHERE oid IN (
                   SELECT indexrelid
@@ -111,21 +113,28 @@ class PostgresPlatform(Platform):
                '(' \
                'SELECT c.oid ' \
                'FROM pg_catalog.pg_class c, pg_catalog.pg_namespace n ' \
-               'WHERE ' + self.get_table_where_clause(table) + ' AND n.oid = c.relnamespace' \
+               'WHERE ' + self.get_table_where_clause(table) +\
+               ' AND n.oid = c.relnamespace' \
                ')' \
                ' AND r.contype = \'f\''
 
-    def get_table_where_clause(self, table, class_alias='c', namespace_alias='n'):
-        where_clause = namespace_alias + '.nspname NOT IN (\'pg_catalog\', \'information_schema\', \'pg_toast\') AND '
+    def get_table_where_clause(
+            self, table, class_alias='c', namespace_alias='n'):
+        where_clause = namespace_alias + \
+            ('.nspname NOT IN (\'pg_catalog\', '
+             '\'information_schema\', \'pg_toast\') AND ')
         if table.find('.') >= 0:
             split = table.split('.')
             schema, table = split[0], split[1]
             schema = "'%s'" % schema
         else:
-            schema = 'ANY(string_to_array((select replace(replace(setting, \'"$user"\', user), \' \', \'\')' \
-                     ' from pg_catalog.pg_settings where name = \'search_path\'),\',\'))'
+            schema = ('ANY(string_to_array((select replace(replace(setting, '
+                      '\'"$user"\', user), \' \', \'\')'
+                      ' from pg_catalog.pg_settings '
+                      'where name = \'search_path\'),\',\'))')
 
-        where_clause += '%s.relname = \'%s\' AND %s.nspname = %s' % (class_alias, table, namespace_alias, schema)
+        where_clause += '%s.relname = \'%s\' AND %s.nspname = %s' % (
+            class_alias, table, namespace_alias, schema)
 
         return where_clause
 
@@ -135,9 +144,11 @@ class PostgresPlatform(Platform):
         if foreign_key.has_option('match'):
             query += ' MATCH %s' % foreign_key.get_option('match')
 
-        query += super(PostgresPlatform, self).get_advanced_foreign_key_options_sql(foreign_key)
+        query += super(PostgresPlatform,
+                       self).get_advanced_foreign_key_options_sql(foreign_key)
 
-        deferrable = foreign_key.has_option('deferrable') and foreign_key.get_option('deferrable') is not False
+        deferrable = foreign_key.has_option(
+            'deferrable') and foreign_key.get_option('deferrable') is not False
         if deferrable:
             query += ' DEFERRABLE'
         else:
@@ -145,7 +156,8 @@ class PostgresPlatform(Platform):
 
         query += ' INITIALLY'
 
-        deferred = foreign_key.has_option('deferred') and foreign_key.get_option('deferred') is not False
+        deferred = foreign_key.has_option(
+            'deferred') and foreign_key.get_option('deferred') is not False
         if deferred:
             query += ' DEFERRED'
         else:
@@ -168,24 +180,33 @@ class PostgresPlatform(Platform):
             if self.is_unchanged_binary_column(column_diff):
                 continue
 
-            old_column_name = column_diff.get_old_column_name().get_quoted_name(self)
+            old_column_name = column_diff.get_old_column_name().\
+                get_quoted_name(self)
             column = column_diff.column
 
             if any([column_diff.has_changed('type'),
                     column_diff.has_changed('precision'),
                     column_diff.has_changed('scale'),
                     column_diff.has_changed('fixed')]):
-                query = 'ALTER ' + old_column_name + ' TYPE ' + self.get_sql_type_declaration(column.to_dict())
-                sql.append('ALTER TABLE ' + diff.get_name(self).get_quoted_name(self) + ' ' + query)
+                query = 'ALTER ' + old_column_name + ' TYPE ' + \
+                    self.get_sql_type_declaration(column.to_dict())
+                sql.append('ALTER TABLE ' +
+                           diff.get_name(self).get_quoted_name(self) +
+                           ' ' + query)
 
-            if column_diff.has_changed('default') or column_diff.has_changed('type'):
+            if column_diff.has_changed(
+                    'default') or column_diff.has_changed('type'):
                 if column.get_default() is None:
                     default_clause = ' DROP DEFAULT'
                 else:
-                    default_clause = ' SET' + self.get_default_value_declaration_sql(column.to_dict())
+                    default_clause = ' SET' + \
+                        self.get_default_value_declaration_sql(
+                            column.to_dict())
 
                 query = 'ALTER ' + old_column_name + default_clause
-                sql.append('ALTER TABLE ' + diff.get_name(self).get_quoted_name(self) + ' ' + query)
+                sql.append('ALTER TABLE ' +
+                           diff.get_name(self).get_quoted_name(self) +
+                           ' ' + query)
 
             if column_diff.has_changed('notnull'):
                 op = 'DROP'
@@ -193,28 +214,42 @@ class PostgresPlatform(Platform):
                     op = 'SET'
 
                 query = 'ALTER ' + old_column_name + ' ' + op + ' NOT NULL'
-                sql.append('ALTER TABLE ' + diff.get_name(self).get_quoted_name(self) + ' ' + query)
+                sql.append('ALTER TABLE ' +
+                           diff.get_name(self).get_quoted_name(self) +
+                           ' ' + query)
 
             if column_diff.has_changed('autoincrement'):
                 if column.get_autoincrement():
-                    seq_name = self.get_identity_sequence_name(diff.name, old_column_name)
+                    seq_name = self.get_identity_sequence_name(
+                        diff.name, old_column_name)
 
                     sql.append('CREATE SEQUENCE ' + seq_name)
                     sql.append('SELECT setval(\'' + seq_name + '\', '
-                               '(SELECT MAX(' + old_column_name + ') FROM ' + diff.name + '))')
-                    query = 'ALTER ' + old_column_name + ' SET DEFAULT nextval(\'' + seq_name + '\')'
-                    sql.append('ALTER TABLE ' + diff.get_name(self).get_quoted_name(self) + ' ' + query)
+                               '(SELECT MAX(' + old_column_name +
+                               ') FROM ' + diff.name + '))')
+                    query = 'ALTER ' + old_column_name + \
+                        ' SET DEFAULT nextval(\'' + seq_name + '\')'
+                    sql.append('ALTER TABLE ' +
+                               diff.get_name(self).get_quoted_name(self) +
+                               ' ' + query)
                 else:
                     query = 'ALTER ' + old_column_name + ' DROP DEFAULT'
-                    sql.append('ALTER TABLE ' + diff.get_name(self).get_quoted_name(self) + ' ' + query)
+                    sql.append('ALTER TABLE ' +
+                               diff.get_name(self).get_quoted_name(self) +
+                               ' ' + query)
 
             if column_diff.has_changed('length'):
-                query = 'ALTER ' + old_column_name + ' TYPE ' + self.get_sql_type_declaration(column.to_dict())
-                sql.append('ALTER TABLE ' + diff.get_name(self).get_quoted_name(self) + ' ' + query)
+                query = 'ALTER ' + old_column_name + ' TYPE ' + \
+                    self.get_sql_type_declaration(column.to_dict())
+                sql.append('ALTER TABLE ' +
+                           diff.get_name(self).get_quoted_name(self) +
+                           ' ' + query)
 
         for old_column_name, column in diff.renamed_columns.items():
-            sql.append('ALTER TABLE ' + diff.get_name(self).get_quoted_name(self) + ' '
-                       'RENAME COLUMN ' + Identifier(old_column_name).get_quoted_name(self) +
+            sql.append('ALTER TABLE ' +
+                       diff.get_name(self).get_quoted_name(self) + ' '
+                       'RENAME COLUMN ' +
+                       Identifier(old_column_name).get_quoted_name(self) +
                        ' TO ' + column.get_quoted_name(self))
 
         return sql
@@ -231,17 +266,20 @@ class PostgresPlatform(Platform):
             from_column = None
 
         if from_column:
-            from_column_type = self.INTERNAL_TYPE_MAPPING[from_column.get_type()]
+            from_column_type = self.INTERNAL_TYPE_MAPPING[from_column.get_type(
+            )]
 
             if from_column_type in ['blob', 'binary']:
                 return False
 
-            return len([x for x in column_diff.changed_properties if x not in ['type', 'length', 'fixed']]) == 0
+            return len([x for x in column_diff.changed_properties if x not in [
+                       'type', 'length', 'fixed']]) == 0
 
         if column_diff.has_changed('type'):
             return False
 
-        return len([x for x in column_diff.changed_properties if x not in ['length', 'fixed']]) == 0
+        return len([x for x in column_diff.changed_properties if x not in [
+                   'length', 'fixed']]) == 0
 
     def convert_booleans(self, item):
         if isinstance(item, list):

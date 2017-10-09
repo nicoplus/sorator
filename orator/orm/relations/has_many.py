@@ -20,7 +20,8 @@ class HasMany(HasOneOrMany):
         :type relation: str
         """
         for model in models:
-            model.set_relation(relation, Result(self._related.new_collection(), self, model))
+            model.set_relation(relation, Result(
+                self._related.new_collection(), self, model))
 
         return models
 

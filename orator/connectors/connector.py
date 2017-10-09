@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from ..dbal.exceptions import InvalidPlatformSpecified
 from ..exceptions.connectors import MissingPackage
 
 
@@ -25,7 +24,8 @@ class Connector(object):
 
     def get_config(self, config):
         default_config = self.get_default_config()
-        config = {x: config[x] for x in config if x not in self.RESERVED_KEYWORDS}
+        config = {x: config[x]
+                  for x in config if x not in self.RESERVED_KEYWORDS}
 
         default_config.update(config)
 
@@ -68,14 +68,17 @@ class Connector(object):
         """
         Detects and sets the database platform.
 
-        Evaluates custom platform class and version in order to set the correct platform.
+        Evaluates custom platform class and version in order to
+        set the correct platform.
 
-        :raises InvalidPlatformSpecified: if an invalid platform was specified for this connection.
+        :raises InvalidPlatformSpecified: if an invalid platform was specified
+        for this connection.
         """
         version = self._get_database_platform_version()
 
         if version is not None:
-            self._platform = self._create_database_platform_for_version(version)
+            self._platform = self._create_database_platform_for_version(
+                version)
         else:
             self._platform = self.get_dbal_platform()
 
