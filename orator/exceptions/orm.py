@@ -35,10 +35,10 @@ class ValidationError(ValueError):
     def __init__(self, detail=None):
         if detail is None:
             return
-        if not isinstance(detail, str):
+        if isinstance(detail, dict) or isinstance(detail, list):
             self.detail = json.dumps(detail)
         else:
-            self.detail = detail
+            self.detail = str(detail)
 
     def __str__(self):
         return self.detail
