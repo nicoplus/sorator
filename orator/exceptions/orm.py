@@ -33,7 +33,7 @@ class ValidationError(ValueError):
 
     def __init__(self, detail=None):
         if detail is not None:
-            self.detail = detail
+            self.detail = str(detail)
 
     def __str__(self):
         return self.detail

@@ -1587,7 +1587,7 @@ class Model(object):
             if self.is_valid():
                 self._attributes = self.__cleaned_data__
             else:
-                raise ValueError('The data of this model is not valid')
+                raise ValidationError('The data of this model is not valid')
 
         if options is None:
             options = {}

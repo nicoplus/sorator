@@ -65,7 +65,7 @@ class ModelValidateTestCase(OratorTestCase):
             t.validate({'email': 'xxx'})
         with self.assertRaises(ValidationError):
             t.validate_name('invalid')
-        with self.assertRaises(ValueError):
+        with self.assertRaises(ValidationError):
             t.save()
         self.assertIsNotNone(t.errors)
         self.assertIsNotNone(t.save({'run_validation': False}))
