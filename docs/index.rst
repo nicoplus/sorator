@@ -11,6 +11,7 @@ The Orator ORM provides a simple yet beautiful ActiveRecord implementation.
     basic_usage
     query_builder
     orm
+    validations
     pagination
     schema_builder
     migrations
