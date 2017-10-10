@@ -33,12 +33,13 @@ class ValidationError(ValueError):
     detail = 'Invalid input.'
 
     def __init__(self, detail=None):
-        if detail is None:
-            return
-        try:
-            self.detail = json.dumps(detail)
-        except TypeError:
-            self.detail = str(detail)
+        if detail is not None:
+            self.detail = detail
 
     def __str__(self):
-        return self.detail
+        if isinstance(self.detail, str):
+            return self.detail
+        try:
+            return json.dumps(self.detail)
+        except TypeError:
+            return str(self.detail)
