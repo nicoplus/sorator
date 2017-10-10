@@ -35,9 +35,9 @@ class ValidationError(ValueError):
     def __init__(self, detail=None):
         if detail is None:
             return
-        if isinstance(detail, dict) or isinstance(detail, list):
+        try:
             self.detail = json.dumps(detail)
-        else:
+        except TypeError:
             self.detail = str(detail)
 
     def __str__(self):
