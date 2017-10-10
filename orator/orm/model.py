@@ -1547,7 +1547,7 @@ class Model(object):
                     self.__cleaned_data__[attr] = getattr(
                         self, validator_key)(value)
                 except ValidationError as e:
-                    self.__errors__[attr] = e.detail
+                    self._errors[attr] = e.detail
                 continue
             self.__cleaned_data__[attr] = value
 
@@ -1555,7 +1555,7 @@ class Model(object):
         """
         Call the validate method and return validated data
         """
-        self.__errors__ = dict()
+        self._errors = dict()
         if not self._attributes:
             return
         self.__cleaned_data__ = {}
@@ -1563,13 +1563,13 @@ class Model(object):
         try:
             self.__cleaned_data__ = self.validate(self.__cleaned_data__)
         except ValidationError as e:
-            self.__errors__['_general'] = e.detail
+            self._errors['_general'] = e.detail
 
     @property
     def errors(self):
-        if not hasattr(self, '__errors__'):
+        if not hasattr(self, '_errors'):
             self.run_validation()
-        return self.__errors__
+        return self._errors
 
     def is_valid(self):
         """
@@ -2926,7 +2926,7 @@ class Model(object):
 
     def __setattr__(self, key, value):
         if key in ['_attributes', '_exists', '_relations',
-                   '_original'] or key.startswith('__'):
+                   '_original', '_errors'] or key.startswith('__'):
             return object.__setattr__(self, key, value)
 
         if self._has_set_mutator(key):
