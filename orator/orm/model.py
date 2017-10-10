@@ -134,7 +134,6 @@ class Model(object):
         # Setting default attributes' values
         self._attributes = dict((k, v) for k, v in self.__attributes__.items())
         self._relations = {}
-        self.__errors__ = None
 
         self.sync_original()
 
@@ -1568,7 +1567,7 @@ class Model(object):
 
     @property
     def errors(self):
-        if self.__errors__ is None:
+        if not hasattr(self, '__errors__'):
             self.run_validation()
         return self.__errors__
 
