@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import json
 
 
 class ModelNotFound(RuntimeError):
@@ -36,4 +37,9 @@ class ValidationError(ValueError):
             self.detail = detail
 
     def __str__(self):
-        return self.detail
+        if isinstance(self.detail, str):
+            return self.detail
+        try:
+            return json.dumps(self.detail)
+        except TypeError:
+            return str(self.detail)
