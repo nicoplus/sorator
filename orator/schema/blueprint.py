@@ -3,7 +3,7 @@
 from ..support.fluent import Fluent
 
 
-class Blueprint(object):
+class Blueprint:
 
     def __init__(self, table):
         """
@@ -734,7 +734,7 @@ class Blueprint(object):
 
         :rtype: Blueprint
         """
-        self._columns = filter(lambda c: c.name != name, self._columns)
+        self._columns = list(filter(lambda c: c.name != name, self._columns))
 
         return self
 
@@ -781,8 +781,8 @@ class Blueprint(object):
         return self._commands
 
     def get_added_columns(self):
-        return list(
-            filter(lambda column: not column.get('change'), self._columns))
+        return list(filter(lambda column: not column.get('change'),
+                           self._columns))
 
     def get_changed_columns(self):
         return list(filter(lambda column: column.get('change'), self._columns))

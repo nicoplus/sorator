@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import division
-from ..utils import PY2
 from .connection import Connection, run
 from ..query.grammars.postgres_grammar import PostgresQueryGrammar
 from ..query.processors.postgres_processor import PostgresQueryProcessor
@@ -39,7 +38,7 @@ class PostgresConnection(Connection):
     def begin_transaction(self):
         self._connection.autocommit = False
 
-        super(PostgresConnection, self).begin_transaction()
+        super().begin_transaction()
 
     def commit(self):
         if self._transactions == 1:
@@ -59,16 +58,9 @@ class PostgresConnection(Connection):
 
     def _get_cursor_query(self, query, bindings):
         if self._pretending:
-            if PY2:
-                return self._cursor.mogrify(query, bindings)
-
             return self._cursor.mogrify(query, bindings).decode()
 
         if not hasattr(self._cursor, 'query'):
-            return super(PostgresConnection, self)._get_cursor_query(
-                query, bindings)
-
-        if PY2:
-            return self._cursor.query
+            return super()._get_cursor_query(query, bindings)
 
         return self._cursor.query.decode()

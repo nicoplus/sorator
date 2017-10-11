@@ -3,7 +3,7 @@
 import re
 
 
-class Qmarker(object):
+class Qmarker:
 
     RE_QMARK = re.compile(r'\?\?|\?|%')
 

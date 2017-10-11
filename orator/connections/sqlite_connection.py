@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from ..utils import PY2, decode
 from .connection import Connection
 from ..query.processors.sqlite_processor import SQLiteQueryProcessor
 from ..query.grammars.sqlite_grammar import SQLiteQueryGrammar
@@ -27,7 +26,7 @@ class SQLiteConnection(Connection):
     def begin_transaction(self):
         self._connection.isolation_level = 'DEFERRED'
 
-        super(SQLiteConnection, self).begin_transaction()
+        super().begin_transaction()
 
     def commit(self):
         if self._transactions == 1:
@@ -46,10 +45,6 @@ class SQLiteConnection(Connection):
             self._transactions -= 1
 
     def prepare_bindings(self, bindings):
-        bindings = super(SQLiteConnection, self).prepare_bindings(bindings)
-
-        if PY2:
-            return map(lambda x: decode(x) if isinstance(
-                x, str) else x, bindings)
+        bindings = super().prepare_bindings(bindings)
 
         return bindings

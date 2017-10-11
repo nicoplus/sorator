@@ -5,7 +5,7 @@ from .table import Table
 from .index import Index
 
 
-class SchemaManager(object):
+class SchemaManager:
 
     def __init__(self, connection, platform=None):
         """
@@ -27,7 +27,7 @@ class SchemaManager(object):
 
         cursor = self._connection.get_connection().cursor()
         cursor.execute(sql)
-        table_columns = map(lambda x: dict(x.items()), cursor.fetchall())
+        table_columns = list(map(lambda x: dict(x.items()), cursor.fetchall()))
 
         return self._get_portable_table_columns_list(table, table_columns)
 

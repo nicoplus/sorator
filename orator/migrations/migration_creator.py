@@ -17,7 +17,7 @@ def mkdir_p(path):
             raise
 
 
-class MigrationCreator(object):
+class MigrationCreator:
 
     def create(self, name, path, table=None, create=False):
         """

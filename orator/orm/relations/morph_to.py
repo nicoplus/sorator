@@ -36,7 +36,7 @@ class MorphTo(BelongsTo):
         self._dictionary = {}
         self._with_trashed = False
 
-        super(MorphTo, self).\
+        super().\
             __init__(query, parent, foreign_key, other_key, relation)
 
     def add_eager_constraints(self, models):

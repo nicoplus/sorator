@@ -59,7 +59,7 @@ class DatabaseMigrationRepositoryTestCase(OratorTestCase):
         query.should_receive('where').once().with_args('migration', 'foo').and_return(query)
         query.should_receive('delete').once()
 
-        class Migration(object):
+        class Migration:
 
             migration = 'foo'
 

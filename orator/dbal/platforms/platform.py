@@ -5,10 +5,9 @@ from ..index import Index
 from ..table import Table
 from ..identifier import Identifier
 from ..exceptions import DBALException
-from ...utils import basestring
 
 
-class Platform(object):
+class Platform:
 
     _keywords = None
 
@@ -77,7 +76,7 @@ class Platform(object):
         """
         constraints = []
         for field, def_ in definition.items():
-            if isinstance(def_, basestring):
+            if isinstance(def_, str):
                 constraints.append('CHECK (%s)' % def_)
             else:
                 if 'min' in def_:

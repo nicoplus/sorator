@@ -22,9 +22,7 @@ class Collection(BaseCollection):
 
         :rtype: list
         """
-        results = map(lambda x: getattr(x, value), self.items)
-
-        return list(results)
+        return list(map(lambda x: getattr(x, value), self.items))
 
     def model_keys(self):
         """

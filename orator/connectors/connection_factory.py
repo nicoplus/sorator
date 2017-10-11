@@ -13,7 +13,7 @@ from ..connections import (
 )
 
 
-class ConnectionFactory(object):
+class ConnectionFactory:
 
     CONNECTORS = {
         'sqlite': SQLiteConnector,

@@ -13,7 +13,7 @@ from ..utils.command_formatter import CommandFormatter
 class MigratorHandler(logging.NullHandler):
 
     def __init__(self, level=logging.DEBUG):
-        super(MigratorHandler, self).__init__(level)
+        super().__init__(level)
 
         self.queries = []
 
@@ -21,7 +21,7 @@ class MigratorHandler(logging.NullHandler):
         self.queries.append(record.query)
 
 
-class Migrator(object):
+class Migrator:
 
     def __init__(self, repository, resolver):
         """

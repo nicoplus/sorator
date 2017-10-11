@@ -97,7 +97,7 @@ class SchemaBuilderSQLiteIntegrationCascadingTestCase(OratorTestCase):
         return self.connection().get_schema_builder()
 
 
-class DatabaseIntegrationConnectionResolver(object):
+class DatabaseIntegrationConnectionResolver:
 
     _connection = None
 

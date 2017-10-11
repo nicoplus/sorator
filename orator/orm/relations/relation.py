@@ -5,7 +5,7 @@ from ...query.expression import QueryExpression
 from ..builder import Builder
 
 
-class Relation(object):
+class Relation:
 
     _constraints = True
 

@@ -12,7 +12,7 @@ from ..blueprint import Blueprint
 class SchemaGrammar(Grammar):
 
     def __init__(self, connection):
-        super(SchemaGrammar, self).__init__(marker=connection.get_marker())
+        super().__init__(marker=connection.get_marker())
 
         self._connection = connection
 
@@ -177,13 +177,13 @@ class SchemaGrammar(Grammar):
         if isinstance(table, Blueprint):
             table = table.get_table()
 
-        return super(SchemaGrammar, self).wrap_table(table)
+        return super().wrap_table(table)
 
     def wrap(self, value, prefix_alias=False):
         if isinstance(value, Fluent):
             value = value.name
 
-        return super(SchemaGrammar, self).wrap(value, prefix_alias)
+        return super().wrap(value, prefix_alias)
 
     def _get_default_value(self, value):
         """

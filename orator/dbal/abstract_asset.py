@@ -5,7 +5,7 @@ import binascii
 from ..utils import encode
 
 
-class AbstractAsset(object):
+class AbstractAsset:
 
     _name = None
 

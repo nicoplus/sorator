@@ -22,7 +22,7 @@ class HasOneOrMany(Relation):
         self._local_key = local_key
         self._foreign_key = foreign_key
 
-        super(HasOneOrMany, self).__init__(query, parent)
+        super().__init__(query, parent)
 
     def add_constraints(self):
         """

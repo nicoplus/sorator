@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
-class DatabaseMigrationRepository(object):
+class DatabaseMigrationRepository:
 
     def __init__(self, resolver, table):
         """

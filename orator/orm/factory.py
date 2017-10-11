@@ -7,7 +7,7 @@ from functools import wraps
 from .factory_builder import FactoryBuilder
 
 
-class Factory(object):
+class Factory:
 
     def __init__(self, faker=None, resolver=None):
         """

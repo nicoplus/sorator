@@ -19,7 +19,6 @@ from orator.exceptions.orm import MassAssignmentError
 from orator.orm.collection import Collection
 from orator.connections import Connection
 from orator import DatabaseManager
-from orator.utils import basestring
 from orator.events import Event
 
 
@@ -893,7 +892,7 @@ class OrmModelTestCase(OratorTestCase):
 
         self.assertIsInstance(model.first, int)
         self.assertIsInstance(model.second, float)
-        self.assertIsInstance(model.third, basestring)
+        self.assertIsInstance(model.third, str)
         self.assertIsInstance(model.fourth, bool)
         self.assertIsInstance(model.fifth, bool)
         self.assertIsInstance(model.sixth, dict)
@@ -909,7 +908,7 @@ class OrmModelTestCase(OratorTestCase):
 
         self.assertIsInstance(d['first'], int)
         self.assertIsInstance(d['second'], float)
-        self.assertIsInstance(d['third'], basestring)
+        self.assertIsInstance(d['third'], str)
         self.assertIsInstance(d['fourth'], bool)
         self.assertIsInstance(d['fifth'], bool)
         self.assertIsInstance(d['sixth'], dict)

@@ -63,7 +63,7 @@ class BaseDictCursor(cursor_class):
 
     def _conv_row(self, row):
         # Overridden for pymysql
-        return Record(super(BaseDictCursor, self)._conv_row(row))
+        return Record(super()._conv_row(row))
 
 
 class DictCursor(BaseDictCursor):
@@ -71,14 +71,12 @@ class DictCursor(BaseDictCursor):
     def execute(self, query, args=None):
         query = qmark(query)
 
-        return super(DictCursor, self).execute(query, args)
+        return super().execute(query, args)
 
     def executemany(self, query, args):
         query = qmark(query)
 
-        return super(DictCursor, self).executemany(
-            query, denullify(args)
-        )
+        return super().executemany(query, denullify(args))
 
 
 class MySQLConnector(Connector):

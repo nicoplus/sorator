@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
-class Schema(object):
+class Schema:
 
     def __init__(self, manager):
         """

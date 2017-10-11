@@ -560,5 +560,5 @@ class OrmBelongsToManyModelPivotStub(Model):
         self.pivot = OrmBelongsToManyPivotStub()
 
 
-class OrmBelongsToManyPivotStub(object):
+class OrmBelongsToManyPivotStub:
     pass

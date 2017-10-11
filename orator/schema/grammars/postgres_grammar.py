@@ -230,4 +230,4 @@ class PostgresSchemaGrammar(SchemaGrammar):
         if type_ == 'enum':
             return 'string'
 
-        return super(PostgresSchemaGrammar, self)._get_dbal_column_type(type_)
+        return super()._get_dbal_column_type(type_)

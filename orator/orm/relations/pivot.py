@@ -24,7 +24,7 @@ class Pivot(Model):
         if attributes is None:
             attributes = {}
 
-        super(Pivot, self).__init__()
+        super().__init__()
 
         self.set_raw_attributes(attributes, True)
 

@@ -10,12 +10,12 @@ from collections import OrderedDict
 from .expression import QueryExpression
 from .join_clause import JoinClause
 from ..pagination import Paginator, LengthAwarePaginator
-from ..utils import basestring, Null
+from ..utils import Null
 from ..exceptions import ArgumentError
 from ..support import Collection
 
 
-class QueryBuilder(object):
+class QueryBuilder:
 
     _operators = [
         '=', '<', '>', '<=', '>=', '<>', '!=',
@@ -121,7 +121,7 @@ class QueryBuilder(object):
             bindings = query.get_bindings()
 
             query = query.to_sql()
-        elif isinstance(query, basestring):
+        elif isinstance(query, str):
             bindings = []
         else:
             raise ArgumentError('Invalid subselect')

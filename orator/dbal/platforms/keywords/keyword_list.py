@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
-class KeywordList(object):
+class KeywordList:
 
     KEYWORDS = []
 

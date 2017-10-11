@@ -26,7 +26,7 @@ class DictCursor(dict):
         for idx, col in enumerate(cursor.description):
             self.dict[col[0]] = row[idx]
 
-        super(DictCursor, self).__init__(self.dict)
+        super().__init__(self.dict)
 
     def __getattr__(self, item):
         try:

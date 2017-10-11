@@ -2,7 +2,6 @@
 
 import re
 from ...support.grammar import Grammar
-from ...utils import basestring
 
 
 class QueryGrammar(Grammar):
@@ -415,7 +414,7 @@ class QueryGrammar(Grammar):
         }
 
     def _compile_lock(self, query, value):
-        if isinstance(value, basestring):
+        if isinstance(value, str):
             return value
         else:
             return ''

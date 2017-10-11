@@ -6,7 +6,7 @@ from orator import QueryExpression
 from orator.dbal.exceptions import ColumnDoesNotExist
 
 
-class IntegrationTestCase(object):
+class IntegrationTestCase:
 
     @classmethod
     def setUpClass(cls):

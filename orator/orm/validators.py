@@ -3,7 +3,7 @@ import functools
 from ..exceptions.orm import ValidationError
 
 
-class BaseValidator(object):
+class BaseValidator:
     """"Base Class"""
     pass
 
@@ -183,7 +183,7 @@ class UniquenessValidator(BaseValidator):
         return value
 
 
-class ValidatorDispatcher(object):
+class ValidatorDispatcher:
 
     mapping = {
         'presence': PresenceValidator,
@@ -206,7 +206,7 @@ class ValidatorDispatcher(object):
         return chain
 
 
-class validates(object):  # noqa
+class validates:  # noqa
     """decorator
     """
 

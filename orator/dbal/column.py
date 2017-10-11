@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from .abstract_asset import AbstractAsset
-from ..utils import basestring
 
 
 class Column(AbstractAsset):
@@ -59,8 +58,8 @@ class Column(AbstractAsset):
         return self
 
     def set_precision(self, precision):
-        if precision is None or isinstance(
-                precision, basestring) and not precision.isdigit():
+        if precision is None or isinstance(precision, str) and not \
+                precision.isdigit():
             precision = 10
 
         self._precision = int(precision)
@@ -68,8 +67,7 @@ class Column(AbstractAsset):
         return self
 
     def set_scale(self, scale):
-        if scale is None or isinstance(
-                scale, basestring) and not scale.isdigit():
+        if scale is None or isinstance(scale, str) and not scale.isdigit():
             scale = 0
 
         self._scale = int(scale)

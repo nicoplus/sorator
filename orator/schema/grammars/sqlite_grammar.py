@@ -32,7 +32,7 @@ class SQLiteSchemaGrammar(SchemaGrammar):
             if foreign_keys:
                 sql.append('PRAGMA foreign_keys = OFF')
 
-        sql += super(SQLiteSchemaGrammar, self).compile_rename_column(
+        sql += super().compile_rename_column(
             blueprint, command, connection)
 
         if foreign_keys:
@@ -299,7 +299,7 @@ class SQLiteSchemaGrammar(SchemaGrammar):
         if type_ == 'enum':
             return 'string'
 
-        return super(SQLiteSchemaGrammar, self)._get_dbal_column_type(type_)
+        return super()._get_dbal_column_type(type_)
 
     def _get_all_table(self):
         return 'SELECT name FROM sqlite_master WHERE type="table";'

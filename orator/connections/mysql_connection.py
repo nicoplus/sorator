@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from ..utils import PY2
 from .connection import Connection
 from ..query.grammars.mysql_grammar import MySQLQueryGrammar
 from ..query.processors.mysql_processor import MySQLQueryProcessor
@@ -39,7 +38,7 @@ class MySQLConnection(Connection):
     def begin_transaction(self):
         self._connection.autocommit(False)
 
-        super(MySQLConnection, self).begin_transaction()
+        super().begin_transaction()
 
     def commit(self):
         if self._transactions == 1:
@@ -59,10 +58,6 @@ class MySQLConnection(Connection):
 
     def _get_cursor_query(self, query, bindings):
         if not hasattr(self._cursor, '_last_executed') or self._pretending:
-            return super(MySQLConnection, self)._get_cursor_query(
-                query, bindings)
-
-        if PY2:
-            return self._cursor._last_executed.decode()
+            return super()._get_cursor_query(query, bindings)
 
         return self._cursor._last_executed

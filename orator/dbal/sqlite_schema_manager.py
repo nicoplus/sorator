@@ -107,7 +107,7 @@ class SQLiteSchemaManager(SchemaManager):
                     idx['column_name'] = row['name']
                     index_buffer.append(idx)
 
-        return super(SQLiteSchemaManager, self).\
+        return super().\
             _get_portable_table_indexes_list(index_buffer, table_name)
 
     def _get_portable_table_foreign_keys_list(self, table_foreign_keys):

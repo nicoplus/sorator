@@ -7,9 +7,8 @@ import inspect
 import uuid
 import datetime
 from warnings import warn
-from six import add_metaclass
 from collections import OrderedDict
-from ..utils import basestring, deprecated
+from ..utils import deprecated
 from ..exceptions.orm import (MassAssignmentError, RelatedClassNotFound,
                               ValidationError)
 from .builder import Builder
@@ -29,17 +28,17 @@ class ModelRegister(dict):
     def __init__(self, *args, **kwargs):
         self.inverse = {}
 
-        super(ModelRegister, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def __setitem__(self, key, value):
-        super(ModelRegister, self).__setitem__(key, value)
+        super().__setitem__(key, value)
 
         self.inverse[value] = key
 
     def __delitem__(self, key):
         del self.inverse[self[key]]
 
-        super(ModelRegister, self).__delitem__(key)
+        super().__delitem__(key)
 
 
 class MetaModel(type):
@@ -66,8 +65,7 @@ class MetaModel(type):
             return getattr(query, item)
 
 
-@add_metaclass(MetaModel)
-class Model(object):
+class Model(metaclass=MetaModel):
 
     __connection__ = None
 
@@ -207,7 +205,7 @@ class Model(object):
         if cls not in cls._global_scopes:
             cls._global_scopes[cls] = OrderedDict()
 
-        if isinstance(scope, basestring) and implementation is not None:
+        if isinstance(scope, str) and implementation is not None:
             cls._global_scopes[cls][scope] = implementation
         elif callable(scope):
             cls._global_scopes[cls][uuid.uuid4().hex] = scope
@@ -1194,7 +1192,7 @@ class Model(object):
 
         :rtype: Model class
         """
-        if not isinstance(related, basestring) and issubclass(related, Model):
+        if not isinstance(related, str) and issubclass(related, Model):
             if as_instance:
                 instance = related()
                 instance.set_connection(self.get_connection_name())
@@ -2378,7 +2376,7 @@ class Model(object):
         if key in self._relations:
             return self._relations[key]
 
-        relation = original or super(Model, self).__getattribute__(key)
+        relation = original or super().__getattribute__(key)
 
         if relation:
             return self._get_relationship_from_method(key, relation)
@@ -2423,7 +2421,7 @@ class Model(object):
 
         :rtype: mixed
         """
-        relations = relations or super(Model, self).__getattribute__(method)
+        relations = relations or super().__getattribute__(method)
 
         if not isinstance(relations, Relation):
             raise RuntimeError(
@@ -2539,7 +2537,7 @@ class Model(object):
         elif type in ['bool', 'boolean']:
             return bool(value)
         elif (type in ['dict', 'list', 'json'] and
-              isinstance(value, basestring)):
+              isinstance(value, str)):
             return json.loads(value)
         else:
             return value
@@ -2584,7 +2582,7 @@ class Model(object):
 
         :rtype: pendulum.Pendulum or pendulum.Date
         """
-        if isinstance(value, basestring):
+        if isinstance(value, str):
             return pendulum.parse(value)
 
         if isinstance(value, (int, float)):
@@ -2619,12 +2617,12 @@ class Model(object):
         format = self.get_date_format()
 
         if format == 'iso':
-            if isinstance(date, basestring):
+            if isinstance(date, str):
                 return pendulum.parse(date).isoformat()
 
             return date.isoformat()
         else:
-            if isinstance(date, basestring):
+            if isinstance(date, str):
                 return pendulum.parse(date).format(format)
 
             return date.strftime(format)
@@ -2634,7 +2632,7 @@ class Model(object):
         Set a given attribute on the model.
         """
         if self._has_set_mutator(key):
-            return super(Model, self).__setattr__(key, value)
+            return super().__setattr__(key, value)
 
         if key in self.get_dates() and value:
             value = self.from_datetime(value)
@@ -2939,13 +2937,13 @@ class Model(object):
             pass
 
         if callable(getattr(self, key, None)):
-            return super(Model, self).__setattr__(key, value)
+            return super().__setattr__(key, value)
         else:
             self.set_attribute(key, value)
 
     def __delattr__(self, item):
         try:
-            super(Model, self).__delattr__(item)
+            super().__delattr__(item)
         except AttributeError:
             del self._attributes[item]
 

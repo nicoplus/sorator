@@ -14,7 +14,7 @@ class SchemaBuilderPostgresIntegrationTestCase(IntegrationTestCase, OratorTestCa
         return DatabaseIntegrationConnectionResolver()
 
 
-class DatabaseIntegrationConnectionResolver(object):
+class DatabaseIntegrationConnectionResolver:
 
     _connection = None
 

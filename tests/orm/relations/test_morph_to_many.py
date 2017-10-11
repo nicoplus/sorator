@@ -135,5 +135,5 @@ class OrmMorphToManyModelPivotStub(Model):
         self.pivot = OrmMorphToManyPivotStub()
 
 
-class OrmMorphToManyPivotStub(object):
+class OrmMorphToManyPivotStub:
     pass

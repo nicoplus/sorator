@@ -14,7 +14,7 @@ class SchemaBuilderMySQLIntegrationTestCase(IntegrationTestCase, OratorTestCase)
         return DatabaseIntegrationConnectionResolver()
 
 
-class DatabaseIntegrationConnectionResolver(object):
+class DatabaseIntegrationConnectionResolver:
 
     _connection = None
 

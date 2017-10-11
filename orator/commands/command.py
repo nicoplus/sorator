@@ -15,10 +15,10 @@ class Command(BaseCommand):
         self.input = None
         self.output = None
 
-        super(Command, self).__init__()
+        super().__init__()
 
     def configure(self):
-        super(Command, self).configure()
+        super().configure()
 
         if self.needs_config and not self.resolver:
             # Checking if a default config file is present
@@ -42,13 +42,13 @@ class Command(BaseCommand):
         command = self.get_application().find(name)
         command.resolver = self.resolver
 
-        return super(Command, self).call(name, options)
+        return super().call(name, options)
 
     def call_silent(self, name, options=None):
         command = self.get_application().find(name)
         command.resolver = self.resolver
 
-        return super(Command, self).call_silent(name, options)
+        return super().call_silent(name, options)
 
     def confirm_to_proceed(self, message=None):
         if message is None:

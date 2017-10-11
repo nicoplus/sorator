@@ -24,7 +24,7 @@ class MorphOneOrMany(HasOneOrMany):
         self._morph_type = morph_type
         self._morph_name = parent.get_morph_name()
 
-        super(MorphOneOrMany, self).\
+        super().\
             __init__(query, parent, foreign_key, local_key)
 
     def add_constraints(self):
@@ -32,7 +32,7 @@ class MorphOneOrMany(HasOneOrMany):
         Set the base constraints of the relation query
         """
         if self._constraints:
-            super(MorphOneOrMany, self).add_constraints()
+            super().add_constraints()
 
             self._query.where(self._morph_type, self._morph_name)
 
@@ -45,7 +45,7 @@ class MorphOneOrMany(HasOneOrMany):
 
         :rtype: Builder
         """
-        query = super(MorphOneOrMany, self).get_relation_count_query(
+        query = super().get_relation_count_query(
             query, parent)
 
         return query.where(self._morph_type, self._morph_name)
@@ -56,7 +56,7 @@ class MorphOneOrMany(HasOneOrMany):
 
         :type models: list
         """
-        super(MorphOneOrMany, self).add_eager_constraints(models)
+        super().add_eager_constraints(models)
 
         self._query.where(self._morph_type, self._morph_name)
 
@@ -71,7 +71,7 @@ class MorphOneOrMany(HasOneOrMany):
         """
         model.set_attribute(self.get_plain_morph_type(), self._morph_name)
 
-        return super(MorphOneOrMany, self).save(model)
+        return super().save(model)
 
     def find_or_new(self, id, columns=None):
         """

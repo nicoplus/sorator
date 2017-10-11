@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
-class QueryExpression(object):
+class QueryExpression:
 
     def __init__(self, value):
         self._value = value
