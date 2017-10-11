@@ -76,9 +76,7 @@ class DictCursor(BaseDictCursor):
     def executemany(self, query, args):
         query = qmark(query)
 
-        return super().executemany(
-            query, denullify(args)
-        )
+        return super().executemany(query, denullify(args))
 
 
 class MySQLConnector(Connector):

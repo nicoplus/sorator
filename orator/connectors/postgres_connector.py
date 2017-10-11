@@ -55,8 +55,7 @@ class DictCursor(BaseDictCursor):
     def executemany(self, query, args_seq):
         query = qmark(query)
 
-        return super().executemany(
-            query, denullify(args_seq))
+        return super().executemany(query, denullify(args_seq))
 
 
 class DictRow(row_class):

@@ -131,8 +131,7 @@ class PostgresSchemaManager(SchemaManager):
                             'where': row['where']
                         })
 
-        return super().\
-            _get_portable_table_indexes_list(buffer, table_name)
+        return super()._get_portable_table_indexes_list(buffer, table_name)
 
     def _get_portable_table_foreign_key_definition(self, table_foreign_key):
         on_update = ''

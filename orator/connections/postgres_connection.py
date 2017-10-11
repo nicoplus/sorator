@@ -61,7 +61,6 @@ class PostgresConnection(Connection):
             return self._cursor.mogrify(query, bindings).decode()
 
         if not hasattr(self._cursor, 'query'):
-            return super()._get_cursor_query(
-                query, bindings)
+            return super()._get_cursor_query(query, bindings)
 
         return self._cursor.query.decode()
