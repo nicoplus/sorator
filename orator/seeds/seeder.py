@@ -3,7 +3,7 @@
 from ..orm import Factory
 
 
-class Seeder(object):
+class Seeder:
 
     factory = None
 

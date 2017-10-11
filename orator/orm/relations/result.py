@@ -18,7 +18,7 @@ class Result(ObjectProxy):
         :param parent: The parent model
         :type parent: Model
         """
-        super(Result, self).__init__(result)
+        super().__init__(result)
 
         self._results = result
         self._relation = relation

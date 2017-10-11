@@ -3,7 +3,7 @@
 from .expression import QueryExpression
 
 
-class JoinClause(object):
+class JoinClause:
 
     def __init__(self, table, type='inner'):
         self.type = type

@@ -4,7 +4,7 @@ from contextlib import contextmanager
 from .blueprint import Blueprint
 
 
-class SchemaBuilder(object):
+class SchemaBuilder:
 
     def __init__(self, connection):
         """

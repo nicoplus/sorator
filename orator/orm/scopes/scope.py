@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
-class Scope(object):
+class Scope:
 
     def apply(self, builder, model):
         """

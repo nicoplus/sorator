@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
-class QueryProcessor(object):
+class QueryProcessor:
 
     def process_select(self, query, results):
         """

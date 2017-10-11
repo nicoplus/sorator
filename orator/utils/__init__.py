@@ -1,61 +1,22 @@
 # -*- coding: utf-8 -*-
 
 import sys
+import imp
 import warnings
 import functools
-
-PY2 = sys.version_info[0] == 2
-PY3K = sys.version_info[0] >= 3
-PY33 = sys.version_info >= (3, 3)
-
-if PY2:
-    import imp
-
-    long = long # noqa
-    unicode = unicode # noqa
-    basestring = basestring # noqa
-
-    reduce = reduce # noqa
-
-    from urllib import quote_plus, unquote_plus, quote, unquote
-    from urlparse import parse_qsl
-
-    def load_module(module, path):
-        with open(path, 'rb') as fh:
-            mod = imp.load_source(module, path, fh)
-
-            return mod
-else:
-    long = int
-    unicode = str
-    basestring = str
-
-    from functools import reduce # noqa
-
-    from urllib.parse import (quote_plus, unquote_plus, # noqa
-                              parse_qsl, quote, unquote) # noqa
-
-    if PY33:
-        from importlib import machinery
-
-        def load_module(module, path):
-            return machinery.SourceFileLoader(
-                module, path
-            ).load_module(module)
-    else:
-        import imp
-
-        def load_module(module, path):
-            with open(path, 'rb') as fh:
-                mod = imp.load_source(module, path, fh)
-
-                return mod
+from functools import reduce
+from .helpers import mkdir_p, value
+from urllib.parse import (quote_plus, unquote_plus,
+                          parse_qsl, quote, unquote)
 
 
-from .helpers import mkdir_p, value # noqa
+def load_module(module, path):
+    with open(path, 'rb') as fh:
+        mod = imp.load_source(module, path, fh)
+    return mod
 
 
-class Null(object):
+class Null:
 
     def __bool__(self):
         return False
@@ -71,10 +32,7 @@ def deprecated(func):
 
     @functools.wraps(func)
     def new_func(*args, **kwargs):
-        if PY3K:
-            func_code = func.__code__
-        else:
-            func_code = func.func_code
+        func_code = func.__code__
 
         warnings.warn_explicit(
             "Call to deprecated function {}.".format(func.__name__),
@@ -89,10 +47,7 @@ def deprecated(func):
 
 
 def decode(string, encodings=None):
-    if not PY2 and not isinstance(string, bytes):
-        return string
-
-    if PY2 and isinstance(string, unicode):
+    if not isinstance(string, bytes):
         return string
 
     if encodings is None:
@@ -108,10 +63,7 @@ def decode(string, encodings=None):
 
 
 def encode(string, encodings=None):
-    if not PY2 and isinstance(string, bytes):
-        return string
-
-    if PY2 and isinstance(string, str):
+    if isinstance(string, bytes):
         return string
 
     if encodings is None:

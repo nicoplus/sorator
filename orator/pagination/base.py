@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
-class BasePaginator(object):
+class BasePaginator:
 
     _current_page_resolver = None
 

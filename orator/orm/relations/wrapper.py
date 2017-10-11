@@ -26,7 +26,7 @@ class Wrapper(Proxy):
         :type relation: Relation
         :return:
         """
-        super(Wrapper, self).__init__(self._get_results)
+        super().__init__(self._get_results)
 
         self._relation = relation
 

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
-class ConnectionResolverInterface(object):
+class ConnectionResolverInterface:
 
     def connection(self, name=None):
         raise NotImplementedError()

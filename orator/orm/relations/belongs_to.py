@@ -28,7 +28,7 @@ class BelongsTo(Relation):
         self._relation = relation
         self._foreign_key = foreign_key
 
-        super(BelongsTo, self).__init__(query, parent)
+        super().__init__(query, parent)
 
     def get_results(self):
         """

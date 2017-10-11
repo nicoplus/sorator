@@ -26,7 +26,7 @@ class BaseDictConnection(connection_class):
     def cursor(self, *args, **kwargs):
         kwargs.setdefault('cursor_factory', BaseDictCursor)
 
-        return super(BaseDictConnection, self).cursor(*args, **kwargs)
+        return super().cursor(*args, **kwargs)
 
 
 class DictConnection(BaseDictConnection):
@@ -34,7 +34,7 @@ class DictConnection(BaseDictConnection):
     def cursor(self, *args, **kwargs):
         kwargs.setdefault('cursor_factory', DictCursor)
 
-        return super(DictConnection, self).cursor(*args, **kwargs)
+        return super().cursor(*args, **kwargs)
 
 
 class BaseDictCursor(cursor_class):
@@ -50,12 +50,12 @@ class DictCursor(BaseDictCursor):
     def execute(self, query, vars=None):
         query = qmark(query)
 
-        return super(DictCursor, self).execute(query, vars)
+        return super().execute(query, vars)
 
     def executemany(self, query, args_seq):
         query = qmark(query)
 
-        return super(DictCursor, self).executemany(
+        return super().executemany(
             query, denullify(args_seq))
 
 

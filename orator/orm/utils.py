@@ -12,7 +12,7 @@ from .relations import (
 )
 
 
-class accessor(object):
+class accessor:
 
     def __init__(self, accessor_, attribute=None):
         self.accessor = accessor_
@@ -47,7 +47,7 @@ class accessor(object):
         return mutator(f, self.attribute)
 
 
-class mutator(object):
+class mutator:
 
     def __init__(self, mutator_, attribute=None):
         self.mutator = mutator_
@@ -72,7 +72,7 @@ class mutator(object):
         return accessor(f, self.attribute)
 
 
-class column(object):
+class column:
 
     def __init__(self, property_, attribute=None):
         self.property = property_
@@ -118,7 +118,7 @@ class scope(classmethod):
     """
 
     def __init__(self, method):
-        super(scope, self).__init__(method)
+        super().__init__(method)
 
         self._method = method
         self._owner = None
@@ -142,7 +142,7 @@ class scope(classmethod):
 
 
 # Relations decorators
-class relation(object):
+class relation:
     """
     Base relation decorator
     """

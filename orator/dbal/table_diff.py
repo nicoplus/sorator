@@ -5,7 +5,7 @@ from .table import Table
 from .identifier import Identifier
 
 
-class TableDiff(object):
+class TableDiff:
 
     def __init__(self, table_name, added_columns=None, changed_columns=None,
                  removed_columns=None, added_indexes=None,

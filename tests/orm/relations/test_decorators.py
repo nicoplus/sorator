@@ -196,7 +196,7 @@ class OratorTestPhoto(Model):
         return
 
 
-class DatabaseIntegrationConnectionResolver(object):
+class DatabaseIntegrationConnectionResolver:
 
     _connection = None
 

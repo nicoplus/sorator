@@ -3,14 +3,14 @@
 import copy
 from collections import OrderedDict
 from ..exceptions.orm import ModelNotFound
-from ..utils import Null, basestring
+from ..utils import Null
 from ..query.expression import QueryExpression
 from ..pagination import Paginator, LengthAwarePaginator
 from ..support import Collection
 from .scopes import Scope
 
 
-class Builder(object):
+class Builder:
 
     _passthru = [
         'to_sql', 'lists', 'insert', 'insert_get_id', 'pluck', 'count',
@@ -58,7 +58,7 @@ class Builder(object):
 
         :rtype: Builder
         """
-        if isinstance(scope, basestring):
+        if isinstance(scope, str):
             del self._scopes[scope]
 
             return self
@@ -820,7 +820,7 @@ class Builder(object):
         self._merge_model_defined_relation_wheres_to_has_query(
             has_query, relation)
 
-        if isinstance(count, basestring) and count.isdigit():
+        if isinstance(count, str) and count.isdigit():
             count = QueryExpression(count)
 
         return self.where(

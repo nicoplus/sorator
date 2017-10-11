@@ -41,7 +41,7 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 
-class IntegrationTestCase(object):
+class IntegrationTestCase:
 
     @classmethod
     def setUpClass(cls):

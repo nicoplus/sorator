@@ -25,7 +25,7 @@ class HasManyThrough(Relation):
         self._second_key = second_key
         self._far_parent = far_parent
 
-        super(HasManyThrough, self).__init__(query, parent)
+        super().__init__(query, parent)
 
     def add_constraints(self):
         """

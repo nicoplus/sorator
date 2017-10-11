@@ -5,7 +5,7 @@ from .table import Table
 from .index import Index
 
 
-class SchemaManager(object):
+class SchemaManager:
 
     def __init__(self, connection, platform=None):
         """

@@ -11,7 +11,7 @@ class Dynamic(ObjectProxy):
     _fluent = None
 
     def __init__(self, value, key, fluent):
-        super(Dynamic, self).__init__(value)
+        super().__init__(value)
 
         self._key = key
         self._fluent = fluent
@@ -28,7 +28,7 @@ class Dynamic(ObjectProxy):
         self._fluent._attributes[self._key] = value
 
 
-class Fluent(object):
+class Fluent:
 
     def __init__(self, **attributes):
         self._attributes = {}
@@ -79,12 +79,12 @@ class Fluent(object):
 
     def __setattr__(self, key, value):
         if key == '_attributes':
-            super(Fluent, self).__setattr__(key, value)
+            super().__setattr__(key, value)
 
         try:
-            super(Fluent, self).__getattribute__(key)
+            super().__getattribute__(key)
 
-            return super(Fluent, self).__setattr__(key, value)
+            return super().__setattr__(key, value)
         except AttributeError:
             pass
 

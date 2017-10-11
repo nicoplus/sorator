@@ -3,7 +3,7 @@
 from ..scopes import SoftDeletingScope
 
 
-class SoftDeletes(object):
+class SoftDeletes:
 
     __force_deleting__ = False
 

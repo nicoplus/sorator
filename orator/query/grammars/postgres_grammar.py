@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from .grammar import QueryGrammar
-from ...utils import basestring
 
 
 class PostgresQueryGrammar(QueryGrammar):
@@ -27,7 +26,7 @@ class PostgresQueryGrammar(QueryGrammar):
         :return: The compiled lock
         :rtype: str
         """
-        if isinstance(value, basestring):
+        if isinstance(value, str):
             return value
 
         if value:

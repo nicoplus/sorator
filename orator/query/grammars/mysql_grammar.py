@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from .grammar import QueryGrammar
-from ...utils import basestring
 
 
 class MySQLQueryGrammar(QueryGrammar):
@@ -32,7 +31,7 @@ class MySQLQueryGrammar(QueryGrammar):
         :return: The compiled sql
         :rtype: str
         """
-        sql = super(MySQLQueryGrammar, self).compile_select(query)
+        sql = super().compile_select(query)
 
         if query.unions:
             sql = '(%s) %s' % (sql, self._compile_unions(query))
@@ -69,7 +68,7 @@ class MySQLQueryGrammar(QueryGrammar):
         :return: The compiled lock
         :rtype: str
         """
-        if isinstance(value, basestring):
+        if isinstance(value, str):
             return value
 
         if value is True:
@@ -90,7 +89,7 @@ class MySQLQueryGrammar(QueryGrammar):
         :return: The compiled update
         :rtype: str
         """
-        sql = super(MySQLQueryGrammar, self).compile_update(query, values)
+        sql = super().compile_update(query, values)
 
         if query.orders:
             sql += ' %s' % self._compile_orders(query, query.orders)

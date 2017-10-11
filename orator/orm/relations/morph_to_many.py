@@ -34,7 +34,7 @@ class MorphToMany(BelongsToMany):
         self._morph_name = query.get_model().get_morph_name(
         ) if inverse else parent.get_morph_name()
 
-        super(MorphToMany, self).__init__(
+        super().__init__(
             query, parent, table,
             foreign_key, other_key, relation_name
         )
@@ -46,7 +46,7 @@ class MorphToMany(BelongsToMany):
         :return: self
         :rtype: BelongsToMany
         """
-        super(MorphToMany, self)._set_where()
+        super()._set_where()
 
         self._query.where('%s.%s' %
                           (self._table, self._morph_type), self._morph_name)
@@ -60,7 +60,7 @@ class MorphToMany(BelongsToMany):
 
         :rtype: orator.orm.Builder
         """
-        query = super(MorphToMany, self).get_relation_count_query(
+        query = super().get_relation_count_query(
             query, parent)
 
         return query.where('%s.%s' %
@@ -72,7 +72,7 @@ class MorphToMany(BelongsToMany):
 
         :type models: list
         """
-        super(MorphToMany, self).add_eager_constraints(models)
+        super().add_eager_constraints(models)
 
         self._query.where('%s.%s' %
                           (self._table, self._morph_type), self._morph_name)
@@ -81,7 +81,7 @@ class MorphToMany(BelongsToMany):
         """
         Create a new pivot attachement record.
         """
-        record = super(MorphToMany, self)._create_attach_record(id, timed)
+        record = super()._create_attach_record(id, timed)
 
         record[self._morph_type] = self._morph_name
 
@@ -93,7 +93,7 @@ class MorphToMany(BelongsToMany):
 
         :rtype: orator.orm.Builder
         """
-        query = super(MorphToMany, self)._new_pivot_query()
+        query = super()._new_pivot_query()
 
         return query.where(self._morph_type, self._morph_name)
 

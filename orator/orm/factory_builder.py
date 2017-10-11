@@ -3,7 +3,7 @@
 from .collection import Collection
 
 
-class FactoryBuilder(object):
+class FactoryBuilder:
 
     def __init__(self, klass, name, definitions, faker, resolver=None):
         """

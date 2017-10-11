@@ -3,7 +3,7 @@
 from ..exceptions.connectors import MissingPackage
 
 
-class Connector(object):
+class Connector:
 
     RESERVED_KEYWORDS = [
         'log_queries', 'driver', 'prefix', 'name'

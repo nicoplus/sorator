@@ -3,7 +3,7 @@
 from ..support.fluent import Fluent
 
 
-class Blueprint(object):
+class Blueprint:
 
     def __init__(self, table):
         """

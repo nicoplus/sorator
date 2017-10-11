@@ -5,7 +5,7 @@ from .table_diff import TableDiff
 from .column_diff import ColumnDiff
 
 
-class Comparator(object):
+class Comparator:
     """
     Compares two Schemas and return an instance of SchemaDiff.
     """

@@ -107,7 +107,7 @@ class MySQLSchemaManager(SchemaManager):
 
             new.append(v)
 
-        return super(MySQLSchemaManager, self).\
+        return super().\
             _get_portable_table_indexes_list(new, table_name)
 
     def _get_portable_table_foreign_keys_list(self, table_foreign_keys):

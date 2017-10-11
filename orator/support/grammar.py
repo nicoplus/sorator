@@ -3,7 +3,7 @@
 from ..query.expression import QueryExpression
 
 
-class Grammar(object):
+class Grammar:
 
     marker = '?'
 

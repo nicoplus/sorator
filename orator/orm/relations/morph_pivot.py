@@ -20,7 +20,7 @@ class MorphPivot(Pivot):
         """
         query.where(self._morph_type, self._morph_name)
 
-        return super(MorphPivot, self)._set_keys_for_save_query(query)
+        return super()._set_keys_for_save_query(query)
 
     def delete(self):
         """

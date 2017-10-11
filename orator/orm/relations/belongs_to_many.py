@@ -50,7 +50,7 @@ class BelongsToMany(Relation):
         self._pivot_columns = []
         self._pivot_wheres = []
 
-        super(BelongsToMany, self).__init__(query, parent)
+        super().__init__(query, parent)
 
     def get_results(self):
         """
@@ -213,7 +213,7 @@ class BelongsToMany(Relation):
 
         self._set_join(query)
 
-        return super(BelongsToMany, self).get_relation_count_query(
+        return super().get_relation_count_query(
             query, parent)
 
     def get_relation_count_query_for_self_join(self, query, parent):

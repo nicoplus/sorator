@@ -2,7 +2,7 @@ from orator.connections import SQLiteConnection
 from orator.connectors import SQLiteConnector
 
 
-class DatabaseConnectionResolver(object):
+class DatabaseConnectionResolver:
 
     _connection = None
 

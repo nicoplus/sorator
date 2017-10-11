@@ -114,7 +114,7 @@ class SQLitePlatform(Platform):
         if not create_flags:
             create_flags = self.CREATE_INDEXES | self.CREATE_FOREIGNKEYS
 
-        return super(SQLitePlatform, self).get_create_table_sql(
+        return super().get_create_table_sql(
             table, create_flags)
 
     def _get_create_table_sql(self, table_name, columns, options=None):
@@ -154,7 +154,7 @@ class SQLitePlatform(Platform):
         return query
 
     def get_foreign_key_declaration_sql(self, foreign_key):
-        return super(SQLitePlatform, self).get_foreign_key_declaration_sql(
+        return super().get_foreign_key_declaration_sql(
             ForeignKeyConstraint(
                 foreign_key.get_quoted_local_columns(self),
                 foreign_key.get_quoted_foreign_table_name(
@@ -166,7 +166,7 @@ class SQLitePlatform(Platform):
         )
 
     def get_advanced_foreign_key_options_sql(self, foreign_key):
-        query = super(SQLitePlatform, self).\
+        query = super().\
             get_advanced_foreign_key_options_sql(foreign_key)
 
         deferrable = foreign_key.has_option('deferrable') and \

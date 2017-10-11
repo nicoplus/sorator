@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
-class Migration(object):
+class Migration:
 
     _connection = None
     transactional = True

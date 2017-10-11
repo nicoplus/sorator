@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
-class ConnectionInterface(object):
+class ConnectionInterface:
 
     def table(self, table):
         """

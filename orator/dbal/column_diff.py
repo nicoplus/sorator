@@ -3,7 +3,7 @@
 from .identifier import Identifier
 
 
-class ColumnDiff(object):
+class ColumnDiff:
 
     def __init__(self, old_column_name, column,
                  changed_properties=None, from_column=None):

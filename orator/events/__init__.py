@@ -3,7 +3,7 @@
 from blinker import Namespace
 
 
-class Event(object):
+class Event:
 
     events = Namespace()
 
