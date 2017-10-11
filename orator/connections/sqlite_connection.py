@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from ..utils import decode
 from .connection import Connection
 from ..query.processors.sqlite_processor import SQLiteQueryProcessor
 from ..query.grammars.sqlite_grammar import SQLiteQueryGrammar
