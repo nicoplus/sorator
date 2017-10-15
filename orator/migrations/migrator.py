@@ -6,7 +6,7 @@ import inflection
 import logging
 from pygments import highlight
 from pygments.lexers.sql import SqlLexer
-from .schema_gen import parse_sql_syntax
+from .schema_gen import parse
 from ..utils import decode, load_module
 from ..utils.command_formatter import CommandFormatter
 
@@ -66,8 +66,8 @@ class Migrator:
 
         dump_path = os.path.abspath(os.path.join(path, '../schema.py'))
         with open(dump_path, 'w') as fd:
-            output_buffer = parse_sql_syntax(output_buffer)
-            fd.write('\n\n'.join(output_buffer))
+            output = parse(output_buffer)
+            fd.write(output)
 
     def run_migration_list(self, path, migrations, pretend=False):
         """

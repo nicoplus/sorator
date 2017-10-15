@@ -4,15 +4,13 @@ generate sorator schema builder from plain sql
 
 import re
 import sqlparse
+import autopep8
 import textwrap
 import sqlparse.tokens as TOKEN
 from sqlparse.sql import TokenList
 from jinja2 import Template as jinjaTemplate
-from fields import FieldFactory
+from .fields import FieldFactory
 from collections import defaultdict, OrderedDict
-
-
-debug = False
 
 
 def dump(obj):
@@ -277,33 +275,9 @@ def parse(buf_list):
                 self.schema.drop('{{ table }}')
             {% endfor %}
     """))
+    if not len(buf_list):
+        return ''
 
-    table_names, tables = zip(*parse_sql_syntax(buf_list))
-    return dump_tmpl.render(tables_created=map(dump, tables),
-                            tables_droped=table_names)
-
-
-if __name__ == '__main__':
-    seed_data = """\
-    CREATE TABLE `Persons` (
-      `Id_P` int(11) unsigned NOT NULL AUTO_INCREMENT,
-      `Id_D` int(11) NOT NULL,
-      `LastName` varchar(255) NOT NULL,
-      `FirstName` varchar(255) DEFAULT NULL,
-      `Address` varchar(255) DEFAULT NULL,
-      `City` varchar(255) DEFAULT NULL,
-      `Country` varchar(255) DEFAULT 'China',
-      `created_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
-      `updated_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
-      PRIMARY KEY (`Id_P`),
-      KEY `CityIndex` (`City`),
-      KEY `PersonIndex` (`LastName`,`FirstName`),
-      UNIQUE KEY `unique_name` (`FirstName`,`LastName`),
-      CONSTRAINT `fk_Id_D` FOREIGN KEY (`Id_D`) REFERENCES `other_table` (`id`)
-    ) ENGINE=InnoDB DEFAULT CHARSET=latin1
-    """
-    seed_data = seed_data + '\n' + seed_data
-    print(seed_data)
-    print('-' * 80)
-    dump_result = parse(seed_data)
-    print(dump_result)
+    table_names, tables = zip(*parse_sql_syntax('\n'.join(buf_list)))
+    return autopep8.fix_code(dump_tmpl.render(tables_created=map(dump, tables),
+                                              tables_droped=table_names))

@@ -3,6 +3,7 @@
 import os
 import glob
 import inspect
+import textwrap
 from flexmock import flexmock, flexmock_teardown
 from .. import OratorTestCase
 from orator.migrations import Migrator, DatabaseMigrationRepository, Migration
@@ -353,6 +354,24 @@ class MigratorTestCase(OratorTestCase):
         migrator.rollback(os.getcwd())
 
     def test_schema_dump(self):
+        seed_data = """\
+        CREATE TABLE `Persons` (
+          `Id_P` int(11) unsigned NOT NULL AUTO_INCREMENT,
+          `Id_D` int(11) NOT NULL,
+          `LastName` varchar(255) NOT NULL,
+          `FirstName` varchar(255) DEFAULT NULL,
+          `Address` varchar(255) DEFAULT NULL,
+          `City` varchar(255) DEFAULT NULL,
+          `Country` varchar(255) DEFAULT 'China',
+          `created_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+          `updated_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+          PRIMARY KEY (`Id_P`),
+          KEY `CityIndex` (`City`),
+          KEY `PersonIndex` (`LastName`,`FirstName`),
+          UNIQUE KEY `unique_name` (`FirstName`,`LastName`),
+          CONSTRAINT `fk_Id_D` FOREIGN KEY (`Id_D`) REFERENCES `other_table` (`id`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=latin1
+        """
         resolver_mock = flexmock(DatabaseManager)
         resolver_mock.should_receive('connection').and_return({})
         resolver = flexmock(DatabaseManager({}))
@@ -364,7 +383,7 @@ class MigratorTestCase(OratorTestCase):
             once().and_return([table])
         connection.should_receive('select').\
             with_args('show create table test_table').once().and_return([{
-                'Create Table': ''
+                'Create Table': seed_data
             }])
         connection.name = 'mysql'
         grammar = flexmock()
@@ -407,8 +426,36 @@ class MigratorTestCase(OratorTestCase):
         migrator.should_receive('_resolve').with_args(os.getcwd(), '3_baz').once().and_return(baz_mock)
 
         migrator.run(os.getcwd())
-        dump_path = os.path.abspath(os.path.join(os.getcwd(), '../schema.sql'))
+        dump_path = os.path.abspath(os.path.join(os.getcwd(), '../schema.py'))
         assert os.path.exists(dump_path)
+        result = textwrap.dedent("""\
+        from orator.migrations import Migration
+
+
+        class InitDb(Migration):
+
+            def up(self):
+                with self.schema.create('Persons') as table:
+                    table.increments('Id_P').unsigned()
+                    table.foreign('Id_D').references('id').on('other_table')
+                    table.string('LastName', 255)
+                    table.string('FirstName', 255).nullable()
+                    table.string('Address', 255).nullable()
+                    table.string('City', 255).nullable()
+                    table.string('Country', 255).default('China')
+                    table.timestamp('created_at')
+                    table.timestamp('updated_at')
+
+                    table.primary(['id'])
+                    table.index(['City'], name='CityIndex')
+                    table.index(['LastName', 'FirstName'], name='PersonIndex')
+                    table.unique(['FirstName', 'LastName'], name='unique_name')
+
+            def down(self):
+                self.schema.drop('Persons')
+        """).strip()
+        with open(dump_path, 'r') as fd:
+            assert result == fd.read().strip()
         os.remove(dump_path)
 
 
