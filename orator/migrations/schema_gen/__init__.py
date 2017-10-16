@@ -6,10 +6,11 @@ import re
 import sqlparse
 import autopep8
 import textwrap
-import sqlparse.tokens as TOKEN
+import sqlparse.tokens as TOKENS
 from sqlparse.sql import TokenList
 from jinja2 import Template as jinjaTemplate
 from .fields import FieldFactory
+from operator import itemgetter
 from collections import defaultdict, OrderedDict
 
 
@@ -42,20 +43,20 @@ class Table:
 
     dump_tmpl = jinjaTemplate(textwrap.dedent("""\
             with self.schema.create('{{ table_name }}') as table:
-                {% for field in fields.values() %}
+                {% for _, field in fields %}
                     {{- field.__dump__()}}
                 {% endfor %}
-                {% for primary_name, primary_field in primary.items()  -%}
+                {% for primary_name, primary_field in primary  -%}
                     {%- if primary_name is none -%}
                         table.primary({{ primary_field }})
                     {%- else -%}
                         table.primary({{ primary_field }}, name='{{primary_name}}')
                     {%- endif %}
                 {% endfor -%}
-                {% for index_name, index_field in indexs.items() -%}
+                {% for index_name, index_field in indexs -%}
                     table.index({{ index_field }}, name='{{ index_name }}')
                 {% endfor -%}
-                {% for unique_name, unique_field in uniques.items() -%}
+                {% for unique_name, unique_field in uniques -%}
                     table.unique({{ unique_field }}, name='{{ unique_name }}') {# noqa #}
                 {% endfor -%}
         """))
@@ -112,11 +113,14 @@ class Table:
                         key=lambda item: float('inf')
                         if item[1].correspond not in format_priority else
                         format_priority.index(item[1].correspond))
+        primary = sorted(self._primary.items(), key=itemgetter(1))
+        indexs = sorted(self._indexs.items(), key=itemgetter(1))
+        uniques = sorted(self._uniques.items(), key=itemgetter(1))
         return self.dump_tmpl.render(table_name=self._table_name,
-                                     fields=OrderedDict(fields),
-                                     primary=self._primary,
-                                     indexs=self._indexs,
-                                     uniques=self._uniques)
+                                     fields=fields,
+                                     primary=primary,
+                                     indexs=indexs,
+                                     uniques=uniques)
 
 
 class Lexer:
@@ -137,8 +141,8 @@ def get_next(stream):
     """get next token from stream and skip Whitespace and Newline"""
     while True:
         token = next(stream)
-        if not (token.ttype is TOKEN.Whitespace or
-                token.ttype is TOKEN.Newline):
+        if not (token.ttype is TOKENS.Whitespace or
+                token.ttype is TOKENS.Newline):
             # if token.is_whitespace:
             return token
 
@@ -156,7 +160,7 @@ def parse_field_syntax(stream, table):
     try:
         while True:
             field_constraint = get_next(stream)
-            if field_constraint.ttype is TOKEN.Keyword:
+            if field_constraint.ttype is TOKENS.Keyword:
                 literal = field_constraint.value
                 if literal == 'NOT NULL':
                     field.set_nullable(False)
@@ -166,7 +170,7 @@ def parse_field_syntax(stream, table):
                     field.set_auto_incr(True)
                 else:
                     raise UnknownToken(literal)
-            elif field_constraint.ttype is TOKEN.Name.Builtin:
+            elif field_constraint.ttype is TOKENS.Name.Builtin:
                 literal = field_constraint.value
                 if literal == 'unsigned':
                     field.set_unsigned(True)
@@ -185,7 +189,7 @@ def parse_table_constraint(stream, table):
     try:
         token = get_next(stream)
         ttype = token.ttype
-        if ttype is TOKEN.Keyword:
+        if ttype is TOKENS.Keyword:
             literal = token.value
             if literal == 'PRIMARY':
                 # parse PRIMARY KEY
@@ -248,9 +252,9 @@ def parse_sql_syntax(plain_sql):
     while len(token_stream):
         token = get_next(token_stream)
         # DDL is shorten for Database Definition Language
-        if token.ttype is TOKEN.DDL and token.value == 'CREATE':
+        if token.ttype is TOKENS.DDL and token.value == 'CREATE':
             token = get_next(token_stream)
-            if token.ttype is TOKEN.Keyword and token.value == 'TABLE':
+            if token.ttype is TOKENS.Keyword and token.value == 'TABLE':
                 result.append(parse_table_syntax(token_stream))
             else:
                 raise BadMatch()
