@@ -62,7 +62,7 @@ class Table:
 
     def __init__(self, table_name):
         self._table_name = table_name
-        self._fields = {}
+        self._fields = OrderedDict()
         self._indexs = {}
         self._foreigns = {}
         self._uniques = {}
