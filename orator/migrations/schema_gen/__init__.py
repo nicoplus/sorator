@@ -64,9 +64,9 @@ class Table:
     def __init__(self, table_name):
         self._table_name = table_name
         self._fields = OrderedDict()
-        self._indexs = {}
-        self._foreigns = {}
-        self._uniques = {}
+        self._indexs = OrderedDict()
+        self._foreigns = OrderedDict()
+        self._uniques = OrderedDict()
         self._primary = {None: ['id']}  # None meas anonymous
 
     def set_primary(self, columns):
