@@ -19,7 +19,7 @@ install:
 
 script:
   - flake8 orator
-  - pytest tests
+  - pytest tests -vv
 
 before_script:
   - psql -c 'create database orator_test;' -U postgres
