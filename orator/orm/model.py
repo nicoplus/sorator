@@ -2957,4 +2957,5 @@ class Model(metaclass=MetaModel):
         self._boot_if_not_booted()
 
         self.set_raw_attributes(state['attributes'], True)
+        self.set_relations({})
         self.set_exists(state['exists'])
