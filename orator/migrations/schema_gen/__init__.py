@@ -147,14 +147,19 @@ def get_next(stream):
             return token
 
 
-def parse_field_syntax(stream, table):
+def parse_field_syntax(stream, table, field_name):
     """parse sql field syntax"""
-    field_name = get_next(stream).get_name()
     token = get_next(stream)  # list type
-    field_type = token.get_name()
+    if token.ttype is None:
+        field_type = token.get_name()
+    else:
+        field_type = token.value
     field = FieldFactory.new(field_name, field_type)
-    field_type_arg = list(map(lambda f: f.value,
-                          token.get_parameters()))
+    if field_type in ('datetime', 'text',):
+        field_type_arg = []
+    else:
+        field_type_arg = list(map(lambda f: f.value,
+                                  token.get_parameters()))
     if field_type_arg:
         field.set_type_arg(field_type_arg)
     try:
@@ -196,7 +201,6 @@ def parse_table_constraint(stream, table):
                 assert get_next(stream).value == 'KEY'
                 global debug
                 debug = get_next(stream)
-                # table.set_primary(get_next(stream).get_name())
             elif literal == 'UNIQUE':
                 # parse UNIQUE KEY
                 assert get_next(stream).value == 'KEY'
@@ -236,10 +240,13 @@ def parse_table_syntax(stream):
 
     # parse all talbe field
     fields = get_next(stream).value.strip('()').split(',\n')
-    constraint_re = re.compile(r'^\s*`\w+`')
+    constraint_re = re.compile(r'^\s*`(\w+)`')
     for field in fields:
-        if constraint_re.match(field):
-            parse_field_syntax(Lexer(field), table)
+        captured = constraint_re.match(field)
+        if captured:
+            field_name = captured.groups()[0]
+            field = field.replace('`{}`'.format(field_name), '')
+            parse_field_syntax(Lexer(field), table, field_name)
         else:
             parse_table_constraint(Lexer(field), table)
     return (table_name, table)

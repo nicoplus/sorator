@@ -81,8 +81,12 @@ class Field:
     def _dump_other(self):
         if self._unsigned:
             self._string_buf.append('.unsigned()')
-        if self._default_value and self._default_value != 'NULL':
-            self._string_buf.append('.default({})'.format(self._default_value))
+        default_value = self._default_value
+        if default_value and default_value != 'NULL':
+            default_value = default_value.strip("'")
+            if default_value.isdigit():
+                default_value = int(default_value)
+            self._string_buf.append('.default({})'.format(repr(default_value)))
         elif self._nullable:
             self._string_buf.append('.nullable()')
 
@@ -134,7 +138,7 @@ class BIGINTField(Field):
 
     def _dump_main(self):
         self._string_buf.append(
-            ".{}('{}')".format(self.__correspond__), self._name)
+            ".{}('{}')".format(self.__correspond__, self._name))
 
     def upgrade_increments(self):
         self.__correspond__ = 'increments'
@@ -221,6 +225,21 @@ class VARCHARField(Field):
     __correspond__ = 'string'
 
 
+class TINYINTField(Field):
+    __correspond__ = 'tiny_int'
+
+    def _dump_main(self):
+        if len(self._type_arg) == 1 and self._type_arg[0]:
+            self.upgrade_boolean()
+            self._default_value = None
+        self._string_buf.append(
+            ".{}('{}')".format(self.__correspond__, self._name))
+
+    def upgrade_boolean(self):
+        self.__correspond__ = 'boolean'
+        self._type_arg = []
+
+
 class FieldFactory:
 
     mapping = {
@@ -242,6 +261,7 @@ class FieldFactory:
         'SMALLINT': SMALLINTField,
         'TEXT': TEXTField,
         'TIME': TIMEField,
+        'TINYINT': TINYINTField,
         'TIMESTAMP': TIMESTAMPField,
         'VARCHAR': VARCHARField
     }
