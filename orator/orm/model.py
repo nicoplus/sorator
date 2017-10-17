@@ -2950,7 +2950,7 @@ class Model(metaclass=MetaModel):
     def __getstate__(self):
         return {
             'attributes': self._attributes,
-            'relations': {k: list(v) for k, v in self._relations.items() if v},
+            'relations': {k: list(v) for k, v in self._relations.items()},
             'exists': self._exists
         }
 
@@ -2959,5 +2959,5 @@ class Model(metaclass=MetaModel):
 
         self.set_raw_attributes(state['attributes'], True)
         self.set_relations({k: Collection(v)
-                            for k, v in state['relations'].items() if v})
+                            for k, v in state['relations'].items()})
         self.set_exists(state['exists'])
