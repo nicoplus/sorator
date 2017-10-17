@@ -4,6 +4,7 @@ import simplejson as json
 import hashlib
 import time
 import datetime
+import pickle
 from pendulum import Pendulum
 from flexmock import flexmock, flexmock_teardown
 from .. import OratorTestCase, mock
@@ -966,6 +967,20 @@ class OrmModelTestCase(OratorTestCase):
         model = OrmModelStub()
 
         self.assertEqual('stub', model.get_morph_name())
+
+    def test_pickle(self):
+        model = OrmModelStub()
+        model.set_table('stub')
+        attributes = {'name': 'test'}
+        relations = {'labels': Collection(OrmModelDefaultAttributes()),
+                     't': None}
+        model.set_raw_attributes(attributes)
+        model.set_relations(relations)
+        state = pickle.dumps(model, protocol=pickle.HIGHEST_PROTOCOL)
+        new_model = pickle.loads(state)
+        assert new_model._attributes == attributes
+        assert new_model.labels
+        assert 't' not in new_model._relations
 
 
 class OrmModelStub(Model):
