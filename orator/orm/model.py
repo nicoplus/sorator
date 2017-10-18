@@ -580,6 +580,76 @@ class Model(metaclass=MetaModel):
         return instance.new_query().find(id, columns)
 
     @classmethod
+    def find_by(cls, name, value, columns=None):
+        """
+        Find a model by specificd column.
+
+        :param name: specificd column name
+        :type name: str
+
+        :param value: column value
+        :type value: mixed
+
+        :return: Either a Model instance or a Collection
+        :rtype: Model
+        """
+        instance = cls()
+        return instance.new_query().find_by(name, value, columns)
+
+    @classmethod
+    def find_many(cls, id, columns=None):
+        """
+        Find a model by a id collection.
+
+        :param id: The ids of the model
+        :type id: mixed
+
+        :param columns: The columns to retrieve
+        :type columns: list
+
+        :return: Either a Model instance or a Collection
+        :rtype: Model
+        """
+        instance = cls()
+        if not id:
+            return instance.new_collection()
+        return instance.new_query().find_many(id, columns)
+
+    @classmethod
+    def find_or_fail(cls, id, columns=None):
+        """
+        Find a model by its primary key or raise exception
+
+        :param id: The primary key value
+        :type id: mixed
+
+        :param columns: The columns to retrieve
+        :type columns: list
+
+        :return: Either a Model instance or a Collection
+        :rtype: Model
+        """
+        instance = cls()
+        return instance.new_query().find_or_fail(id, columns)
+
+    @classmethod
+    def find_by_or_fail(cls, name, value columns=None):
+        """
+        Find a model by specificd column or raise exception
+
+        :param id: column name
+        :type id: str
+
+        :param columns: The columns to retrieve
+        :type columns: list
+
+        :return: Either a Model instance or a Collection
+        :rtype: Model
+        """
+        instance = cls()
+        return instance.new_query().find_by_or_fail(id, columns)
+
+    @classmethod
     def find_or_new(cls, id, columns=None):
         """
         Find a model by its primary key or return new instance.
