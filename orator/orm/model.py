@@ -597,25 +597,6 @@ class Model(metaclass=MetaModel):
         return instance.new_query().find_by(name, value, columns)
 
     @classmethod
-    def find_many(cls, id, columns=None):
-        """
-        Find a model by a id collection.
-
-        :param id: The ids of the model
-        :type id: mixed
-
-        :param columns: The columns to retrieve
-        :type columns: list
-
-        :return: Either a Model instance or a Collection
-        :rtype: Model
-        """
-        instance = cls()
-        if not id:
-            return instance.new_collection()
-        return instance.new_query().find_many(id, columns)
-
-    @classmethod
     def find_or_fail(cls, id, columns=None):
         """
         Find a model by its primary key or raise exception
