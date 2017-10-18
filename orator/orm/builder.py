@@ -106,6 +106,28 @@ class Builder:
 
         return self.first(columns)
 
+    def find_by(self, name, value, columns=None):
+        """
+        Find a model by specified column
+
+        :param name: column name
+        :type name: str
+
+        :param value: column value
+        :type value: mixed
+
+        :param columns: The columns to retrieve
+        :type columns: list
+
+        :return: The found model
+        :rtype: orator.Collection
+        """
+        if columns is None:
+            columns = ['*']
+
+        self._query.where(name, '=', value)
+        return self.first(columns)
+
     def find_many(self, id, columns=None):
         """
         Find a model by its primary key
@@ -150,6 +172,31 @@ class Builder:
             if len(result) == len(set(id)):
                 return result
         elif result:
+            return result
+
+        raise ModelNotFound(self._model.__class__)
+
+    def find_by_or_fail(self, name, value, columns=None):
+        """
+        Find a model by it specified column or raise an exception
+
+        :param name: column name
+        :type name: str
+
+        :param value: column value
+        :type value: mixed
+
+        :param columns: The columns to retrieve
+        :type columns: list
+
+        :return: The found model
+        :rtype: orator.Collection
+
+        :raises: ModelNotFound
+        """
+        result = self.find_by(name, value, columns)
+
+        if result:
             return result
 
         raise ModelNotFound(self._model.__class__)
