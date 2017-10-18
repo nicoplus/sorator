@@ -633,7 +633,7 @@ class Model(metaclass=MetaModel):
         return instance.new_query().find_or_fail(id, columns)
 
     @classmethod
-    def find_by_or_fail(cls, name, value columns=None):
+    def find_by_or_fail(cls, name, value, columns=None):
         """
         Find a model by specificd column or raise exception
 
@@ -647,7 +647,7 @@ class Model(metaclass=MetaModel):
         :rtype: Model
         """
         instance = cls()
-        return instance.new_query().find_by_or_fail(id, columns)
+        return instance.new_query().find_by_or_fail(name, value, columns)
 
     @classmethod
     def find_or_new(cls, id, columns=None):
