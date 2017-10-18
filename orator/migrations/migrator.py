@@ -54,7 +54,7 @@ class Migrator:
         self.run_migration_list(path, migrations, pretend)
 
         conn = self.get_repository().get_connection()
-        if conn.name == 'pgsql':
+        if conn.name in ('pgsql', 'sqlite'):
             return
         output_buffer = []
         grammar = conn.get_default_schema_grammar()
