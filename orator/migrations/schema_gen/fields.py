@@ -141,7 +141,7 @@ class BIGINTField(Field):
             ".{}('{}')".format(self.__correspond__, self._name))
 
     def upgrade_increments(self):
-        self.__correspond__ = 'increments'
+        self.__correspond__ = 'big_increments'
 
 
 class BLOBField(Field):
@@ -216,9 +216,8 @@ class TIMESTAMPField(Field):
         self._string_buf.append('.{}({})'.format(ttype, repr(self._name)))
 
     def _dump_other(self):
+        self._default_value = None
         super()._dump_other()
-        # default_value
-        self._string_buf.pop()
 
 
 class VARCHARField(Field):

@@ -169,6 +169,8 @@ def parse_field_syntax(stream, table, field_name):
                 literal = field_constraint.value
                 if literal == 'NOT NULL':
                     field.set_nullable(False)
+                elif literal == 'NULL':
+                    field.set_nullable(True)
                 elif literal == 'DEFAULT':
                     field.set_default(get_next(stream).value)
                 elif literal == 'AUTO_INCREMENT':
