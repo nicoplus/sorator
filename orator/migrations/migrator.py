@@ -6,7 +6,7 @@ import inflection
 import logging
 from pygments import highlight
 from pygments.lexers.sql import SqlLexer
-from .schema_gen import parse
+from .schema_dumper import dump
 from ..utils import decode, load_module
 from ..utils.command_formatter import CommandFormatter
 
@@ -54,20 +54,14 @@ class Migrator:
         self.run_migration_list(path, migrations, pretend)
 
         conn = self.get_repository().get_connection()
-        if conn.name in ('pgsql', 'sqlite'):
-            return
-        output_buffer = []
-        grammar = conn.get_default_schema_grammar()
-        tables = conn.select(grammar._get_all_table())
-        for table_mapping in tables:
-            _, table_name = table_mapping.popitem()
-            sql = conn.select(grammar._get_table_structure(table_name))[0]
-            output_buffer.append(sql['Create Table'])
-
+        try:
+            output = dump(conn)
+        except Exception:
+            import traceback
+            traceback.print_exc()
         dump_path = os.path.abspath(os.path.join(path, '../schema.py'))
-        with open(dump_path, 'w') as fd:
-            output = parse(output_buffer)
-            fd.write(output)
+        # with open(dump_path, 'w') as fd:
+            # fd.write(output)
 
     def run_migration_list(self, path, migrations, pretend=False):
         """
