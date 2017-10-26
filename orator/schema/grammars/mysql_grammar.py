@@ -286,16 +286,15 @@ class MySQLSchemaGrammar(SchemaGrammar):
 
         return '`%s`' % value.replace('`', '``')
 
-    def _list_tables(self, db):
-        # TODO current_db
+    def _list_tables(self):
         sql = """\
             SELECT table_name
             FROM information_schema.tables
-            WHERE table_schema= '{}'
-        """.format(db)
+            WHERE table_schema= DATABASE();
+        """
         return sql
 
-    def _list_columns(self, db, table):
+    def _list_columns(self, table):
         sql = """\
             SELECT column_name AS 'name',
                    data_type AS 'ttype',
@@ -307,23 +306,23 @@ class MySQLSchemaGrammar(SchemaGrammar):
                    column_default AS 'default',
                    extra AS 'extra'
             FROM information_schema.columns
-            WHERE table_schema = '{}'
+            WHERE table_schema = DATABASE()
               AND table_name = '{}'
-        """.format(db, table)
+        """.format(table)
         return sql
 
-    def _list_primary_keys(self, db, table):
+    def _list_primary_keys(self, table):
         sql = """\
             SELECT column_name
             FROM information_schema.key_column_usage
             WHERE constraint_name = 'PRIMARY'
-              AND table_schema = '{}'
+              AND table_schema = DATABASE()
               AND table_name = '{}'
             ORDER BY ordinal_position
-        """.format(db, table)
+        """.format(table)
         return sql
 
-    def _list_foreign_keys(self, db, table):
+    def _list_foreign_keys(self, table):
         sql = """\
             SELECT fk.referenced_table_name AS 'to_table',
                    fk.referenced_column_name AS 'ref_key',
@@ -335,14 +334,14 @@ class MySQLSchemaGrammar(SchemaGrammar):
             JOIN information_schema.referential_constraints rc
             USING (constraint_schema, constraint_name)
             WHERE fk.referenced_column_name IS NOT NULL
-              AND fk.table_schema = '{0}'
-              AND fk.table_name = '{1}'
-              AND rc.table_name = '{1}';
-        """.format(db, table)
+              AND fk.table_schema = DATABASE()
+              AND fk.table_name = '{0}'
+              AND rc.table_name = '{0}';
+        """.format(table)
         return sql
 
-    def _list_indexes(self, db, table):
+    def _list_indexes(self, table):
         sql = """\
-            SHOW KEYS FROM {}.{}
-        """.format(db, table)
+            SHOW KEYS FROM {}
+        """.format(table)
         return sql

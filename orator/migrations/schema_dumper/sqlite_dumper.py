@@ -8,7 +8,7 @@ class Dumper(BaseDumper):
 
     __ignore_list__ = ['migrations', 'sqlite_sequence']
 
-    column_record = namedtuple('Record', ['name', 'ttype', 'nullable',
+    column_record = namedtuple('Record', ['name', 'ttype', 'nullable', 'pk',
                                           'precision', 'default', 'autoincr'])
 
     mapping = {
@@ -37,7 +37,7 @@ class Dumper(BaseDumper):
     def list_columns(self, table_name):
         """list column in table
         rtype [namedtuple]"""
-        sql = self._grammer._list_columns(table_name)
+        sql = self._grammar._list_columns(table_name)
         result = self._conn.select(sql)
         autoincrement_columns = self.list_autoincrement_columns(table_name)
         for r in result:
@@ -59,6 +59,7 @@ class Dumper(BaseDumper):
             name=r['name'],
             ttype=r['type'],
             precision=precision,
+            pk=r['pk'],
             nullable=not r['notnull'],
             default=r['dflt_value'],
             autoincr=r['autoincr']
@@ -97,13 +98,15 @@ class Dumper(BaseDumper):
                         default = int(default)
                     elif re.match("^\d+?\.\d+?$", default) is not None:
                         default = float(default)
+                    else:
+                        default = "'{}'".format(default)
                     column_buffer.append('.default({})'.format(default))
             statements.append(''.join(column_buffer))
         return statements
 
     def list_indexes(self, table_name):
         """list index in table"""
-        sql = self._grammer._list_indexes(table_name)
+        sql = self._grammar._list_indexes(table_name)
         indexes = defaultdict(lambda: {'columns': [], 'is_unique': False})
         result = self._conn.select(sql)
         for r in result:
@@ -111,7 +114,7 @@ class Dumper(BaseDumper):
             indexes[index_name]['is_unique'] = bool(r['unique'])
             columns = map(itemgetter('name'),
                           self._conn.select(
-                              self._grammer._show_index(index_name)))
+                              self._grammar._show_index(index_name)))
             indexes[r['name']]['columns'].extend(columns)
         return indexes
 
@@ -137,7 +140,7 @@ class Dumper(BaseDumper):
         # Besides it have none default value
         result = []
         plain_sql = self._conn.select(
-            self._grammer._plain_sql(table_name))[0]['sql']
+            self._grammar._plain_sql(table_name))[0]['sql']
         s = slice(plain_sql.find('(') + 1, plain_sql.rfind(')'))
         columns = plain_sql[s].split(', ')
         for column in columns:
@@ -148,7 +151,7 @@ class Dumper(BaseDumper):
 
     def list_foreign_keys(self, table_name):
         """list foreign key from specified table"""
-        sql = self._grammer._list_foreign_keys(table_name)
+        sql = self._grammar._list_foreign_keys(table_name)
         result = self._conn.select(sql)
         foreign_keys = []
         for r in result:
@@ -160,3 +163,34 @@ class Dumper(BaseDumper):
                 'on_delete': r['on_delete']
             })
         return foreign_keys
+
+    def handle_primary_key(self, primary_key):
+        return ['self.primary([{}])'.format(repr(primary_key[0].name))]
+
+    def dump(self):
+        table_names = list(self.list_tables())
+
+        table_buffer = []
+        for table in table_names:
+            columns = self.list_columns(table)
+
+            indexes = self.list_indexes(table)
+            primary_key = list(filter(lambda column: column.pk, columns))
+            foreign_keys = self.list_foreign_keys(table)
+            statement_buffer = []
+
+            statement_buffer.extend(self.handle_column(columns))
+            statement_buffer.extend(self.handle_index(indexes))
+            statement_buffer.extend(self.handle_foreign_key(foreign_keys))
+            statement_buffer.extend(self.handle_primary_key(primary_key))
+
+            table_buffer.append(self.table_tmpl.render(
+                table_name=table,
+                table_statement=statement_buffer
+            ))
+
+        output = self.schema_tmpl.render(
+            tables_created=table_buffer,
+            tables_droped=table_names
+        )
+        return output

@@ -64,12 +64,12 @@ class Dumper:
             {% endfor %}
     """))
 
-    def __init__(self, conn, grammer, db_name):
+    def __init__(self, conn, grammar, db_name):
         """
-        @param grammer: grammer instance
+        @param grammar: grammar instance
         """
         self._conn = conn
-        self._grammer = grammer
+        self._grammar = grammar
         self._db_name = db_name
 
     def handle_column(self, columns):
@@ -167,7 +167,7 @@ class Dumper:
         """list all table_names from specified database
         rtype [str]
         """
-        sql = self._grammer._list_tables()
+        sql = self._grammar._list_tables()
         result = self._conn.select(sql)
         return filter(
             lambda table_name: table_name not in self.__ignore_list__,
@@ -176,13 +176,13 @@ class Dumper:
     def list_columns(self, table_name):
         """list column in table
         rtype [namedtuple]"""
-        sql = self._grammer._list_columns(table_name)
+        sql = self._grammar._list_columns(table_name)
         result = self._conn.select(sql)
         return [self.column_record(*r) for r in result]
 
     def list_indexes(self, table_name):
         """list index in table"""
-        sql = self._grammer._list_indexes(table_name)
+        sql = self._grammar._list_indexes(table_name)
         result = self._conn.select(sql)
         indexes = defaultdict(lambda: {'columns': [], 'ttype': 'index'})
         for r in result:
@@ -196,6 +196,6 @@ class Dumper:
 
     def list_foreign_keys(self, table_name):
         """list foreign key from specified table"""
-        sql = self._grammer._list_foreign_keys(table_name)
+        sql = self._grammar._list_foreign_keys(table_name)
         result = self._conn.select(sql)
         return [self.foreign_key_record(*r) for r in result]
