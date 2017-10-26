@@ -301,9 +301,43 @@ class SQLiteSchemaGrammar(SchemaGrammar):
 
         return super()._get_dbal_column_type(type_)
 
-    def _get_all_table(self):
-        return 'SELECT name FROM sqlite_master WHERE type="table";'
+    def _list_tables(self):
+        sql = """\
+            SELECT name AS table_name
+            FROM sqlite_master
+            WHERE type="table"
+        """
+        return sql
 
-    def _get_table_structure(self, table):
-        return ('SELECT sql as "Create Table" FROM sqlite_master '
-                'WHERE name="%s";' % table)
+    def _list_columns(self, table):
+        sql = """\
+            PRAGMA table_info('{}');
+        """.format(table)
+        return sql
+
+    def _plain_sql(self, column):
+        sql = """\
+            SELECT sql
+            FROM sqlite_master
+            WHERE type = 'table'
+                AND name = '{}'
+        """.format(column)
+        return sql
+
+    def _list_indexes(self, table):
+        sql = """\
+            PRAGMA index_list('{}')
+        """.format(table)
+        return sql
+
+    def _show_index(self, index):
+        sql = """\
+            PRAGMA index_info('{}')
+        """.format(index)
+        return sql
+
+    def _list_foreign_keys(self, table):
+        sql = """\
+            PRAGMA foreign_key_list('{}')
+        """.format(table)
+        return sql
