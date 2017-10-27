@@ -3,9 +3,10 @@ import textwrap
 from jinja2 import Template as jinjaTemplate
 from operator import itemgetter
 from collections import namedtuple, defaultdict
+from .dumper_interface import Dumper as BaseDumper
 
 
-class Dumper:
+class Dumper(BaseDumper):
 
     __ignore_list__ = 'migrations'
 
@@ -78,12 +79,28 @@ class Dumper:
             column_buffer = []
             name = column.name
             ttype = self.mapping[column.ttype.upper()]
+            precision = column.precision
             nullable = column.nullable
             default = column.default
 
+            # handle auto increments
+            pk = False
+            v = re.match(r"nextval\('(\w+)'::regclass\)", default or '')
+            if v and v.groups()[0].endswith(name + '_seq'):
+                pk = True
+                ttype = 'increments'
+
+            # TODO pgsql doesn't support unsigned
+
             # dump to orator schema syntax
-            column_buffer.append('self.{ttype}({name})'.format(
-                ttype=ttype, name=repr(name)))
+            if not pk and precision:
+                column_buffer.append(
+                    'self.{ttype}({name}, {precision})'.format(
+                        ttype=ttype, name=repr(name),
+                        precision=repr(precision)))
+            else:
+                column_buffer.append('self.{ttype}({name})'.format(
+                    ttype=ttype, name=repr(name)))
             if nullable != 'NO':
                 column_buffer.append('.nullable()')
             if default is not None:
@@ -96,15 +113,21 @@ class Dumper:
                     flag = False
 
                 if flag:
-                    column_buffer.append('.default({})'.format(
-                        default.split(':')[0]))
+                    default = default.split(':')[0].strip("''")
+                    if default.isdigit():
+                        default = int(default)
+                    elif re.match("^\d+?\.\d+?$", default) is not None:
+                        default = float(default)
+                    else:
+                        default = "'{}'".format(default)
+                    column_buffer.append('.default({})'.format(default))
 
             statements.append(''.join(column_buffer))
         return statements
 
     def handle_index(self, indexes):
         statements = []
-        for name, index in indexes.items():
+        for name, index in sorted(indexes.items(), key=itemgetter(0)):
             ttype = index['ttype']
             if ttype == 'primary':
                 name = None
@@ -120,21 +143,18 @@ class Dumper:
             local_key = foreign_key.column
             ref_key = foreign_key.ref_key
             to_table = foreign_key.to_table
-            if foreign_key.on_update == 'a':
-                on_update = 'restrict'
-            else:
-                on_update = 'cascade'
-            if foreign_key.on_delete == 'a':
-                on_delete = 'restrict'
-            else:
-                on_delete = 'cascade'
+            on_update = foreign_key.on_update
+            on_delete = foreign_key.on_delete
 
-            statement = ('self.foreign({}).references({}).on({})'
-                         '.on_update({}).on_delete({})').format(
-                             repr(local_key), repr(ref_key),
-                             repr(to_table), repr(on_update),
-                             repr(on_delete)
-            )
+            statement = 'self.foreign({}).references({}).on({})'.format(
+                repr(local_key), repr(ref_key), repr(to_table))
+
+            if on_update == 'a':
+                statement += ".on_update('cascadea')"
+
+            if on_delete == 'cascadea':
+                statement += ".on_delete('cascadea')"
+
             statements.append(statement)
         return statements
 
@@ -171,7 +191,7 @@ class Dumper:
         result = self._conn.select(sql)
         return filter(
             lambda table_name: table_name not in self.__ignore_list__,
-            map(itemgetter('table_name'), result))
+            map(itemgetter(0), result))
 
     def list_columns(self, table_name):
         """list column in table
@@ -187,10 +207,11 @@ class Dumper:
         indexes = defaultdict(lambda: {'columns': [], 'ttype': 'index'})
         for r in result:
             index = indexes[r[0]]
-            index['columns'].extend(r[1].split(', '))
-            if r[2] == 'u':
+            columns = self._conn.select(self._grammar._show_index(r[0]))
+            index['columns'].extend(zip(*columns))
+            if r[1].startswith('CREATE UNIQUE'):
                 index['ttype'] = 'unique'
-            if r[2] == 'p':
+            if r[0].endswith('pkey'):
                 index['ttype'] = 'primary'
         return indexes
 

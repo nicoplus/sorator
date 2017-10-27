@@ -425,35 +425,156 @@ class MigratorTestCase(OratorTestCase):
 
                 def up(self):
                     with self.schema.create('users') as table:
-                        self.increments('id').unsigned()
-                        self.string('username')
-                        self.string('password')
-                        self.string('name')
+                        self.increments('id')
+                        self.string('username', 128)
+                        self.string('password', 128)
+                        self.string('name', 255)
                         self.timestamp('created_at')
                         self.timestamp('updated_at')
-                        self.index(['username'], name='users_username_unique')
                         self.primary(['id'], name=None)
+                        self.unique(['username'], name='users_username_unique')
 
                     with self.schema.create('user_info') as table:
-                        self.increments('id').unsigned()
-                        self.integer('user_id').unsigned()
-                        self.small_int('age').unsigned().default(18)
-                        self.string('bio').default(nothing)
-                        self.tiny_int('is_stuff')
+                        self.increments('id')
+                        self.integer('user_id', 10).unsigned()
+                        self.small_int('age', 5).unsigned().default(18)
+                        self.string('bio', 255).default('nothing')
+                        self.tiny_int('is_stuff', 3)
                         self.timestamp('created_at')
                         self.timestamp('updated_at')
-                        self.unique(['user_id'], name='user_info_user_id_foreign')
                         self.primary(['id'], name=None)
+                        self.index(['user_id'], name='user_info_user_id_foreign')
                         self.foreign('user_id').references('id').on('users')
 
                     with self.schema.create('groups') as table:
-                        self.increments('id').unsigned()
-                        self.string('name')
-                        self.string('category')
-                        self.string('bio').nullable()
-                        self.unique(['name', 'category'],
-                                    name='groups_name_category_index')
+                        self.increments('id')
+                        self.string('name', 255)
+                        self.string('category', 255)
+                        self.string('bio', 255).nullable()
                         self.primary(['id'], name=None)
+                        self.index(['name', 'category'], name='groups_name_category_index')
+
+                def down(self):
+                    self.schema.drop('users')
+                    self.schema.drop('user_info')
+                    self.schema.drop('groups')
+        """)
+        assert correct_output == output
+
+    def test_pgsql_schema_dump(self):
+        from orator.schema.grammars import PostgresSchemaGrammar
+        conn = flexmock()
+        conn.should_receive('get_database_name').and_return('test_db')
+        conn.should_receive('get_marker').and_return('?')
+        conn.name = 'pgsql'
+        grammar = PostgresSchemaGrammar(conn)
+        conn.should_receive('get_default_schema_grammar').and_return(grammar)
+
+
+        conn.should_receive('select').with_args(grammar._list_tables()).and_return([
+            ['migrations'],
+            ['users'],
+            ['user_info'],
+            ['groups']
+        ])
+
+        conn.should_receive('select').with_args(grammar._list_columns('users')).and_return([
+            ['id', 'integer', 32, 'NO', "nextval('users_id_seq'::regclass)"],
+            ['username', 'character varying', 128, 'NO', None],
+            ['password', 'character varying', 128, 'NO', None],
+            ['name', 'character varying', 255, 'NO', None],
+            ['created_at', 'timestamp without time zone', None, 'NO', "('now'::text)::timestamp(6) with time zone"],
+            ['updated_at', 'timestamp without time zone', None, 'NO', "('now'::text)::timestamp(6) with time zone"]
+        ])
+
+        conn.should_receive('select').with_args(grammar._list_columns('user_info')).and_return([
+            ['id', 'integer', 32, 'NO', "nextval('user_info_id_seq'::regclass)"],
+            ['user_id', 'integer', 32, 'NO', None],
+            ['age', 'smallint', 16, 'NO', "'18'::smallint"],
+            ['bio', 'character varying', 255, 'NO', "'nothing'::character varying"],
+            ['is_stuff', 'boolean', None, 'NO', None],
+            ['created_at', 'timestamp without time zone', None, 'NO', "('now'::text)::timestamp(6) with time zone"],
+            ['updated_at', 'timestamp without time zone', None, 'NO', "('now'::text)::timestamp(6) with time zone"]
+        ])
+
+        conn.should_receive('select').with_args(grammar._list_columns('groups')).and_return([
+            ['id', 'integer', 32, 'NO', "nextval('groups_id_seq'::regclass)"],
+            ['name', 'character varying', 255, 'NO', None],
+            ['category', 'character varying', 255, 'NO', None],
+            ['bio', 'character varying', 255, 'YES', None]
+        ])
+
+        conn.should_receive('select').with_args(grammar._list_indexes('users')).and_return([
+            ['users_pkey', 'CREATE UNIQUE INDEX users_pkey ON users USING btree (id)'],
+            ['users_username_unique', 'CREATE UNIQUE INDEX users_username_unique ON users USING btree (username)']
+        ])
+        conn.should_receive('select').with_args(grammar._list_indexes('user_info')).and_return([
+            ['user_info_pkey', 'CREATE UNIQUE INDEX user_info_pkey ON user_info USING btree (id)']
+        ])
+        conn.should_receive('select').with_args(grammar._list_indexes('groups')).and_return([
+            ['groups_pkey', 'CREATE UNIQUE INDEX groups_pkey ON groups USING btree (id)'], ['groups_name_category_index', 'CREATE INDEX groups_name_category_index ON groups USING btree (name, category)']
+        ])
+
+        conn.should_receive('select').with_args(grammar._show_index('users_pkey')).and_return([
+            ['id']
+        ])
+        conn.should_receive('select').with_args(grammar._show_index('users_username_unique')).and_return([
+            ['username']
+        ])
+        conn.should_receive('select').with_args(grammar._show_index('user_info_pkey')).and_return([
+            ['id']
+        ])
+        conn.should_receive('select').with_args(grammar._show_index('groups_pkey')).and_return([
+            ['id']
+        ])
+        conn.should_receive('select').with_args(grammar._show_index('groups_name_category_index')).and_return([
+            ['name'], ['category']
+        ])
+
+        conn.should_receive('select').with_args(grammar._list_foreign_keys('users')).and_return([])
+
+        conn.should_receive('select').with_args(grammar._list_foreign_keys('user_info')).and_return([
+            ['users', 'user_id', 'id', 'user_info_user_id_foreign', 'a', 'a']
+        ])
+        conn.should_receive('select').with_args(grammar._list_foreign_keys('groups')).and_return([])
+
+        output = dump(conn)
+        correct_output = textwrap.dedent("""\
+            from orator.migrations import Migration
+
+
+            class InitDb(Migration):
+                def up(self):
+                    with self.schema.create('users') as table:
+                        self.increments('id')
+                        self.string('username', 128)
+                        self.string('password', 128)
+                        self.string('name', 255)
+                        self.timestamp('created_at')
+                        self.timestamp('updated_at')
+                        self.primary([('id',)], name=None)
+                        self.unique([('username',)], name='users_username_unique')
+
+                    with self.schema.create('user_info') as table:
+                        self.increments('id')
+                        self.integer('user_id', 32)
+                        self.small_int('age', 16).default(18)
+                        self.string('bio', 255).default('nothing')
+                        self.boolean('is_stuff')
+                        self.timestamp('created_at')
+                        self.timestamp('updated_at')
+                        self.primary([('id',)], name=None)
+                        self.foreign('user_id').references(
+                            'id').on('users').on_update('cascadea')
+
+                    with self.schema.create('groups') as table:
+                        self.increments('id')
+                        self.string('name', 255)
+                        self.string('category', 255)
+                        self.string('bio', 255).nullable()
+                        self.index([('name', 'category')],
+                                   name='groups_name_category_index')
+                        self.primary([('id',)], name=None)
 
                 def down(self):
                     self.schema.drop('users')

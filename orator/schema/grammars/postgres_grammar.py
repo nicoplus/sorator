@@ -260,32 +260,33 @@ class PostgresSchemaGrammar(SchemaGrammar):
 
     def _list_indexes(self, table_name):
         sql = """\
-            SELECT
-                i.relname AS "index_name",
-                array_to_string(array_agg(a.attname), ', ') AS "column_names",
-                pc.contype AS "ttype"
-            FROM
-                pg_class t,
-                pg_class i,
-                pg_index ix,
-                pg_attribute a,
-                pg_constraint pc
-            WHERE
-                t.oid = ix.indrelid
-                and i.oid = ix.indexrelid
-                and a.attrelid = t.oid
-                and a.attnum = ANY(ix.indkey)
-                and t.relkind = 'r'
-                and t.relname like '{}'
-                and pc.conname = i.relname
-            GROUP BY
-                t.relname,
-                i.relname,
-                pc.contype
-            ORDER BY
-                t.relname,
-                i.relname;
+            SELECT indexname AS "name",
+                   indexdef
+            FROM pg_indexes
+            WHERE tablename = '{}'
         """.format(table_name)
+        return sql
+
+    def _show_index(self, index):
+        sql = """\
+            select
+             a.attname as column_name
+            from
+             pg_class t,
+             pg_class i,
+             pg_index ix,
+             pg_attribute a
+            where
+             t.oid = ix.indrelid
+             and i.oid = ix.indexrelid
+             and a.attrelid = t.oid
+             and a.attnum = ANY(ix.indkey)
+             and t.relkind = 'r'
+             and i.relname = '{}'
+            order by
+             t.relname,
+             i.relname;
+        """.format(index)
         return sql
 
     def _list_foreign_keys(self, table_name):

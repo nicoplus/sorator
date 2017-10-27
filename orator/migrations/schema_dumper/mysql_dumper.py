@@ -1,3 +1,4 @@
+import re
 from operator import itemgetter
 from collections import namedtuple, defaultdict
 from .dumper_interface import Dumper as BaseDumper
@@ -42,14 +43,18 @@ class Dumper(BaseDumper):
             name = column.name
             ttype = self.mapping[column.ttype.upper()]
             unsigned = column.unsigned
+            precision = column.precision
 
             # bigint auto_increment -> big_increments
             # int auto_increment -> increments
+            pk = False
             if column.extra == 'auto_increment':
                 if ttype == 'big_integer':
                     ttype = 'big_increments'
+                    pk = True
                 if ttype == 'integer':
                     ttype = 'increments'
+                    pk = True
 
             # tiny_int when length is 1 -> boolean
             if ttype == 'tiny_int' and column.precision == 1:
@@ -59,9 +64,15 @@ class Dumper(BaseDumper):
             default = column.default
 
             # dump to orator schema syntax
-            column_buffer.append('self.{ttype}({name})'.format(
-                ttype=ttype, name=repr(name)))
-            if unsigned == 'unsigned':
+            if not pk and precision:
+                column_buffer.append(
+                    'self.{ttype}({name}, {precision})'.format(
+                        ttype=ttype, name=repr(name),
+                        precision=repr(precision)))
+            else:
+                column_buffer.append('self.{ttype}({name})'.format(
+                    ttype=ttype, name=repr(name)))
+            if not pk and unsigned == 'unsigned':
                 column_buffer.append('.unsigned()')
             if nullable != 'NO':
                 column_buffer.append('.nullable()')
@@ -73,13 +84,20 @@ class Dumper(BaseDumper):
                     flag = False
 
                 if flag:
+                    default = default.strip("'")
+                    if default.isdigit():
+                        default = int(default)
+                    elif re.match("^\d+?\.\d+?$", default) is not None:
+                        default = float(default)
+                    else:
+                        default = "'{}'".format(default)
                     column_buffer.append('.default({})'.format(default))
             statements.append(''.join(column_buffer))
         return statements
 
     def handle_index(self, indexes):
         statements = []
-        for name, index in indexes.items():
+        for name, index in sorted(indexes.items(), key=itemgetter(0)):
             ttype = 'index'
             if index['is_unique']:
                 ttype = 'unique'
@@ -107,10 +125,10 @@ class Dumper(BaseDumper):
                 repr(local_key), repr(ref_key), repr(to_table))
 
             if on_update.upper() == 'CASCADEA':
-                statement += ".on_update('CASCADEA')"
+                statement += ".on_update('cascadea')"
 
             if on_delete.upper() == 'CASCADEA':
-                statement += ".on_delete('CASCADEA')"
+                statement += ".on_delete('cascadea')"
 
             statements.append(statement)
         return statements
@@ -141,7 +159,7 @@ class Dumper(BaseDumper):
         for r in result:
             index = indexes[r['Key_name']]
             index['columns'].append(r['Column_name'])
-            if r['Non_unique']:
+            if not r['Non_unique']:
                 index['is_unique'] = True
         return indexes
 
