@@ -42,37 +42,6 @@ class Dumper(BaseDumper):
         'SERIAL': 'increments'
     }
 
-    table_tmpl = jinjaTemplate(textwrap.dedent("""\
-        with self.schema.create('{{ table_name }}') as table:
-            {% for statement in table_statement %}
-                {{- statement }}
-            {% endfor %}
-    """))
-
-    schema_tmpl = jinjaTemplate(textwrap.dedent("""\
-    from orator.migrations import Migration
-
-
-    class InitDb(Migration):
-        def up(self):
-            {% for table in tables_created %}
-                {{- table | indent(8) }}
-            {% endfor %}
-
-        def down(self):
-            {% for table in tables_droped -%}
-                self.schema.drop('{{ table }}')
-            {% endfor %}
-    """))
-
-    def __init__(self, conn, grammar, db_name):
-        """
-        @param grammar: grammar instance
-        """
-        self._conn = conn
-        self._grammar = grammar
-        self._db_name = db_name
-
     def handle_column(self, columns):
         statements = []
         for column in columns:
@@ -89,8 +58,6 @@ class Dumper(BaseDumper):
             if v and v.groups()[0].endswith(name + '_seq'):
                 pk = True
                 ttype = 'increments'
-
-            # TODO pgsql doesn't support unsigned
 
             # dump to orator schema syntax
             if not pk and precision:

@@ -78,11 +78,11 @@ class Dumper(BaseDumper):
             else:
                 r['autoincr'] = False
 
-            precision = None
             # handle type precision
+            precision = None
             match_obj = re.match(r'\w+\((\S+)\)', r['type'])
             if match_obj is not None:
-                # VARCHAR(20)
+                # handle like VARCHAR(20)
                 precision, *_ = match_obj.groups()
                 precision = int(precision)
 
@@ -155,8 +155,7 @@ class Dumper(BaseDumper):
         for r in result:
             index_name = r['name']
             indexes[index_name]['is_unique'] = bool(r['unique'])
-            columns = map(itemgetter('name'),
-                          self._conn.select(
+            columns = map(itemgetter('name'), self._conn.select(
                               self._grammar._show_index(index_name)))
             indexes[r['name']]['columns'].extend(columns)
         return indexes
@@ -254,7 +253,6 @@ class Dumper(BaseDumper):
     def handle_foreign_key(self, foreign_keys):
         statements = []
         for foreign_key in foreign_keys:
-            # name = foreign_key['name']
             local_key = foreign_key['column']
             ref_key = foreign_key['ref_key']
             to_table = foreign_key['to_table']
@@ -263,9 +261,9 @@ class Dumper(BaseDumper):
 
             statement = 'self.foreign({}).references({}).on({})'.format(
                 repr(local_key), repr(ref_key), repr(to_table))
+
             if on_update.upper() == 'CASCADEA':
                 statement += ".on_update('cascadea')"
-
             if on_delete.upper() == 'CASCADEA':
                 statement += ".on_delete('cascadea')"
 

@@ -529,6 +529,7 @@ class MigratorTestCase(OratorTestCase):
 
 
             class InitDb(Migration):
+
                 def up(self):
                     with self.schema.create('users') as table:
                         self.increments('id')
