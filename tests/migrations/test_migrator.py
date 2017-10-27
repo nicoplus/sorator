@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 import os
 import glob
 import inspect
@@ -21,14 +20,21 @@ class MigratorTestCase(OratorTestCase):
     def tearDown(self):
         flexmock_teardown()
         inspect.getargspec = self.orig
+        try:
+            os.remove(os.path.abspath(os.path.join(os.getcwd(), '../schema.py')))
+        except FileNotFoundError:
+            pass
 
     def test_migrations_are_run_up_when_outstanding_migrations_exist(self):
+        import orator.migrations.migrator as migrator
+        d = flexmock(migrator)
         resolver_mock = flexmock(DatabaseManager)
         resolver_mock.should_receive('connection').and_return({})
         resolver = flexmock(DatabaseManager({}))
         connection = flexmock()
         connection.should_receive('transaction').twice().and_return(connection)
         resolver.should_receive('connection').and_return(connection)
+        d.should_receive('dump').with_args(connection).and_return('')
 
         migrator = flexmock(
             Migrator(
@@ -65,12 +71,15 @@ class MigratorTestCase(OratorTestCase):
         migrator.run(os.getcwd())
 
     def test_migrations_are_run_up_directly_if_transactional_is_false(self):
+        import orator.migrations.migrator as migrator
+        d = flexmock(migrator)
         resolver_mock = flexmock(DatabaseManager)
         resolver_mock.should_receive('connection').and_return({})
         resolver = flexmock(DatabaseManager({}))
         connection = flexmock()
         connection.should_receive('transaction').never()
         resolver.should_receive('connection').and_return(connection)
+        d.should_receive('dump').and_return('')
 
         migrator = flexmock(
             Migrator(
@@ -148,9 +157,12 @@ class MigratorTestCase(OratorTestCase):
         migrator.run(os.getcwd(), True)
 
     def test_nothing_is_done_when_no_migrations_outstanding(self):
+        import orator.migrations.migrator as migrator
+        d = flexmock(migrator)
         resolver_mock = flexmock(DatabaseManager)
         resolver_mock.should_receive('connection').and_return(None)
         resolver = flexmock(DatabaseManager({}))
+        d.should_receive('dump').and_return('')
 
         migrator = flexmock(
             Migrator(
@@ -174,12 +186,15 @@ class MigratorTestCase(OratorTestCase):
         migrator.run(os.getcwd())
 
     def test_last_batch_of_migrations_can_be_rolled_back(self):
+        import orator.migrations.migrator as migrator
+        d = flexmock(migrator)
         resolver_mock = flexmock(DatabaseManager)
         resolver_mock.should_receive('connection').and_return({})
         resolver = flexmock(DatabaseManager({}))
         connection = flexmock()
         connection.should_receive('transaction').twice().and_return(connection)
         resolver.should_receive('connection').and_return(connection)
+        d.should_receive('dump').with_args(connection).and_return('')
 
         migrator = flexmock(
             Migrator(
@@ -215,12 +230,15 @@ class MigratorTestCase(OratorTestCase):
         migrator.rollback(os.getcwd())
 
     def test_last_batch_of_migrations_can_be_rolled_back_directly_if_transactional_is_false(self):
+        import orator.migrations.migrator as migrator
+        d = flexmock(migrator)
         resolver_mock = flexmock(DatabaseManager)
         resolver_mock.should_receive('connection').and_return({})
         resolver = flexmock(DatabaseManager({}))
         connection = flexmock()
         connection.should_receive('transaction').never()
         resolver.should_receive('connection').and_return(connection)
+        d.should_receive('dump').with_args(connection).and_return('')
 
         migrator = flexmock(
             Migrator(
@@ -258,12 +276,15 @@ class MigratorTestCase(OratorTestCase):
         migrator.rollback(os.getcwd())
 
     def test_rollback_migration_can_be_pretended(self):
+        import orator.migrations.migrator as migrator
+        d = flexmock(migrator)
         resolver_mock = flexmock(DatabaseManager)
         resolver_mock.should_receive('connection').and_return({})
         resolver = flexmock(DatabaseManager({}))
         connection = flexmock(Connection(None))
         connection.should_receive('get_logged_queries').twice().and_return([])
         resolver.should_receive('connection').with_args(None).and_return(connection)
+        d.should_receive('dump').with_args(connection).and_return('')
 
         migrator = flexmock(
             Migrator(
@@ -297,6 +318,8 @@ class MigratorTestCase(OratorTestCase):
         self.assertFalse(foo_migration.upped)
 
     def test_nothing_is_rolled_back_when_nothing_in_repository(self):
+        import orator.migrations.migrator as migrator
+        d = flexmock(migrator)
         resolver = flexmock(DatabaseManager)
         resolver.should_receive('connection').and_return(None)
 
