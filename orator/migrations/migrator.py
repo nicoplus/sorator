@@ -54,14 +54,10 @@ class Migrator:
         self.run_migration_list(path, migrations, pretend)
 
         conn = self.get_repository().get_connection()
-        try:
-            output = dump(conn)
-        except Exception:
-            import traceback
-            traceback.print_exc()
+        output = dump(conn)
         dump_path = os.path.abspath(os.path.join(path, '../schema.py'))
-        # with open(dump_path, 'w') as fd:
-            # fd.write(output)
+        with open(dump_path, 'w') as fd:
+            fd.write(output)
 
     def run_migration_list(self, path, migrations, pretend=False):
         """
