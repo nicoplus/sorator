@@ -28,11 +28,6 @@ class MigratorTestCase(OratorTestCase):
         resolver = flexmock(DatabaseManager({}))
         connection = flexmock()
         connection.should_receive('transaction').twice().and_return(connection)
-        connection.should_receive('select').and_return([])
-        connection.name = 'mysql'
-        grammar = flexmock()
-        grammar.should_receive('_get_all_table').and_return('show tables')
-        connection.should_receive('get_default_schema_grammar').and_return(grammar)
         resolver.should_receive('connection').and_return(connection)
 
         migrator = flexmock(
@@ -75,11 +70,6 @@ class MigratorTestCase(OratorTestCase):
         resolver = flexmock(DatabaseManager({}))
         connection = flexmock()
         connection.should_receive('transaction').never()
-        connection.should_receive('select').and_return([])
-        connection.name = 'mysql'
-        grammar = flexmock()
-        grammar.should_receive('_get_all_table').and_return('show tables')
-        connection.should_receive('get_default_schema_grammar').and_return(grammar)
         resolver.should_receive('connection').and_return(connection)
 
         migrator = flexmock(
@@ -118,17 +108,11 @@ class MigratorTestCase(OratorTestCase):
 
         migrator.run(os.getcwd())
 
-    def test_up_migration_can_be_pretended(self):
         resolver_mock = flexmock(DatabaseManager)
         resolver_mock.should_receive('connection').and_return({})
         resolver = flexmock(DatabaseManager({}))
         connection = flexmock(Connection(None))
-        connection.should_receive('select').and_return([])
         connection.should_receive('get_logged_queries').twice().and_return([])
-        connection.name = 'mysql'
-        grammar = flexmock()
-        grammar.should_receive('_get_all_table').and_return('show tables')
-        connection.should_receive('get_default_schema_grammar').and_return(grammar)
         resolver.should_receive('connection').with_args(None).and_return(connection)
 
         migrator = flexmock(
@@ -167,13 +151,6 @@ class MigratorTestCase(OratorTestCase):
         resolver_mock = flexmock(DatabaseManager)
         resolver_mock.should_receive('connection').and_return(None)
         resolver = flexmock(DatabaseManager({}))
-        connection = flexmock()
-        connection.should_receive('select').and_return([])
-        connection.name = 'mysql'
-        grammar = flexmock()
-        grammar.should_receive('_get_all_table').and_return('show tables')
-        connection.should_receive('get_default_schema_grammar').and_return(grammar)
-        resolver.should_receive('connection').and_return(connection)
 
         migrator = flexmock(
             Migrator(
@@ -202,11 +179,6 @@ class MigratorTestCase(OratorTestCase):
         resolver = flexmock(DatabaseManager({}))
         connection = flexmock()
         connection.should_receive('transaction').twice().and_return(connection)
-        connection.should_receive('select').and_return([])
-        connection.name = 'mysql'
-        grammar = flexmock()
-        grammar.should_receive('_get_all_table').and_return('show tables')
-        connection.should_receive('get_default_schema_grammar').and_return(grammar)
         resolver.should_receive('connection').and_return(connection)
 
         migrator = flexmock(
@@ -248,11 +220,6 @@ class MigratorTestCase(OratorTestCase):
         resolver = flexmock(DatabaseManager({}))
         connection = flexmock()
         connection.should_receive('transaction').never()
-        connection.should_receive('select').and_return([])
-        connection.name = 'mysql'
-        grammar = flexmock()
-        grammar.should_receive('_get_all_table').and_return('show tables')
-        connection.should_receive('get_default_schema_grammar').and_return(grammar)
         resolver.should_receive('connection').and_return(connection)
 
         migrator = flexmock(
@@ -296,11 +263,6 @@ class MigratorTestCase(OratorTestCase):
         resolver = flexmock(DatabaseManager({}))
         connection = flexmock(Connection(None))
         connection.should_receive('get_logged_queries').twice().and_return([])
-        connection.should_receive('select').and_return([])
-        connection.name = 'mysql'
-        grammar = flexmock()
-        grammar.should_receive('_get_all_table').and_return('show tables')
-        connection.should_receive('get_default_schema_grammar').and_return(grammar)
         resolver.should_receive('connection').with_args(None).and_return(connection)
 
         migrator = flexmock(
