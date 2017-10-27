@@ -366,7 +366,7 @@ class MigratorTestCase(OratorTestCase):
             {'precision': 10, 'unsigned': 'unsigned', 'name': 'user_id', 'ttype': 'int', 'extra': '', 'default': None, 'nullable': 'NO'},
             {'precision': 5, 'unsigned': 'unsigned', 'name': 'age', 'ttype': 'smallint', 'extra': '', 'default': '18', 'nullable': 'NO'},
             {'precision': 255, 'unsigned': None, 'name': 'bio', 'ttype': 'varchar', 'extra': '', 'default': 'nothing', 'nullable': 'NO'},
-            {'precision': 3, 'unsigned': None, 'name': 'is_stuff', 'ttype': 'tinyint', 'extra': '', 'default': None, 'nullable': 'NO'},
+            {'precision': 1, 'unsigned': None, 'name': 'is_stuff', 'ttype': 'tinyint', 'extra': '', 'default': None, 'nullable': 'NO'},
             {'precision': None, 'unsigned': None, 'name': 'created_at', 'ttype': 'timestamp', 'extra': '', 'default': 'CURRENT_TIMESTAMP(6)', 'nullable': 'NO'},
             {'precision': None, 'unsigned': None, 'name': 'updated_at', 'ttype': 'timestamp', 'extra': '', 'default': 'CURRENT_TIMESTAMP(6)', 'nullable': 'NO'}
         ])
@@ -424,7 +424,7 @@ class MigratorTestCase(OratorTestCase):
                         self.integer('user_id', 10).unsigned()
                         self.small_int('age', 5).unsigned().default(18)
                         self.string('bio', 255).default('nothing')
-                        self.tiny_int('is_stuff', 3)
+                        self.boolean('is_stuff')
                         self.timestamp('created_at')
                         self.timestamp('updated_at')
                         self.primary(['id'], name=None)
@@ -611,13 +611,13 @@ class MigratorTestCase(OratorTestCase):
         ])
 
         conn.should_receive('select').with_args(grammar._plain_sql('users')).and_return([
-            {'sql':"""CREATE TABLE "users" ("id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "username" VARCHAR NOT NULL, "password" VARCHAR NOT NULL, "name" VARCHAR NOT NULL, "created_at" DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, "updated_at" DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL)"""}
+            {'sql': """CREATE TABLE "users" ("id" INTEGER /*integer(%s)*/ /*unsigned*/ NOT NULL PRIMARY KEY AUTOINCREMENT, "username" VARCHAR /*string(%s 128)*/ NOT NULL, "password" VARCHAR /*string(%s 128)*/ NOT NULL, "name" VARCHAR /*string(%s 255)*/ NOT NULL, "created_at" DATETIME /*timestamp(%s)*/ DEFAULT CURRENT_TIMESTAMP NOT NULL, "updated_at" DATETIME /*timestamp(%s)*/ DEFAULT CURRENT_TIMESTAMP NOT NULL)"""}
         ])
         conn.should_receive('select').with_args(grammar._plain_sql('user_info')).and_return([
-            {'sql':"""CREATE TABLE "user_info" ("id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "user_id" INTEGER NOT NULL, "age" INTEGER NOT NULL DEFAULT '18', "bio" TEXT NOT NULL DEFAULT 'nothing', "is_stuff" TINYINT NOT NULL, "created_at" DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, "updated_at" DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY("user_id") REFERENCES "users"("id"))"""}
+            {'sql': """CREATE TABLE "user_info" ("id" INTEGER /*integer(%s)*/ /*unsigned*/ NOT NULL PRIMARY KEY AUTOINCREMENT, "user_id" INTEGER /*integer(%s)*/ /*unsigned*/ NOT NULL, "age" INTEGER /*small_integer(%s)*/ /*unsigned*/ NOT NULL DEFAULT '18', "bio" VARCHAR /*string(%s 255)*/ NOT NULL DEFAULT 'nothing', "is_stuff" TINYINT /*boolean(%s)*/ NOT NULL, "created_at" DATETIME /*timestamp(%s)*/ DEFAULT CURRENT_TIMESTAMP NOT NULL, "updated_at" DATETIME /*timestamp(%s)*/ DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY("user_id") REFERENCES "users"("id"))"""}
         ])
         conn.should_receive('select').with_args(grammar._plain_sql('groups')).and_return([
-            {'sql':"""CREATE TABLE "groups" ("id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "name" VARCHAR NOT NULL, "category" VARCHAR NOT NULL, "bio" VARCHAR NULL)"""}
+            {'sql': """CREATE TABLE "groups" ("id" INTEGER /*integer(%s)*/ /*unsigned*/ NOT NULL PRIMARY KEY AUTOINCREMENT, "name" VARCHAR /*string(%s 255)*/ NOT NULL, "category" VARCHAR /*string(%s 255)*/ NOT NULL, "bio" VARCHAR /*string(%s 255)*/ NULL)"""}
         ])
 
 
@@ -655,9 +655,9 @@ class MigratorTestCase(OratorTestCase):
                 def up(self):
                     with self.schema.create('users') as table:
                         self.increments('id')
-                        self.string('username')
-                        self.string('password')
-                        self.string('name')
+                        self.string('username' 128)
+                        self.string('password' 128)
+                        self.string('name' 255)
                         self.timestamp('created_at')
                         self.timestamp('updated_at')
                         self.unique(['username'], name='users_username_unique')
@@ -665,10 +665,10 @@ class MigratorTestCase(OratorTestCase):
 
                     with self.schema.create('user_info') as table:
                         self.increments('id')
-                        self.integer('user_id')
-                        self.integer('age').default(18)
-                        self.text('bio').default('nothing')
-                        self.tiny_int('is_stuff')
+                        self.integer('user_id').unsigned()
+                        self.small_integer('age').unsigned().default(18)
+                        self.string('bio' 255).default('nothing')
+                        self.boolean('is_stuff')
                         self.timestamp('created_at')
                         self.timestamp('updated_at')
                         self.foreign('user_id').references('id').on('users')
@@ -676,9 +676,9 @@ class MigratorTestCase(OratorTestCase):
 
                     with self.schema.create('groups') as table:
                         self.increments('id')
-                        self.string('name')
-                        self.string('category')
-                        self.string('bio').nullable()
+                        self.string('name' 255)
+                        self.string('category' 255)
+                        self.string('bio' 255).nullable()
                         self.index(['name', 'category'], name='groups_name_category_index')
                         self.primary(['id'])
 

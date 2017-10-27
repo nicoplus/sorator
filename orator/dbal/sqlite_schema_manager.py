@@ -20,7 +20,7 @@ class SQLiteSchemaManager(SchemaManager):
         length = table_column.get('length', None)
         unsigned = False
 
-        if ' unsigned' in db_type:
+        if ' /*unsigned*/' in db_type:
             db_type = db_type.replace(' unsigned', '')
             unsigned = True
 

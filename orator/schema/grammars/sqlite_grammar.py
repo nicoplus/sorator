@@ -5,7 +5,7 @@ from .grammar import SchemaGrammar
 
 class SQLiteSchemaGrammar(SchemaGrammar):
 
-    _modifiers = ['nullable', 'default', 'increment']
+    _modifiers = ['unsigned', 'nullable', 'default', 'increment']
 
     _serials = ['big_integer', 'integer']
 
@@ -201,77 +201,91 @@ class SQLiteSchemaGrammar(SchemaGrammar):
         return 'ALTER TABLE %s RENAME TO %s' % (
             from_, self.wrap_table(command.to))
 
+    # why need comment in SQLite Schema?
+    # Because multi orator type dump to same SQLite type
+    # so meet a SQLite type, doesn't know the origin type
     def _type_char(self, column):
-        return 'VARCHAR'
+        return 'VARCHAR /*char(%%s,%s)*/' % column.length
 
     def _type_string(self, column):
-        return 'VARCHAR'
+        return 'VARCHAR /*string(%%s %s)*/' % column.length
 
     def _type_text(self, column):
-        return 'TEXT'
+        return 'TEXT /*text(%s)*/'
 
     def _type_medium_text(self, column):
-        return 'TEXT'
+        return 'TEXT /*medium_text(%s)*/'
 
     def _type_long_text(self, column):
-        return 'TEXT'
+        return 'TEXT /*long_text(%s)*/'
 
     def _type_integer(self, column):
-        return 'INTEGER'
+        return 'INTEGER /*integer(%s)*/'
 
     def _type_big_integer(self, column):
-        return 'INTEGER'
+        return 'INTEGER /*big_integer(%s)*/'
 
     def _type_medium_integer(self, column):
-        return 'INTEGER'
+        return 'INTEGER /*medium_integer(%s)*/'
 
     def _type_tiny_integer(self, column):
-        return 'TINYINT'
+        return 'TINYINT /*tiny_integer(%s)*/'
 
     def _type_small_integer(self, column):
-        return 'INTEGER'
+        return 'INTEGER /*small_integer(%s)*/'
 
     def _type_float(self, column):
-        return 'FLOAT'
+        return 'FLOAT /*float(%s)*/'
 
     def _type_double(self, column):
-        return 'FLOAT'
+        if column.total and column.places:
+            return 'FLOAT /*double(%%s,%s,%s)*/' % (
+                column.total, column.places)
+        return 'FLOAT /*double(%s)*/'
 
     def _type_decimal(self, column):
-        return 'NUMERIC'
+        return 'NUMERIC /*DECIMAL(%%s,%s,%s)*/' % (
+            column.total, column.places)
 
     def _type_boolean(self, column):
-        return 'TINYINT'
+        return 'TINYINT /*boolean(%s)*/'
 
     def _type_enum(self, column):
-        return 'VARCHAR'
+        return 'VARCHAR /*enum(%%s,%s)*/' % column.allowed
 
     def _type_json(self, column):
-        return 'TEXT'
+        return 'TEXT /*json(%s)*/'
 
     def _type_date(self, column):
-        return 'DATE'
+        return 'DATE /*date(%s)*/'
 
     def _type_datetime(self, column):
-        return 'DATETIME'
+        return 'DATETIME /*datetime(%s)*/'
 
     def _type_time(self, column):
-        return 'TIME'
+        return 'TIME /*time(%s)*/'
 
     def _type_timestamp(self, column):
         if column.use_current:
-            return 'DATETIME DEFAULT CURRENT_TIMESTAMP'
+            return 'DATETIME /*timestamp(%s)*/ DEFAULT CURRENT_TIMESTAMP'
 
-        return 'DATETIME'
+        return 'DATETIME /*timestamp(%s)*/'
 
     def _type_binary(self, column):
-        return 'BLOB'
+        return 'BLOB /*binary*/'
 
     def _modify_nullable(self, blueprint, column):
         if column.get('nullable'):
             return ' NULL'
 
         return ' NOT NULL'
+
+    def _modify_unsigned(self, blueprint, column):
+        # SQLite doesn't have unsigned
+        # but the schema dumper need this info
+        if column.get('unsigned', False):
+            return ' /*unsigned*/'
+        return ''
 
     def _modify_default(self, blueprint, column):
         if column.get('default') is not None:

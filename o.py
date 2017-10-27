@@ -1,12 +1,12 @@
-import re
+import textwrap
+from jinja2 import Template as jinjaTemplate
 from operator import itemgetter
 from collections import namedtuple, defaultdict
-from .dumper_interface import Dumper as BaseDumper
 
 
-class Dumper(BaseDumper):
+class Dumper:
 
-    __ignore_list__ = 'migrations'
+    __ignore_list__ = ['migrations']
 
     column_record = namedtuple('Record', ['name', 'ttype', 'precision',
                                           'unsigned', 'nullable', 'default',
@@ -36,6 +36,39 @@ class Dumper(BaseDumper):
         'VARCHAR': 'string'
     }
 
+    table_tmpl = jinjaTemplate(textwrap.dedent("""\
+        with self.schema.create('{{ table_name }}') as table:
+            {% for statement in table_statement %}
+                {{- statement }}
+            {% endfor %}
+    """))
+
+    schema_tmpl = jinjaTemplate(textwrap.dedent("""\
+    from orator.migrations import Migration
+
+
+    class InitDb(Migration):
+
+        def up(self):
+            {% for table in tables_created %}
+                {{- table | indent(8) }}
+            {% endfor %}
+
+        def down(self):
+            {% for table in tables_droped -%}
+                self.schema.drop('{{ table }}')
+            {% endfor %}
+    """))
+
+    def __init__(self, conn, grammar, db_name):
+        """
+        @param grammar: grammar instance
+        @param da_name: str
+        """
+        self._conn = conn
+        self._grammar = grammar
+        self._db_name = db_name
+
     def handle_column(self, columns):
         statements = []
         for column in columns:
@@ -43,22 +76,14 @@ class Dumper(BaseDumper):
             name = column.name
             ttype = self.mapping[column.ttype.upper()]
             unsigned = column.unsigned
-            precision = column.precision
 
             # bigint auto_increment -> big_increments
             # int auto_increment -> increments
-            pk = False
             if column.extra == 'auto_increment':
                 if ttype == 'big_integer':
                     ttype = 'big_increments'
-                    pk = True
                 if ttype == 'integer':
                     ttype = 'increments'
-                    pk = True
-
-            if ttype == 'tiny_int' and precision == 1:
-                ttype = 'boolean'
-                precision = None
 
             # tiny_int when length is 1 -> boolean
             if ttype == 'tiny_int' and column.precision == 1:
@@ -68,15 +93,9 @@ class Dumper(BaseDumper):
             default = column.default
 
             # dump to orator schema syntax
-            if not pk and precision:
-                column_buffer.append(
-                    'self.{ttype}({name}, {precision})'.format(
-                        ttype=ttype, name=repr(name),
-                        precision=repr(precision)))
-            else:
-                column_buffer.append('self.{ttype}({name})'.format(
-                    ttype=ttype, name=repr(name)))
-            if not pk and unsigned == 'unsigned':
+            column_buffer.append('self.{ttype}({name})'.format(
+                ttype=ttype, name=repr(name)))
+            if unsigned == 'unsigned':
                 column_buffer.append('.unsigned()')
             if nullable != 'NO':
                 column_buffer.append('.nullable()')
@@ -88,20 +107,13 @@ class Dumper(BaseDumper):
                     flag = False
 
                 if flag:
-                    default = default.strip("'")
-                    if default.isdigit():
-                        default = int(default)
-                    elif re.match("^\d+?\.\d+?$", default) is not None:
-                        default = float(default)
-                    else:
-                        default = "'{}'".format(default)
                     column_buffer.append('.default({})'.format(default))
             statements.append(''.join(column_buffer))
         return statements
 
     def handle_index(self, indexes):
         statements = []
-        for name, index in sorted(indexes.items(), key=itemgetter(0)):
+        for name, index in indexes.items():
             ttype = 'index'
             if index['is_unique']:
                 ttype = 'unique'
@@ -127,15 +139,39 @@ class Dumper(BaseDumper):
 
             statement = 'self.foreign({}).references({}).on({})'.format(
                 repr(local_key), repr(ref_key), repr(to_table))
-
             if on_update.upper() == 'CASCADEA':
-                statement += ".on_update('cascadea')"
+                statement += ".on_update('CASCADEA')"
 
             if on_delete.upper() == 'CASCADEA':
-                statement += ".on_delete('cascadea')"
+                statement += ".on_delete('CASCADEA')"
 
             statements.append(statement)
         return statements
+
+    def dump(self):
+        table_names = list(self.list_tables())
+
+        table_buffer = []
+        for table in table_names:
+            columns = self.list_columns(table)
+            indexes = self.list_indexes(table)
+            foreign_keys = self.list_foreign_keys(table)
+            statement_buffer = []
+
+            statement_buffer.extend(self.handle_column(columns))
+            statement_buffer.extend(self.handle_index(indexes))
+            statement_buffer.extend(self.handle_foreign_key(foreign_keys))
+
+            table_buffer.append(self.table_tmpl.render(
+                table_name=table,
+                table_statement=statement_buffer
+            ))
+
+        output = self.schema_tmpl.render(
+            tables_created=table_buffer,
+            tables_droped=table_names
+        )
+        return output
 
     def list_tables(self):
         """list all table_names from specified database
@@ -150,24 +186,24 @@ class Dumper(BaseDumper):
     def list_columns(self, table_name):
         """list column in table
         rtype [namedtuple]"""
-        sql = self._grammar._list_columns(table_name)
+        sql = self._grammar._list_columns(self._db_name, table_name)
         result = self._conn.select(sql)
         return [self.column_record(**r) for r in result]
 
     def list_indexes(self, table_name):
         """list index in table"""
-        sql = self._grammar._list_indexes(table_name)
+        sql = self._grammar._list_indexes(self._db_name, table_name)
         result = self._conn.select(sql)
         indexes = defaultdict(lambda: {'columns': [], 'is_unique': False})
         for r in result:
             index = indexes[r['Key_name']]
             index['columns'].append(r['Column_name'])
-            if not r['Non_unique']:
+            if r['Non_unique']:
                 index['is_unique'] = True
         return indexes
 
     def list_foreign_keys(self, table_name):
         """list foreign key from specified table"""
-        sql = self._grammar._list_foreign_keys(table_name)
+        sql = self._grammar._list_foreign_keys(self._db_name, table_name)
         result = self._conn.select(sql)
         return result

@@ -302,7 +302,7 @@ class MySQLSchemaGrammar(SchemaGrammar):
                           character_maximum_length
                    ) AS 'precision',
                    IF(RIGHT(column_type,8)='unsigned', 'unsigned', NULL)
-                   AS 'unsigned'
+                   AS 'unsigned',
                    is_nullable AS 'nullable',
                    column_default AS 'default',
                    extra AS 'extra'

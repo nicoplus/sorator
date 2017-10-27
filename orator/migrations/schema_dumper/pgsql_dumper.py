@@ -158,31 +158,6 @@ class Dumper(BaseDumper):
             statements.append(statement)
         return statements
 
-    def dump(self):
-        table_names = list(self.list_tables())
-
-        table_buffer = []
-        for table in table_names:
-            columns = self.list_columns(table)
-            indexes = self.list_indexes(table)
-            foreign_keys = self.list_foreign_keys(table)
-            statement_buffer = []
-
-            statement_buffer.extend(self.handle_column(columns))
-            statement_buffer.extend(self.handle_index(indexes))
-            statement_buffer.extend(self.handle_foreign_key(foreign_keys))
-
-            table_buffer.append(self.table_tmpl.render(
-                table_name=table,
-                table_statement=statement_buffer
-            ))
-
-        output = self.schema_tmpl.render(
-            tables_created=table_buffer,
-            tables_droped=table_names
-        )
-        return output
-
     def list_tables(self):
         """list all table_names from specified database
         rtype [str]

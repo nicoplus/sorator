@@ -9,7 +9,8 @@ class Dumper(BaseDumper):
     __ignore_list__ = ['migrations', 'sqlite_sequence']
 
     column_record = namedtuple('Record', ['name', 'ttype', 'nullable', 'pk',
-                                          'precision', 'default', 'autoincr'])
+                                          'precision', 'default', 'autoincr',
+                                          'unsigned', 'origin_type'])
 
     mapping = {
         'INT': 'integer',
@@ -34,13 +35,43 @@ class Dumper(BaseDumper):
         'JSON': 'json',
     }
 
+    def grep_origin_meta(self, plain_sql):
+        result = []
+        s = slice(plain_sql.find('(') + 1, plain_sql.rfind(')'))
+        columns = plain_sql[s].split(', ')
+        meta_regex = re.compile('/\*(.*?)\*/')
+        for column in columns:
+            match_obj = meta_regex.search(column.strip())
+            if match_obj is not None:
+                result.append(match_obj.groups()[0])
+            else:
+                result.append(None)
+        return result
+
+    def grep_unsigned(self, plain_sql):
+        result = []
+        s = slice(plain_sql.find('(') + 1, plain_sql.rfind(')'))
+        columns = plain_sql[s].split(', ')
+        meta_regex = re.compile('/\*.*\*/.*/\*(.*)\*/')
+        for column in columns:
+            match_obj = meta_regex.search(column.strip())
+            if match_obj is not None:
+                result.append(match_obj.groups()[0])
+            else:
+                result.append(None)
+        return result
+
     def list_columns(self, table_name):
         """list column in table
         rtype [namedtuple]"""
         sql = self._grammar._list_columns(table_name)
         result = self._conn.select(sql)
-        autoincrement_columns = self.list_autoincrement_columns(table_name)
-        for r in result:
+        plain_sql = self.list_plain_sql(table_name)
+        autoincrement_columns = self.list_autoincrement_columns(plain_sql)
+        origin_type = self.grep_origin_meta(plain_sql)
+        unsigned_col = self.grep_unsigned(plain_sql)
+        columns = []
+        for r, otype, is_unsigned in zip(result, origin_type, unsigned_col):
             # add autoincrement info
             if r['name'] in autoincrement_columns:
                 r['autoincr'] = True
@@ -55,15 +86,18 @@ class Dumper(BaseDumper):
                 precision, *_ = match_obj.groups()
                 precision = int(precision)
 
-        return [self.column_record(
-            name=r['name'],
-            ttype=r['type'],
-            precision=precision,
-            pk=r['pk'],
-            nullable=not r['notnull'],
-            default=r['dflt_value'],
-            autoincr=r['autoincr']
-        ) for r in result]
+            columns.append(self.column_record(
+                name=r['name'],
+                ttype=r['type'],
+                precision=precision,
+                pk=r['pk'],
+                unsigned=is_unsigned,
+                nullable=not r['notnull'],
+                default=r['dflt_value'],
+                autoincr=r['autoincr'],
+                origin_type=otype
+            ))
+        return columns
 
     def handle_column(self, columns):
         statements = []
@@ -72,18 +106,27 @@ class Dumper(BaseDumper):
             name = column.name
             ttype = self.mapping[column.ttype.upper()]
 
+            pk = False
             if column.autoincr:
                 if ttype == 'big_integer':
                     ttype = 'big_increments'
+                    pk = True
                 if ttype == 'integer':
                     ttype = 'increments'
+                    pk = True
 
+            unsigned = column.unsigned
             nullable = column.nullable
             default = column.default
 
             # dump to orator schema syntax
-            column_buffer.append('self.{ttype}({name})'.format(
-                ttype=ttype, name=repr(name)))
+            if not pk and column.origin_type is not None:
+                column_buffer.append('self.' + column.origin_type % repr(name))
+            else:
+                column_buffer.append('self.{ttype}({name})'.format(
+                    ttype=ttype, name=repr(name)))
+            if not pk and unsigned:
+                column_buffer.append('.unsigned()')
             if nullable:
                 column_buffer.append('.nullable()')
             if default is not None:
@@ -134,13 +177,16 @@ class Dumper(BaseDumper):
                                               repr(name)))
         return statements
 
-    def list_autoincrement_columns(self, table_name):
+    def list_plain_sql(self, table_name):
+        plain_sql = self._conn.select(
+            self._grammar._plain_sql(table_name))[0]['sql']
+        return plain_sql
+
+    def list_autoincrement_columns(self, plain_sql):
         # SQLite autoincrement is not recommanded to use
         # see https://sqlite.org/autoinc.html
         # Besides it have none default value
         result = []
-        plain_sql = self._conn.select(
-            self._grammar._plain_sql(table_name))[0]['sql']
         s = slice(plain_sql.find('(') + 1, plain_sql.rfind(')'))
         columns = plain_sql[s].split(', ')
         for column in columns:
@@ -194,3 +240,34 @@ class Dumper(BaseDumper):
             tables_droped=table_names
         )
         return output
+
+    def list_tables(self):
+        """list all table_names from specified database
+        rtype [str]
+        """
+        sql = self._grammar._list_tables()
+        result = self._conn.select(sql)
+        return filter(
+            lambda table_name: table_name not in self.__ignore_list__,
+            map(itemgetter('table_name'), result))
+
+    def handle_foreign_key(self, foreign_keys):
+        statements = []
+        for foreign_key in foreign_keys:
+            # name = foreign_key['name']
+            local_key = foreign_key['column']
+            ref_key = foreign_key['ref_key']
+            to_table = foreign_key['to_table']
+            on_update = foreign_key['on_update']
+            on_delete = foreign_key['on_delete']
+
+            statement = 'self.foreign({}).references({}).on({})'.format(
+                repr(local_key), repr(ref_key), repr(to_table))
+            if on_update.upper() == 'CASCADEA':
+                statement += ".on_update('cascadea')"
+
+            if on_delete.upper() == 'CASCADEA':
+                statement += ".on_delete('cascadea')"
+
+            statements.append(statement)
+        return statements
