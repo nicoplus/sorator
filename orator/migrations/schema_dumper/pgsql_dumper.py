@@ -1,6 +1,4 @@
 import re
-import textwrap
-from jinja2 import Template as jinjaTemplate
 from operator import itemgetter
 from collections import namedtuple, defaultdict
 from .dumper_interface import Dumper as BaseDumper

@@ -30,7 +30,7 @@ class Dumper(BaseDumper):
         'TEXT': 'text',
         'LONGTEXT': 'long_text',
         'DATE': 'date',
-        'DATETIME': 'timestamp',  # SQLite doesn't have TIMESTAMP type
+        'DATETIME': 'timestamp',
         'INTEGER': 'integer',
         'JSON': 'json',
     }
@@ -156,7 +156,7 @@ class Dumper(BaseDumper):
             index_name = r['name']
             indexes[index_name]['is_unique'] = bool(r['unique'])
             columns = map(itemgetter('name'), self._conn.select(
-                              self._grammar._show_index(index_name)))
+                self._grammar._show_index(index_name)))
             indexes[r['name']]['columns'].extend(columns)
         return indexes
 
