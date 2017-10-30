@@ -110,9 +110,8 @@ class Dumper(BaseDumper):
                 name = None
 
             statements.append(
-                'table.{}({}, name={})'.format(ttype,
-                                              repr(index['columns']),
-                                              repr(name)))
+                'table.{}({}, name={})'.format(ttype, repr(index['columns']),
+                                               repr(name)))
         return statements
 
     def handle_foreign_key(self, foreign_keys):

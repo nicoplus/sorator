@@ -99,7 +99,7 @@ class Dumper(BaseDumper):
 
             statements.append(
                 'table.{}({}, name={})'.format(ttype, repr(index['columns']),
-                                              repr(name)))
+                                               repr(name)))
         return statements
 
     def handle_foreign_key(self, foreign_keys):

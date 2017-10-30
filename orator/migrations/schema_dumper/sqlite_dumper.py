@@ -121,7 +121,8 @@ class Dumper(BaseDumper):
 
             # dump to orator schema syntax
             if not pk and column.origin_type is not None:
-                column_buffer.append('table.' + column.origin_type % repr(name))
+                column_buffer.append(
+                    'table.' + column.origin_type % repr(name))
             else:
                 column_buffer.append('table.{ttype}({name})'.format(
                     ttype=ttype, name=repr(name)))
@@ -171,9 +172,8 @@ class Dumper(BaseDumper):
                 name = None
 
             statements.append(
-                'table.{}({}, name={})'.format(ttype,
-                                              repr(index['columns']),
-                                              repr(name)))
+                'table.{}({}, name={})'.format(ttype, repr(index['columns']),
+                                               repr(name)))
         return statements
 
     def list_plain_sql(self, table_name):
