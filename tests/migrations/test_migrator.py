@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 import os
 import glob
 import inspect
@@ -7,6 +6,7 @@ import textwrap
 from flexmock import flexmock, flexmock_teardown
 from .. import OratorTestCase
 from orator.migrations import Migrator, DatabaseMigrationRepository, Migration
+from orator.migrations.schema_dumper import dump
 from orator import DatabaseManager
 from orator.connections import Connection
 
@@ -20,19 +20,21 @@ class MigratorTestCase(OratorTestCase):
     def tearDown(self):
         flexmock_teardown()
         inspect.getargspec = self.orig
+        try:
+            os.remove(os.path.abspath(os.path.join(os.getcwd(), '../schema.py')))
+        except FileNotFoundError:
+            pass
 
     def test_migrations_are_run_up_when_outstanding_migrations_exist(self):
+        import orator.migrations.migrator as migrator
+        d = flexmock(migrator)
         resolver_mock = flexmock(DatabaseManager)
         resolver_mock.should_receive('connection').and_return({})
         resolver = flexmock(DatabaseManager({}))
         connection = flexmock()
         connection.should_receive('transaction').twice().and_return(connection)
-        connection.should_receive('select').and_return([])
-        connection.name = 'mysql'
-        grammar = flexmock()
-        grammar.should_receive('_get_all_table').and_return('show tables')
-        connection.should_receive('get_default_schema_grammar').and_return(grammar)
         resolver.should_receive('connection').and_return(connection)
+        d.should_receive('dump').with_args(connection).and_return('')
 
         migrator = flexmock(
             Migrator(
@@ -69,17 +71,15 @@ class MigratorTestCase(OratorTestCase):
         migrator.run(os.getcwd())
 
     def test_migrations_are_run_up_directly_if_transactional_is_false(self):
+        import orator.migrations.migrator as migrator
+        d = flexmock(migrator)
         resolver_mock = flexmock(DatabaseManager)
         resolver_mock.should_receive('connection').and_return({})
         resolver = flexmock(DatabaseManager({}))
         connection = flexmock()
         connection.should_receive('transaction').never()
-        connection.should_receive('select').and_return([])
-        connection.name = 'mysql'
-        grammar = flexmock()
-        grammar.should_receive('_get_all_table').and_return('show tables')
-        connection.should_receive('get_default_schema_grammar').and_return(grammar)
         resolver.should_receive('connection').and_return(connection)
+        d.should_receive('dump').and_return('')
 
         migrator = flexmock(
             Migrator(
@@ -117,17 +117,11 @@ class MigratorTestCase(OratorTestCase):
 
         migrator.run(os.getcwd())
 
-    def test_up_migration_can_be_pretended(self):
         resolver_mock = flexmock(DatabaseManager)
         resolver_mock.should_receive('connection').and_return({})
         resolver = flexmock(DatabaseManager({}))
         connection = flexmock(Connection(None))
-        connection.should_receive('select').and_return([])
         connection.should_receive('get_logged_queries').twice().and_return([])
-        connection.name = 'mysql'
-        grammar = flexmock()
-        grammar.should_receive('_get_all_table').and_return('show tables')
-        connection.should_receive('get_default_schema_grammar').and_return(grammar)
         resolver.should_receive('connection').with_args(None).and_return(connection)
 
         migrator = flexmock(
@@ -163,16 +157,12 @@ class MigratorTestCase(OratorTestCase):
         migrator.run(os.getcwd(), True)
 
     def test_nothing_is_done_when_no_migrations_outstanding(self):
+        import orator.migrations.migrator as migrator
+        d = flexmock(migrator)
         resolver_mock = flexmock(DatabaseManager)
         resolver_mock.should_receive('connection').and_return(None)
         resolver = flexmock(DatabaseManager({}))
-        connection = flexmock()
-        connection.should_receive('select').and_return([])
-        connection.name = 'mysql'
-        grammar = flexmock()
-        grammar.should_receive('_get_all_table').and_return('show tables')
-        connection.should_receive('get_default_schema_grammar').and_return(grammar)
-        resolver.should_receive('connection').and_return(connection)
+        d.should_receive('dump').and_return('')
 
         migrator = flexmock(
             Migrator(
@@ -196,17 +186,15 @@ class MigratorTestCase(OratorTestCase):
         migrator.run(os.getcwd())
 
     def test_last_batch_of_migrations_can_be_rolled_back(self):
+        import orator.migrations.migrator as migrator
+        d = flexmock(migrator)
         resolver_mock = flexmock(DatabaseManager)
         resolver_mock.should_receive('connection').and_return({})
         resolver = flexmock(DatabaseManager({}))
         connection = flexmock()
         connection.should_receive('transaction').twice().and_return(connection)
-        connection.should_receive('select').and_return([])
-        connection.name = 'mysql'
-        grammar = flexmock()
-        grammar.should_receive('_get_all_table').and_return('show tables')
-        connection.should_receive('get_default_schema_grammar').and_return(grammar)
         resolver.should_receive('connection').and_return(connection)
+        d.should_receive('dump').with_args(connection).and_return('')
 
         migrator = flexmock(
             Migrator(
@@ -242,17 +230,15 @@ class MigratorTestCase(OratorTestCase):
         migrator.rollback(os.getcwd())
 
     def test_last_batch_of_migrations_can_be_rolled_back_directly_if_transactional_is_false(self):
+        import orator.migrations.migrator as migrator
+        d = flexmock(migrator)
         resolver_mock = flexmock(DatabaseManager)
         resolver_mock.should_receive('connection').and_return({})
         resolver = flexmock(DatabaseManager({}))
         connection = flexmock()
         connection.should_receive('transaction').never()
-        connection.should_receive('select').and_return([])
-        connection.name = 'mysql'
-        grammar = flexmock()
-        grammar.should_receive('_get_all_table').and_return('show tables')
-        connection.should_receive('get_default_schema_grammar').and_return(grammar)
         resolver.should_receive('connection').and_return(connection)
+        d.should_receive('dump').with_args(connection).and_return('')
 
         migrator = flexmock(
             Migrator(
@@ -290,17 +276,15 @@ class MigratorTestCase(OratorTestCase):
         migrator.rollback(os.getcwd())
 
     def test_rollback_migration_can_be_pretended(self):
+        import orator.migrations.migrator as migrator
+        d = flexmock(migrator)
         resolver_mock = flexmock(DatabaseManager)
         resolver_mock.should_receive('connection').and_return({})
         resolver = flexmock(DatabaseManager({}))
         connection = flexmock(Connection(None))
         connection.should_receive('get_logged_queries').twice().and_return([])
-        connection.should_receive('select').and_return([])
-        connection.name = 'mysql'
-        grammar = flexmock()
-        grammar.should_receive('_get_all_table').and_return('show tables')
-        connection.should_receive('get_default_schema_grammar').and_return(grammar)
         resolver.should_receive('connection').with_args(None).and_return(connection)
+        d.should_receive('dump').with_args(connection).and_return('')
 
         migrator = flexmock(
             Migrator(
@@ -334,6 +318,8 @@ class MigratorTestCase(OratorTestCase):
         self.assertFalse(foo_migration.upped)
 
     def test_nothing_is_rolled_back_when_nothing_in_repository(self):
+        import orator.migrations.migrator as migrator
+        d = flexmock(migrator)
         resolver = flexmock(DatabaseManager)
         resolver.should_receive('connection').and_return(None)
 
@@ -353,110 +339,356 @@ class MigratorTestCase(OratorTestCase):
 
         migrator.rollback(os.getcwd())
 
-    def test_schema_dump(self):
-        seed_data = """\
-        CREATE TABLE `Persons` (
-          `Id_P` int(11) unsigned NOT NULL AUTO_INCREMENT,
-          `Id_D` int(11) NOT NULL,
-          `LastName` varchar(255) NOT NULL,
-          `FirstName` varchar(255) DEFAULT NULL,
-          `Address` varchar(255) DEFAULT NULL,
-          `City` varchar(255) DEFAULT NULL,
-          `Country` varchar(255) DEFAULT 'China',
-          `created_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
-          `updated_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
-          PRIMARY KEY (`Id_P`),
-          KEY `CityIndex` (`City`),
-          KEY `PersonIndex` (`LastName`,`FirstName`),
-          UNIQUE KEY `unique_name` (`FirstName`,`LastName`),
-          CONSTRAINT `fk_Id_D` FOREIGN KEY (`Id_D`) REFERENCES `other_table` (`id`)
-        ) ENGINE=InnoDB DEFAULT CHARSET=latin1
-        """
-        resolver_mock = flexmock(DatabaseManager)
-        resolver_mock.should_receive('connection').and_return({})
-        resolver = flexmock(DatabaseManager({}))
-        connection = flexmock()
-        table = flexmock()
-        table.should_receive('popitem').and_return((None, 'test_table'))
-        connection.should_receive('transaction').twice().and_return(connection)
-        connection.should_receive('select').with_args('show tables').\
-            once().and_return([table])
-        connection.should_receive('select').\
-            with_args('show create table test_table').once().and_return([{
-                'Create Table': seed_data
-            }])
-        connection.name = 'mysql'
-        grammar = flexmock()
-        grammar.should_receive('_get_all_table').and_return('show tables')
-        grammar.should_receive('_get_table_structure').\
-            and_return('show create table test_table')
-        connection.should_receive('get_default_schema_grammar').and_return(grammar)
-        resolver.should_receive('connection').and_return(connection)
-
-        migrator = flexmock(
-            Migrator(
-                flexmock(
-                    DatabaseMigrationRepository(
-                        resolver,
-                        'migrations'
-                    )
-                ),
-                resolver
-            )
-        )
-
-        g = flexmock(glob)
-        g.should_receive('glob').with_args(os.path.join(os.getcwd(), '[0-9]*_*.py')).and_return([
-            os.path.join(os.getcwd(), '2_bar.py'),
-            os.path.join(os.getcwd(), '1_foo.py'),
-            os.path.join(os.getcwd(), '3_baz.py')
+    def test_mysql_schema_dump(self):
+        from orator.schema.grammars import MySQLSchemaGrammar
+        conn = flexmock()
+        conn.should_receive('get_database_name').and_return('test_db')
+        conn.should_receive('get_marker').and_return('?')
+        conn.name = 'mysql'
+        grammar = MySQLSchemaGrammar(conn)
+        conn.should_receive('get_default_schema_grammar').and_return(grammar)
+        conn.should_receive('select').with_args(grammar._list_tables()).and_return([
+            {'table_name': 'migrations'},
+            {'table_name': 'users'},
+            {'table_name': 'user_info'},
+            {'table_name': 'groups'}
         ])
 
-        migrator.get_repository().should_receive('get_ran').once().and_return(['1_foo'])
-        migrator.get_repository().should_receive('get_next_batch_number').once().and_return(1)
-        migrator.get_repository().should_receive('log').once().with_args('2_bar', 1)
-        migrator.get_repository().should_receive('log').once().with_args('3_baz', 1)
-        bar_mock = flexmock(MigrationStub())
-        bar_mock.set_connection(connection)
-        bar_mock.should_receive('up').once()
-        baz_mock = flexmock(MigrationStub())
-        baz_mock.set_connection(connection)
-        baz_mock.should_receive('up').once()
-        migrator.should_receive('_resolve').with_args(os.getcwd(), '2_bar').once().and_return(bar_mock)
-        migrator.should_receive('_resolve').with_args(os.getcwd(), '3_baz').once().and_return(baz_mock)
+        conn.should_receive('select').with_args(grammar._list_columns('groups')).and_return([
+            {'precision': 10, 'unsigned': 'unsigned', 'name': 'id', 'ttype': 'int', 'extra': 'auto_increment', 'default': None, 'nullable': 'NO'},
+            {'precision': 255, 'unsigned': None, 'name': 'name', 'ttype': 'varchar', 'extra': '', 'default': None, 'nullable': 'NO'},
+            {'precision': 255, 'unsigned': None, 'name': 'category', 'ttype': 'varchar', 'extra': '', 'default': None, 'nullable': 'NO'},
+            {'precision': 255, 'unsigned': None, 'name': 'bio', 'ttype': 'varchar', 'extra': '', 'default': None, 'nullable': 'YES'}
+        ])
 
-        migrator.run(os.getcwd())
-        dump_path = os.path.abspath(os.path.join(os.getcwd(), '../schema.py'))
-        assert os.path.exists(dump_path)
-        result = textwrap.dedent("""\
-        from orator.migrations import Migration
+        conn.should_receive('select').with_args(grammar._list_columns('user_info')).and_return([
+            {'precision': 10, 'unsigned': 'unsigned', 'name': 'id', 'ttype': 'int', 'extra': 'auto_increment', 'default': None, 'nullable': 'NO'},
+            {'precision': 10, 'unsigned': 'unsigned', 'name': 'user_id', 'ttype': 'int', 'extra': '', 'default': None, 'nullable': 'NO'},
+            {'precision': 5, 'unsigned': 'unsigned', 'name': 'age', 'ttype': 'smallint', 'extra': '', 'default': '18', 'nullable': 'NO'},
+            {'precision': 255, 'unsigned': None, 'name': 'bio', 'ttype': 'varchar', 'extra': '', 'default': 'nothing', 'nullable': 'NO'},
+            {'precision': 1, 'unsigned': None, 'name': 'is_stuff', 'ttype': 'tinyint', 'extra': '', 'default': None, 'nullable': 'NO'},
+            {'precision': None, 'unsigned': None, 'name': 'created_at', 'ttype': 'timestamp', 'extra': '', 'default': 'CURRENT_TIMESTAMP(6)', 'nullable': 'NO'},
+            {'precision': None, 'unsigned': None, 'name': 'updated_at', 'ttype': 'timestamp', 'extra': '', 'default': 'CURRENT_TIMESTAMP(6)', 'nullable': 'NO'}
+        ])
+
+        conn.should_receive('select').with_args(grammar._list_columns('users')).and_return([
+            {'precision': 10, 'unsigned': 'unsigned', 'name': 'id', 'ttype': 'int', 'extra': 'auto_increment', 'default': None, 'nullable': 'NO'},
+            {'precision': 128, 'unsigned': None, 'name': 'username', 'ttype': 'varchar', 'extra': '', 'default': None, 'nullable': 'NO'},
+            {'precision': 128, 'unsigned': None, 'name': 'password', 'ttype': 'varchar', 'extra': '', 'default': None, 'nullable': 'NO'},
+            {'precision': 255, 'unsigned': None, 'name': 'name', 'ttype': 'varchar', 'extra': '', 'default': None, 'nullable': 'NO'},
+            {'precision': None, 'unsigned': None, 'name': 'created_at', 'ttype': 'timestamp', 'extra': '', 'default': 'CURRENT_TIMESTAMP(6)', 'nullable': 'NO'},
+            {'precision': None, 'unsigned': None, 'name': 'updated_at', 'ttype': 'timestamp', 'extra': '', 'default': 'CURRENT_TIMESTAMP(6)', 'nullable': 'NO'}
+        ])
+
+        conn.should_receive('select').with_args(grammar._list_indexes('groups')).and_return([
+            {'Table': 'groups', 'Column_name': 'id', 'Seq_in_index': 1, 'Packed': None, 'Comment': '', 'Null': '', 'Collation': 'A', 'Sub_part': None, 'Index_type': 'BTREE', 'Index_comment': '', 'Key_name': 'PRIMARY', 'Cardinality': 0, 'Non_unique': 0},
+            {'Table': 'groups', 'Column_name': 'name', 'Seq_in_index': 1, 'Packed': None, 'Comment': '', 'Null': '', 'Collation': 'A', 'Sub_part': None, 'Index_type': 'BTREE', 'Index_comment': '', 'Key_name': 'groups_name_category_index', 'Cardinality': 0, 'Non_unique': 1},
+            {'Table': 'groups', 'Column_name': 'category', 'Seq_in_index': 2, 'Packed': None, 'Comment': '', 'Null': '', 'Collation': 'A', 'Sub_part': None, 'Index_type': 'BTREE', 'Index_comment': '', 'Key_name': 'groups_name_category_index', 'Cardinality': 0, 'Non_unique': 1}
+        ])
+        conn.should_receive('select').with_args(grammar._list_indexes('user_info')).and_return([
+            {'Table': 'user_info', 'Column_name': 'id', 'Seq_in_index': 1, 'Packed': None, 'Comment': '', 'Null': '', 'Collation': 'A', 'Sub_part': None, 'Index_type': 'BTREE', 'Index_comment': '', 'Key_name': 'PRIMARY', 'Cardinality': 0, 'Non_unique': 0},
+            {'Table': 'user_info', 'Column_name': 'user_id', 'Seq_in_index': 1, 'Packed': None, 'Comment': '', 'Null': '', 'Collation': 'A', 'Sub_part': None, 'Index_type': 'BTREE', 'Index_comment': '', 'Key_name': 'user_info_user_id_foreign', 'Cardinality': 0, 'Non_unique': 1}
+        ])
+        conn.should_receive('select').with_args(grammar._list_indexes('users')).and_return(
+            {'Table': 'users', 'Column_name': 'id', 'Seq_in_index': 1, 'Packed': None, 'Comment': '', 'Null': '', 'Collation': 'A', 'Sub_part': None, 'Index_type': 'BTREE', 'Index_comment': '', 'Key_name': 'PRIMARY', 'Cardinality': 0, 'Non_unique': 0},
+            {'Table': 'users', 'Column_name': 'username', 'Seq_in_index': 1, 'Packed': None, 'Comment': '', 'Null': '', 'Collation': 'A', 'Sub_part': None, 'Index_type': 'BTREE', 'Index_comment': '', 'Key_name': 'users_username_unique', 'Cardinality': 0, 'Non_unique': 0}
+        )
+
+        conn.should_receive('select').with_args(grammar._list_foreign_keys('groups')).and_return([])
+
+        conn.should_receive('select').with_args(grammar._list_foreign_keys('user_info')).and_return([
+            {'column': 'user_id', 'on_delete': 'RESTRICT', 'name': 'user_info_user_id_foreign', 'on_update': 'RESTRICT', 'ref_key': 'id', 'to_table': 'users'}
+        ])
+        conn.should_receive('select').with_args(grammar._list_foreign_keys('users')).and_return([])
+
+        output = dump(conn)
+        correct_output = textwrap.dedent("""\
+            from orator.migrations import Migration
 
 
-        class InitDb(Migration):
+            class InitDb(Migration):
 
-            def up(self):
-                with self.schema.create('Persons') as table:
-                    table.increments('Id_P').unsigned()
-                    table.foreign('Id_D').references('id').on('other_table')
-                    table.string('LastName', 255)
-                    table.string('FirstName', 255).nullable()
-                    table.string('Address', 255).nullable()
-                    table.string('City', 255).nullable()
-                    table.string('Country', 255).default('China')
-                    table.timestamp('created_at')
-                    table.timestamp('updated_at')
+                def up(self):
+                    with self.schema.create('users') as table:
+                        self.increments('id')
+                        self.string('username', 128)
+                        self.string('password', 128)
+                        self.string('name', 255)
+                        self.timestamp('created_at')
+                        self.timestamp('updated_at')
+                        self.primary(['id'], name=None)
+                        self.unique(['username'], name='users_username_unique')
 
-                    table.primary(['id'])
-                    table.index(['City'], name='CityIndex')
-                    table.index(['LastName', 'FirstName'], name='PersonIndex')
-                    table.unique(['FirstName', 'LastName'], name='unique_name')
+                    with self.schema.create('user_info') as table:
+                        self.increments('id')
+                        self.integer('user_id', 10).unsigned()
+                        self.small_int('age', 5).unsigned().default(18)
+                        self.string('bio', 255).default('nothing')
+                        self.boolean('is_stuff')
+                        self.timestamp('created_at')
+                        self.timestamp('updated_at')
+                        self.primary(['id'], name=None)
+                        self.index(['user_id'], name='user_info_user_id_foreign')
+                        self.foreign('user_id').references('id').on('users')
 
-            def down(self):
-                self.schema.drop('Persons')
-        """).strip()
-        with open(dump_path, 'r') as fd:
-            assert result == fd.read().strip()
-        os.remove(dump_path)
+                    with self.schema.create('groups') as table:
+                        self.increments('id')
+                        self.string('name', 255)
+                        self.string('category', 255)
+                        self.string('bio', 255).nullable()
+                        self.primary(['id'], name=None)
+                        self.index(['name', 'category'], name='groups_name_category_index')
+
+                def down(self):
+                    self.schema.drop('users')
+                    self.schema.drop('user_info')
+                    self.schema.drop('groups')
+        """)
+        assert correct_output == output
+
+    def test_pgsql_schema_dump(self):
+        from orator.schema.grammars import PostgresSchemaGrammar
+        conn = flexmock()
+        conn.should_receive('get_database_name').and_return('test_db')
+        conn.should_receive('get_marker').and_return('?')
+        conn.name = 'pgsql'
+        grammar = PostgresSchemaGrammar(conn)
+        conn.should_receive('get_default_schema_grammar').and_return(grammar)
+
+
+        conn.should_receive('select').with_args(grammar._list_tables()).and_return([
+            ['migrations'],
+            ['users'],
+            ['user_info'],
+            ['groups']
+        ])
+
+        conn.should_receive('select').with_args(grammar._list_columns('users')).and_return([
+            ['id', 'integer', 32, 'NO', "nextval('users_id_seq'::regclass)"],
+            ['username', 'character varying', 128, 'NO', None],
+            ['password', 'character varying', 128, 'NO', None],
+            ['name', 'character varying', 255, 'NO', None],
+            ['created_at', 'timestamp without time zone', None, 'NO', "('now'::text)::timestamp(6) with time zone"],
+            ['updated_at', 'timestamp without time zone', None, 'NO', "('now'::text)::timestamp(6) with time zone"]
+        ])
+
+        conn.should_receive('select').with_args(grammar._list_columns('user_info')).and_return([
+            ['id', 'integer', 32, 'NO', "nextval('user_info_id_seq'::regclass)"],
+            ['user_id', 'integer', 32, 'NO', None],
+            ['age', 'smallint', 16, 'NO', "'18'::smallint"],
+            ['bio', 'character varying', 255, 'NO', "'nothing'::character varying"],
+            ['is_stuff', 'boolean', None, 'NO', None],
+            ['created_at', 'timestamp without time zone', None, 'NO', "('now'::text)::timestamp(6) with time zone"],
+            ['updated_at', 'timestamp without time zone', None, 'NO', "('now'::text)::timestamp(6) with time zone"]
+        ])
+
+        conn.should_receive('select').with_args(grammar._list_columns('groups')).and_return([
+            ['id', 'integer', 32, 'NO', "nextval('groups_id_seq'::regclass)"],
+            ['name', 'character varying', 255, 'NO', None],
+            ['category', 'character varying', 255, 'NO', None],
+            ['bio', 'character varying', 255, 'YES', None]
+        ])
+
+        conn.should_receive('select').with_args(grammar._list_indexes('users')).and_return([
+            ['users_pkey', 'CREATE UNIQUE INDEX users_pkey ON users USING btree (id)'],
+            ['users_username_unique', 'CREATE UNIQUE INDEX users_username_unique ON users USING btree (username)']
+        ])
+        conn.should_receive('select').with_args(grammar._list_indexes('user_info')).and_return([
+            ['user_info_pkey', 'CREATE UNIQUE INDEX user_info_pkey ON user_info USING btree (id)']
+        ])
+        conn.should_receive('select').with_args(grammar._list_indexes('groups')).and_return([
+            ['groups_pkey', 'CREATE UNIQUE INDEX groups_pkey ON groups USING btree (id)'], ['groups_name_category_index', 'CREATE INDEX groups_name_category_index ON groups USING btree (name, category)']
+        ])
+
+        conn.should_receive('select').with_args(grammar._show_index('users_pkey')).and_return([
+            ['id']
+        ])
+        conn.should_receive('select').with_args(grammar._show_index('users_username_unique')).and_return([
+            ['username']
+        ])
+        conn.should_receive('select').with_args(grammar._show_index('user_info_pkey')).and_return([
+            ['id']
+        ])
+        conn.should_receive('select').with_args(grammar._show_index('groups_pkey')).and_return([
+            ['id']
+        ])
+        conn.should_receive('select').with_args(grammar._show_index('groups_name_category_index')).and_return([
+            ['name'], ['category']
+        ])
+
+        conn.should_receive('select').with_args(grammar._list_foreign_keys('users')).and_return([])
+
+        conn.should_receive('select').with_args(grammar._list_foreign_keys('user_info')).and_return([
+            ['users', 'user_id', 'id', 'user_info_user_id_foreign', 'a', 'a']
+        ])
+        conn.should_receive('select').with_args(grammar._list_foreign_keys('groups')).and_return([])
+
+        output = dump(conn)
+        correct_output = textwrap.dedent("""\
+            from orator.migrations import Migration
+
+
+            class InitDb(Migration):
+
+                def up(self):
+                    with self.schema.create('users') as table:
+                        self.increments('id')
+                        self.string('username', 128)
+                        self.string('password', 128)
+                        self.string('name', 255)
+                        self.timestamp('created_at')
+                        self.timestamp('updated_at')
+                        self.primary([('id',)], name=None)
+                        self.unique([('username',)], name='users_username_unique')
+
+                    with self.schema.create('user_info') as table:
+                        self.increments('id')
+                        self.integer('user_id', 32)
+                        self.small_int('age', 16).default(18)
+                        self.string('bio', 255).default('nothing')
+                        self.boolean('is_stuff')
+                        self.timestamp('created_at')
+                        self.timestamp('updated_at')
+                        self.primary([('id',)], name=None)
+                        self.foreign('user_id').references(
+                            'id').on('users').on_update('cascadea')
+
+                    with self.schema.create('groups') as table:
+                        self.increments('id')
+                        self.string('name', 255)
+                        self.string('category', 255)
+                        self.string('bio', 255).nullable()
+                        self.index([('name', 'category')],
+                                   name='groups_name_category_index')
+                        self.primary([('id',)], name=None)
+
+                def down(self):
+                    self.schema.drop('users')
+                    self.schema.drop('user_info')
+                    self.schema.drop('groups')
+        """)
+        assert correct_output == output
+
+    def test_sqlite_schema_dump(self):
+        from orator.schema.grammars import SQLiteSchemaGrammar
+        conn = flexmock()
+        conn.should_receive('get_database_name').and_return('test_db')
+        conn.should_receive('get_marker').and_return('?')
+        conn.name = 'sqlite'
+        grammar = SQLiteSchemaGrammar(conn)
+        conn.should_receive('get_default_schema_grammar').and_return(grammar)
+        conn.should_receive('select').with_args(grammar._list_tables()).and_return([
+            {'table_name': 'migrations'},
+            {'table_name': 'users'},
+            {'table_name': 'sqlite_sequence'},
+            {'table_name': 'user_info'},
+            {'table_name': 'groups'}
+        ])
+
+        conn.should_receive('select').with_args(grammar._list_columns('users')).and_return([
+            {'cid': 0, 'pk': 1, 'type': 'INTEGER', 'notnull': 1, 'dflt_value': None, 'name': 'id'},
+            {'cid': 1, 'pk': 0, 'type': 'VARCHAR', 'notnull': 1, 'dflt_value': None, 'name': 'username'},
+            {'cid': 2, 'pk': 0, 'type': 'VARCHAR', 'notnull': 1, 'dflt_value': None, 'name': 'password'},
+            {'cid': 3, 'pk': 0, 'type': 'VARCHAR', 'notnull': 1, 'dflt_value': None, 'name': 'name'},
+            {'cid': 4, 'pk': 0, 'type': 'DATETIME', 'notnull': 1, 'dflt_value': 'CURRENT_TIMESTAMP', 'name': 'created_at'},
+            {'cid': 5, 'pk': 0, 'type': 'DATETIME', 'notnull': 1, 'dflt_value': 'CURRENT_TIMESTAMP', 'name': 'updated_at'}
+        ])
+
+        conn.should_receive('select').with_args(grammar._list_columns('user_info')).and_return([
+            {'cid': 0, 'pk': 1, 'type': 'INTEGER', 'notnull': 1, 'dflt_value': None, 'name': 'id'},
+            {'cid': 1, 'pk': 0, 'type': 'INTEGER', 'notnull': 1, 'dflt_value': None, 'name': 'user_id'},
+            {'cid': 2, 'pk': 0, 'type': 'INTEGER', 'notnull': 1, 'dflt_value': "'18'", 'name': 'age'},
+            {'cid': 3, 'pk': 0, 'type': 'TEXT', 'notnull': 1, 'dflt_value': "'nothing'", 'name': 'bio'},
+            {'cid': 4, 'pk': 0, 'type': 'TINYINT', 'notnull': 1, 'dflt_value': None, 'name': 'is_stuff'},
+            {'cid': 5, 'pk': 0, 'type': 'DATETIME', 'notnull': 1, 'dflt_value': 'CURRENT_TIMESTAMP', 'name': 'created_at'},
+            {'cid': 6, 'pk': 0, 'type': 'DATETIME', 'notnull': 1, 'dflt_value': 'CURRENT_TIMESTAMP', 'name': 'updated_at'}
+        ])
+
+        conn.should_receive('select').with_args(grammar._list_columns('groups')).and_return([
+            {'cid': 0, 'pk': 1, 'type': 'INTEGER', 'notnull': 1, 'dflt_value': None, 'name': 'id'},
+            {'cid': 1, 'pk': 0, 'type': 'VARCHAR', 'notnull': 1, 'dflt_value': None, 'name': 'name'},
+            {'cid': 2, 'pk': 0, 'type': 'VARCHAR', 'notnull': 1, 'dflt_value': None, 'name': 'category'},
+            {'cid': 3, 'pk': 0, 'type': 'VARCHAR', 'notnull': 0, 'dflt_value': None, 'name': 'bio'}
+        ])
+
+        conn.should_receive('select').with_args(grammar._plain_sql('users')).and_return([
+            {'sql': """CREATE TABLE "users" ("id" INTEGER /*integer(%s)*/ /*unsigned*/ NOT NULL PRIMARY KEY AUTOINCREMENT, "username" VARCHAR /*string(%s 128)*/ NOT NULL, "password" VARCHAR /*string(%s 128)*/ NOT NULL, "name" VARCHAR /*string(%s 255)*/ NOT NULL, "created_at" DATETIME /*timestamp(%s)*/ DEFAULT CURRENT_TIMESTAMP NOT NULL, "updated_at" DATETIME /*timestamp(%s)*/ DEFAULT CURRENT_TIMESTAMP NOT NULL)"""}
+        ])
+        conn.should_receive('select').with_args(grammar._plain_sql('user_info')).and_return([
+            {'sql': """CREATE TABLE "user_info" ("id" INTEGER /*integer(%s)*/ /*unsigned*/ NOT NULL PRIMARY KEY AUTOINCREMENT, "user_id" INTEGER /*integer(%s)*/ /*unsigned*/ NOT NULL, "age" INTEGER /*small_integer(%s)*/ /*unsigned*/ NOT NULL DEFAULT '18', "bio" VARCHAR /*string(%s 255)*/ NOT NULL DEFAULT 'nothing', "is_stuff" TINYINT /*boolean(%s)*/ NOT NULL, "created_at" DATETIME /*timestamp(%s)*/ DEFAULT CURRENT_TIMESTAMP NOT NULL, "updated_at" DATETIME /*timestamp(%s)*/ DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY("user_id") REFERENCES "users"("id"))"""}
+        ])
+        conn.should_receive('select').with_args(grammar._plain_sql('groups')).and_return([
+            {'sql': """CREATE TABLE "groups" ("id" INTEGER /*integer(%s)*/ /*unsigned*/ NOT NULL PRIMARY KEY AUTOINCREMENT, "name" VARCHAR /*string(%s 255)*/ NOT NULL, "category" VARCHAR /*string(%s 255)*/ NOT NULL, "bio" VARCHAR /*string(%s 255)*/ NULL)"""}
+        ])
+
+
+        conn.should_receive('select').with_args(grammar._list_indexes('users')).and_return([
+            {'name': 'users_username_unique', 'seq': 0, 'origin': 'c', 'partial': 0, 'unique': 1}
+        ])
+        conn.should_receive('select').with_args(grammar._list_indexes('user_info')).and_return([])
+        conn.should_receive('select').with_args(grammar._list_indexes('groups')).and_return([
+            {'name': 'groups_name_category_index', 'seq': 0, 'origin': 'c', 'partial': 0, 'unique': 0}
+        ])
+
+
+        conn.should_receive('select').with_args(grammar._show_index('users_username_unique')).and_return([
+            {'cid': 1, 'seqno': 0, 'name': 'username'}
+        ])
+        conn.should_receive('select').with_args(grammar._show_index('groups_name_category_index')).and_return([
+            {'cid': 1, 'seqno': 0, 'name': 'name'},
+            {'cid': 2, 'seqno': 1, 'name': 'category'}
+        ])
+
+        conn.should_receive('select').with_args(grammar._list_foreign_keys('users')).and_return([])
+
+        conn.should_receive('select').with_args(grammar._list_foreign_keys('user_info')).and_return([
+            {'from': 'user_id', 'seq': 0, 'match': 'NONE', 'to': 'id', 'on_delete': 'NO ACTION', 'id': 0, 'on_update': 'NO ACTION', 'table': 'users'}
+        ])
+        conn.should_receive('select').with_args(grammar._list_foreign_keys('groups')).and_return([])
+
+        output = dump(conn)
+        correct_output = textwrap.dedent("""\
+            from orator.migrations import Migration
+
+
+            class InitDb(Migration):
+
+                def up(self):
+                    with self.schema.create('users') as table:
+                        self.increments('id')
+                        self.string('username' 128)
+                        self.string('password' 128)
+                        self.string('name' 255)
+                        self.timestamp('created_at')
+                        self.timestamp('updated_at')
+                        self.unique(['username'], name='users_username_unique')
+                        self.primary(['id'])
+
+                    with self.schema.create('user_info') as table:
+                        self.increments('id')
+                        self.integer('user_id').unsigned()
+                        self.small_integer('age').unsigned().default(18)
+                        self.string('bio' 255).default('nothing')
+                        self.boolean('is_stuff')
+                        self.timestamp('created_at')
+                        self.timestamp('updated_at')
+                        self.foreign('user_id').references('id').on('users')
+                        self.primary(['id'])
+
+                    with self.schema.create('groups') as table:
+                        self.increments('id')
+                        self.string('name' 255)
+                        self.string('category' 255)
+                        self.string('bio' 255).nullable()
+                        self.index(['name', 'category'], name='groups_name_category_index')
+                        self.primary(['id'])
+
+                def down(self):
+                    self.schema.drop('users')
+                    self.schema.drop('user_info')
+                    self.schema.drop('groups')
+        """)
+        assert correct_output == output
 
 
 class MigrationStub(Migration):

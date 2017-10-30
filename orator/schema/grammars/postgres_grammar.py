@@ -231,3 +231,82 @@ class PostgresSchemaGrammar(SchemaGrammar):
             return 'string'
 
         return super()._get_dbal_column_type(type_)
+
+    def _list_tables(self):
+        sql = """\
+            SELECT c.relname AS "table_name"
+            FROM pg_catalog.pg_class c
+                 LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+            WHERE c.relkind IN ('r','')
+                  AND n.nspname <> 'pg_catalog'
+                  AND n.nspname <> 'information_schema'
+                  AND n.nspname !~ '^pg_toast'
+                  AND pg_catalog.pg_table_is_visible(c.oid)
+        """
+        return sql
+
+    def _list_columns(self, table_name):
+        sql = """\
+            SELECT column_name AS "name",
+                   data_type AS "ttype",
+                   COALESCE(numeric_precision, character_maximum_length) \
+                        AS "precision",
+                   is_nullable AS "nullable",
+                   column_default AS "default"
+            FROM information_schema.columns
+            WHERE table_name = '{}'
+        """.format(table_name)
+        return sql
+
+    def _list_indexes(self, table_name):
+        sql = """\
+            SELECT indexname AS "name",
+                   indexdef
+            FROM pg_indexes
+            WHERE tablename = '{}'
+        """.format(table_name)
+        return sql
+
+    def _show_index(self, index):
+        sql = """\
+            select
+             a.attname as column_name
+            from
+             pg_class t,
+             pg_class i,
+             pg_index ix,
+             pg_attribute a
+            where
+             t.oid = ix.indrelid
+             and i.oid = ix.indexrelid
+             and a.attrelid = t.oid
+             and a.attnum = ANY(ix.indkey)
+             and t.relkind = 'r'
+             and i.relname = '{}'
+            order by
+             t.relname,
+             i.relname;
+        """.format(index)
+        return sql
+
+    def _list_foreign_keys(self, table_name):
+        sql = """\
+            SELECT t2.oid::regclass::text AS "to_table",
+                   a1.attname AS "column",
+                   a2.attname AS "primary_key",
+                   c.conname AS "name",
+                   c.confupdtype AS "on_update",
+                   c.confdeltype AS "on_delete"
+            FROM pg_constraint c
+            JOIN pg_class t1 ON c.conrelid = t1.oid
+            JOIN pg_class t2 ON c.confrelid = t2.oid
+            JOIN pg_attribute a1 ON a1.attnum = c.conkey[1]
+                AND a1.attrelid = t1.oid
+            JOIN pg_attribute a2 ON a2.attnum = c.confkey[1]
+                AND a2.attrelid = t2.oid
+            JOIN pg_namespace t3 ON c.connamespace = t3.oid
+            WHERE c.contype = 'f'
+                AND t1.relname = '{}'
+            ORDER BY c.conname
+        """.format(table_name)
+        return sql

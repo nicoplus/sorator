@@ -286,8 +286,63 @@ class MySQLSchemaGrammar(SchemaGrammar):
 
         return '`%s`' % value.replace('`', '``')
 
-    def _get_all_table(self):
-        return 'show tables'
+    def _list_tables(self):
+        sql = """\
+            SELECT table_name
+            FROM information_schema.tables
+            WHERE table_schema= DATABASE();
+        """
+        return sql
 
-    def _get_table_structure(self, table):
-        return 'show create table %s' % table
+    def _list_columns(self, table):
+        sql = """\
+            SELECT column_name AS 'name',
+                   data_type AS 'ttype',
+                   IFNULL(numeric_precision,
+                          character_maximum_length
+                   ) AS 'precision',
+                   IF(RIGHT(column_type,8)='unsigned', 'unsigned', NULL)
+                   AS 'unsigned',
+                   is_nullable AS 'nullable',
+                   column_default AS 'default',
+                   extra AS 'extra'
+            FROM information_schema.columns
+            WHERE table_schema = DATABASE()
+              AND table_name = '{}'
+        """.format(table)
+        return sql
+
+    def _list_primary_keys(self, table):
+        sql = """\
+            SELECT column_name
+            FROM information_schema.key_column_usage
+            WHERE constraint_name = 'PRIMARY'
+              AND table_schema = DATABASE()
+              AND table_name = '{}'
+            ORDER BY ordinal_position
+        """.format(table)
+        return sql
+
+    def _list_foreign_keys(self, table):
+        sql = """\
+            SELECT fk.referenced_table_name AS 'to_table',
+                   fk.referenced_column_name AS 'ref_key',
+                   fk.column_name AS 'column',
+                   fk.constraint_name AS 'name',
+                   rc.update_rule AS 'on_update',
+                   rc.delete_rule AS 'on_delete'
+            FROM information_schema.key_column_usage fk
+            JOIN information_schema.referential_constraints rc
+            USING (constraint_schema, constraint_name)
+            WHERE fk.referenced_column_name IS NOT NULL
+              AND fk.table_schema = DATABASE()
+              AND fk.table_name = '{0}'
+              AND rc.table_name = '{0}';
+        """.format(table)
+        return sql
+
+    def _list_indexes(self, table):
+        sql = """\
+            SHOW KEYS FROM {}
+        """.format(table)
+        return sql
