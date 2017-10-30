@@ -121,9 +121,10 @@ class Dumper(BaseDumper):
 
             # dump to orator schema syntax
             if not pk and column.origin_type is not None:
-                column_buffer.append('self.' + column.origin_type % repr(name))
+                column_buffer.append(
+                    'table.' + column.origin_type % repr(name))
             else:
-                column_buffer.append('self.{ttype}({name})'.format(
+                column_buffer.append('table.{ttype}({name})'.format(
                     ttype=ttype, name=repr(name)))
             if not pk and unsigned:
                 column_buffer.append('.unsigned()')
@@ -171,9 +172,8 @@ class Dumper(BaseDumper):
                 name = None
 
             statements.append(
-                'self.{}({}, name={})'.format(ttype,
-                                              repr(index['columns']),
-                                              repr(name)))
+                'table.{}({}, name={})'.format(ttype, repr(index['columns']),
+                                               repr(name)))
         return statements
 
     def list_plain_sql(self, table_name):
@@ -210,7 +210,7 @@ class Dumper(BaseDumper):
         return foreign_keys
 
     def handle_primary_key(self, primary_key):
-        return ['self.primary([{}])'.format(repr(primary_key[0].name))]
+        return ['table.primary([{}])'.format(repr(primary_key[0].name))]
 
     def dump(self):
         table_names = list(self.list_tables())
@@ -259,7 +259,7 @@ class Dumper(BaseDumper):
             on_update = foreign_key['on_update']
             on_delete = foreign_key['on_delete']
 
-            statement = 'self.foreign({}).references({}).on({})'.format(
+            statement = 'table.foreign({}).references({}).on({})'.format(
                 repr(local_key), repr(ref_key), repr(to_table))
 
             if on_update.upper() == 'CASCADEA':
