@@ -70,11 +70,11 @@ class Dumper(BaseDumper):
             # dump to orator schema syntax
             if not pk and precision:
                 column_buffer.append(
-                    'self.{ttype}({name}, {precision})'.format(
+                    'table.{ttype}({name}, {precision})'.format(
                         ttype=ttype, name=repr(name),
                         precision=repr(precision)))
             else:
-                column_buffer.append('self.{ttype}({name})'.format(
+                column_buffer.append('table.{ttype}({name})'.format(
                     ttype=ttype, name=repr(name)))
             if not pk and unsigned == 'unsigned':
                 column_buffer.append('.unsigned()')
@@ -110,7 +110,7 @@ class Dumper(BaseDumper):
                 name = None
 
             statements.append(
-                'self.{}({}, name={})'.format(ttype,
+                'table.{}({}, name={})'.format(ttype,
                                               repr(index['columns']),
                                               repr(name)))
         return statements
@@ -125,7 +125,7 @@ class Dumper(BaseDumper):
             on_update = foreign_key['on_update']
             on_delete = foreign_key['on_delete']
 
-            statement = 'self.foreign({}).references({}).on({})'.format(
+            statement = 'table.foreign({}).references({}).on({})'.format(
                 repr(local_key), repr(ref_key), repr(to_table))
 
             if on_update.upper() == 'CASCADEA':

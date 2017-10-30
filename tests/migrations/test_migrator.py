@@ -410,34 +410,35 @@ class MigratorTestCase(OratorTestCase):
 
                 def up(self):
                     with self.schema.create('users') as table:
-                        self.increments('id')
-                        self.string('username', 128)
-                        self.string('password', 128)
-                        self.string('name', 255)
-                        self.timestamp('created_at')
-                        self.timestamp('updated_at')
-                        self.primary(['id'], name=None)
-                        self.unique(['username'], name='users_username_unique')
+                        table.increments('id')
+                        table.string('username', 128)
+                        table.string('password', 128)
+                        table.string('name', 255)
+                        table.timestamp('created_at')
+                        table.timestamp('updated_at')
+                        table.primary(['id'], name=None)
+                        table.unique(['username'], name='users_username_unique')
 
                     with self.schema.create('user_info') as table:
-                        self.increments('id')
-                        self.integer('user_id', 10).unsigned()
-                        self.small_int('age', 5).unsigned().default(18)
-                        self.string('bio', 255).default('nothing')
-                        self.boolean('is_stuff')
-                        self.timestamp('created_at')
-                        self.timestamp('updated_at')
-                        self.primary(['id'], name=None)
-                        self.index(['user_id'], name='user_info_user_id_foreign')
-                        self.foreign('user_id').references('id').on('users')
+                        table.increments('id')
+                        table.integer('user_id', 10).unsigned()
+                        table.small_int('age', 5).unsigned().default(18)
+                        table.string('bio', 255).default('nothing')
+                        table.boolean('is_stuff')
+                        table.timestamp('created_at')
+                        table.timestamp('updated_at')
+                        table.primary(['id'], name=None)
+                        table.index(['user_id'], name='user_info_user_id_foreign')
+                        table.foreign('user_id').references('id').on('users')
 
                     with self.schema.create('groups') as table:
-                        self.increments('id')
-                        self.string('name', 255)
-                        self.string('category', 255)
-                        self.string('bio', 255).nullable()
-                        self.primary(['id'], name=None)
-                        self.index(['name', 'category'], name='groups_name_category_index')
+                        table.increments('id')
+                        table.string('name', 255)
+                        table.string('category', 255)
+                        table.string('bio', 255).nullable()
+                        table.primary(['id'], name=None)
+                        table.index(['name', 'category'],
+                                    name='groups_name_category_index')
 
                 def down(self):
                     self.schema.drop('users')
@@ -532,35 +533,35 @@ class MigratorTestCase(OratorTestCase):
 
                 def up(self):
                     with self.schema.create('users') as table:
-                        self.increments('id')
-                        self.string('username', 128)
-                        self.string('password', 128)
-                        self.string('name', 255)
-                        self.timestamp('created_at')
-                        self.timestamp('updated_at')
-                        self.primary([('id',)], name=None)
-                        self.unique([('username',)], name='users_username_unique')
+                        table.increments('id')
+                        table.string('username', 128)
+                        table.string('password', 128)
+                        table.string('name', 255)
+                        table.timestamp('created_at')
+                        table.timestamp('updated_at')
+                        table.primary([('id',)], name=None)
+                        table.unique([('username',)], name='users_username_unique')
 
                     with self.schema.create('user_info') as table:
-                        self.increments('id')
-                        self.integer('user_id', 32)
-                        self.small_int('age', 16).default(18)
-                        self.string('bio', 255).default('nothing')
-                        self.boolean('is_stuff')
-                        self.timestamp('created_at')
-                        self.timestamp('updated_at')
-                        self.primary([('id',)], name=None)
-                        self.foreign('user_id').references(
+                        table.increments('id')
+                        table.integer('user_id', 32)
+                        table.small_int('age', 16).default(18)
+                        table.string('bio', 255).default('nothing')
+                        table.boolean('is_stuff')
+                        table.timestamp('created_at')
+                        table.timestamp('updated_at')
+                        table.primary([('id',)], name=None)
+                        table.foreign('user_id').references(
                             'id').on('users').on_update('cascadea')
 
                     with self.schema.create('groups') as table:
-                        self.increments('id')
-                        self.string('name', 255)
-                        self.string('category', 255)
-                        self.string('bio', 255).nullable()
-                        self.index([('name', 'category')],
-                                   name='groups_name_category_index')
-                        self.primary([('id',)], name=None)
+                        table.increments('id')
+                        table.string('name', 255)
+                        table.string('category', 255)
+                        table.string('bio', 255).nullable()
+                        table.index([('name', 'category')],
+                                    name='groups_name_category_index')
+                        table.primary([('id',)], name=None)
 
                 def down(self):
                     self.schema.drop('users')
@@ -655,33 +656,34 @@ class MigratorTestCase(OratorTestCase):
 
                 def up(self):
                     with self.schema.create('users') as table:
-                        self.increments('id')
-                        self.string('username' 128)
-                        self.string('password' 128)
-                        self.string('name' 255)
-                        self.timestamp('created_at')
-                        self.timestamp('updated_at')
-                        self.unique(['username'], name='users_username_unique')
-                        self.primary(['id'])
+                        table.increments('id')
+                        table.string('username' 128)
+                        table.string('password' 128)
+                        table.string('name' 255)
+                        table.timestamp('created_at')
+                        table.timestamp('updated_at')
+                        table.unique(['username'], name='users_username_unique')
+                        table.primary(['id'])
 
                     with self.schema.create('user_info') as table:
-                        self.increments('id')
-                        self.integer('user_id').unsigned()
-                        self.small_integer('age').unsigned().default(18)
-                        self.string('bio' 255).default('nothing')
-                        self.boolean('is_stuff')
-                        self.timestamp('created_at')
-                        self.timestamp('updated_at')
-                        self.foreign('user_id').references('id').on('users')
-                        self.primary(['id'])
+                        table.increments('id')
+                        table.integer('user_id').unsigned()
+                        table.small_integer('age').unsigned().default(18)
+                        table.string('bio' 255).default('nothing')
+                        table.boolean('is_stuff')
+                        table.timestamp('created_at')
+                        table.timestamp('updated_at')
+                        table.foreign('user_id').references('id').on('users')
+                        table.primary(['id'])
 
                     with self.schema.create('groups') as table:
-                        self.increments('id')
-                        self.string('name' 255)
-                        self.string('category' 255)
-                        self.string('bio' 255).nullable()
-                        self.index(['name', 'category'], name='groups_name_category_index')
-                        self.primary(['id'])
+                        table.increments('id')
+                        table.string('name' 255)
+                        table.string('category' 255)
+                        table.string('bio' 255).nullable()
+                        table.index(['name', 'category'],
+                                    name='groups_name_category_index')
+                        table.primary(['id'])
 
                 def down(self):
                     self.schema.drop('users')
