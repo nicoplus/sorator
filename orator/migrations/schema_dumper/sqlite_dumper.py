@@ -104,8 +104,8 @@ class Dumper(BaseDumper):
         for column in columns:
             column_buffer = []
             name = column.name
-            ttype = self.mapping[column.ttype.upper()]
             origin_type = column.origin_type
+            ttype = self.mapping[column.ttype.upper()]
 
             pk = False
             if column.autoincr:

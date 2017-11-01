@@ -9,6 +9,5 @@ Faker
 wrapt
 pyaml
 pygments
-sqlparse
 autopep8
 jinja2
