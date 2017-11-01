@@ -105,13 +105,14 @@ class Dumper(BaseDumper):
             column_buffer = []
             name = column.name
             ttype = self.mapping[column.ttype.upper()]
+            origin_type = column.origin_type
 
             pk = False
             if column.autoincr:
-                if ttype == 'big_integer':
+                if origin_type.startswith('big_integer'):
                     ttype = 'big_increments'
                     pk = True
-                if ttype == 'integer':
+                if origin_type.startswith('integer'):
                     ttype = 'increments'
                     pk = True
 
@@ -120,9 +121,8 @@ class Dumper(BaseDumper):
             default = column.default
 
             # dump to orator schema syntax
-            if not pk and column.origin_type is not None:
-                column_buffer.append(
-                    'table.' + column.origin_type % repr(name))
+            if not pk and origin_type is not None:
+                column_buffer.append('table.' + origin_type % repr(name))
             else:
                 column_buffer.append('table.{ttype}({name})'.format(
                     ttype=ttype, name=repr(name)))
