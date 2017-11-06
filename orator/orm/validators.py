@@ -177,8 +177,8 @@ class UniquenessValidator(BaseValidator):
 
     def __call__(self, instance, value):
         column = self.func_name.split('_')[-1]
-
-        if instance.__class__.where(column, '=', value).limit(1).get():
+        if (instance.is_dirty(column) and
+                instance.__class__.where(column, '=', value).limit(1).get()):
             raise ValidationError("duplicate record")
         return value
 
