@@ -208,7 +208,7 @@ class SQLiteSchemaGrammar(SchemaGrammar):
         return 'VARCHAR /*char(%%s,%s)*/' % column.length
 
     def _type_string(self, column):
-        return 'VARCHAR /*string(%%s %s)*/' % column.length
+        return 'VARCHAR /*string(%%s,%s)*/' % column.length
 
     def _type_text(self, column):
         return 'TEXT /*text(%s)*/'

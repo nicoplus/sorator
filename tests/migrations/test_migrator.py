@@ -613,13 +613,13 @@ class MigratorTestCase(OratorTestCase):
         ])
 
         conn.should_receive('select').with_args(grammar._plain_sql('users')).and_return([
-            {'sql': """CREATE TABLE "users" ("id" INTEGER /*integer(%s)*/ /*unsigned*/ NOT NULL PRIMARY KEY AUTOINCREMENT, "username" VARCHAR /*string(%s 128)*/ NOT NULL, "password" VARCHAR /*string(%s 128)*/ NOT NULL, "name" VARCHAR /*string(%s 255)*/ NOT NULL, "created_at" DATETIME /*timestamp(%s)*/ DEFAULT CURRENT_TIMESTAMP NOT NULL, "updated_at" DATETIME /*timestamp(%s)*/ DEFAULT CURRENT_TIMESTAMP NOT NULL)"""}
+            {'sql': """CREATE TABLE "users" ("id" INTEGER /*integer(%s)*/ /*unsigned*/ NOT NULL PRIMARY KEY AUTOINCREMENT, "username" VARCHAR /*string(%s,128)*/ NOT NULL, "password" VARCHAR /*string(%s,128)*/ NOT NULL, "name" VARCHAR /*string(%s,255)*/ NOT NULL, "created_at" DATETIME /*timestamp(%s)*/ DEFAULT CURRENT_TIMESTAMP NOT NULL, "updated_at" DATETIME /*timestamp(%s)*/ DEFAULT CURRENT_TIMESTAMP NOT NULL)"""}
         ])
         conn.should_receive('select').with_args(grammar._plain_sql('user_info')).and_return([
-            {'sql': """CREATE TABLE "user_info" ("id" INTEGER /*integer(%s)*/ /*unsigned*/ NOT NULL PRIMARY KEY AUTOINCREMENT, "user_id" INTEGER /*integer(%s)*/ /*unsigned*/ NOT NULL, "age" INTEGER /*small_integer(%s)*/ /*unsigned*/ NOT NULL DEFAULT '18', "bio" VARCHAR /*string(%s 255)*/ NOT NULL DEFAULT 'nothing', "is_stuff" TINYINT /*boolean(%s)*/ NOT NULL, "created_at" DATETIME /*timestamp(%s)*/ DEFAULT CURRENT_TIMESTAMP NOT NULL, "updated_at" DATETIME /*timestamp(%s)*/ DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY("user_id") REFERENCES "users"("id"))"""}
+            {'sql': """CREATE TABLE "user_info" ("id" INTEGER /*integer(%s)*/ /*unsigned*/ NOT NULL PRIMARY KEY AUTOINCREMENT, "user_id" INTEGER /*integer(%s)*/ /*unsigned*/ NOT NULL, "age" INTEGER /*small_integer(%s)*/ /*unsigned*/ NOT NULL DEFAULT '18', "bio" VARCHAR /*string(%s,255)*/ NOT NULL DEFAULT 'nothing', "is_stuff" TINYINT /*boolean(%s)*/ NOT NULL, "created_at" DATETIME /*timestamp(%s)*/ DEFAULT CURRENT_TIMESTAMP NOT NULL, "updated_at" DATETIME /*timestamp(%s)*/ DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY("user_id") REFERENCES "users"("id"))"""}
         ])
         conn.should_receive('select').with_args(grammar._plain_sql('groups')).and_return([
-            {'sql': """CREATE TABLE "groups" ("id" INTEGER /*integer(%s)*/ /*unsigned*/ NOT NULL PRIMARY KEY AUTOINCREMENT, "name" VARCHAR /*string(%s 255)*/ NOT NULL, "category" VARCHAR /*string(%s 255)*/ NOT NULL, "bio" VARCHAR /*string(%s 255)*/ NULL)"""}
+            {'sql': """CREATE TABLE "groups" ("id" INTEGER /*integer(%s)*/ /*unsigned*/ NOT NULL PRIMARY KEY AUTOINCREMENT, "name" VARCHAR /*string(%s,255)*/ NOT NULL, "category" VARCHAR /*string(%s,255)*/ NOT NULL, "bio" VARCHAR /*string(%s,255)*/ NULL)"""}
         ])
 
 
@@ -657,9 +657,9 @@ class MigratorTestCase(OratorTestCase):
                 def up(self):
                     with self.schema.create('users') as table:
                         table.increments('id')
-                        table.string('username' 128)
-                        table.string('password' 128)
-                        table.string('name' 255)
+                        table.string('username', 128)
+                        table.string('password', 128)
+                        table.string('name', 255)
                         table.timestamp('created_at')
                         table.timestamp('updated_at')
                         table.unique(['username'], name='users_username_unique')
@@ -669,7 +669,7 @@ class MigratorTestCase(OratorTestCase):
                         table.increments('id')
                         table.integer('user_id').unsigned()
                         table.small_integer('age').unsigned().default(18)
-                        table.string('bio' 255).default('nothing')
+                        table.string('bio', 255).default('nothing')
                         table.boolean('is_stuff')
                         table.timestamp('created_at')
                         table.timestamp('updated_at')
@@ -678,9 +678,9 @@ class MigratorTestCase(OratorTestCase):
 
                     with self.schema.create('groups') as table:
                         table.increments('id')
-                        table.string('name' 255)
-                        table.string('category' 255)
-                        table.string('bio' 255).nullable()
+                        table.string('name', 255)
+                        table.string('category', 255)
+                        table.string('bio', 255).nullable()
                         table.index(['name', 'category'],
                                     name='groups_name_category_index')
                         table.primary(['id'])

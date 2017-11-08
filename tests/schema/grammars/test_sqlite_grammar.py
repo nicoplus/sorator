@@ -21,7 +21,7 @@ class SqliteSchemaGrammarTestCase(OratorTestCase):
 
         self.assertEqual(1, len(statements))
         self.assertEqual(
-            'CREATE TABLE "users" ("id" INTEGER /*integer(%s)*/ /*unsigned*/ NOT NULL PRIMARY KEY AUTOINCREMENT, "email" VARCHAR /*string(%s 255)*/ NOT NULL)',
+            'CREATE TABLE "users" ("id" INTEGER /*integer(%s)*/ /*unsigned*/ NOT NULL PRIMARY KEY AUTOINCREMENT, "email" VARCHAR /*string(%s,255)*/ NOT NULL)',
             statements[0]
         )
 
@@ -33,7 +33,7 @@ class SqliteSchemaGrammarTestCase(OratorTestCase):
         self.assertEqual(2, len(statements))
         expected = [
             'ALTER TABLE "users" ADD COLUMN "id" INTEGER /*integer(%s)*/ /*unsigned*/ NOT NULL PRIMARY KEY AUTOINCREMENT',
-            'ALTER TABLE "users" ADD COLUMN "email" VARCHAR /*string(%s 255)*/ NOT NULL'
+            'ALTER TABLE "users" ADD COLUMN "email" VARCHAR /*string(%s,255)*/ NOT NULL'
         ]
         self.assertEqual(expected, statements)
 
@@ -86,7 +86,7 @@ class SqliteSchemaGrammarTestCase(OratorTestCase):
         statements = blueprint.to_sql(self.get_connection(), self.get_grammar())
 
         self.assertEqual(1, len(statements))
-        expected = 'CREATE TABLE "users" ("foo" VARCHAR /*string(%s 255)*/ NOT NULL, "order_id" VARCHAR /*string(%s 255)*/ NOT NULL, ' \
+        expected = 'CREATE TABLE "users" ("foo" VARCHAR /*string(%s,255)*/ NOT NULL, "order_id" VARCHAR /*string(%s,255)*/ NOT NULL, ' \
                    'FOREIGN KEY("order_id") REFERENCES "orders"("id"), PRIMARY KEY ("foo"))'
         self.assertEqual(expected, statements[0])
 
@@ -141,7 +141,7 @@ class SqliteSchemaGrammarTestCase(OratorTestCase):
 
         self.assertEqual(1, len(statements))
         self.assertEqual(
-            'ALTER TABLE "users" ADD COLUMN "foo" VARCHAR /*string(%s 255)*/ NOT NULL',
+            'ALTER TABLE "users" ADD COLUMN "foo" VARCHAR /*string(%s,255)*/ NOT NULL',
             statements[0]
         )
 
@@ -151,7 +151,7 @@ class SqliteSchemaGrammarTestCase(OratorTestCase):
 
         self.assertEqual(1, len(statements))
         self.assertEqual(
-            'ALTER TABLE "users" ADD COLUMN "foo" VARCHAR /*string(%s 100)*/ NOT NULL',
+            'ALTER TABLE "users" ADD COLUMN "foo" VARCHAR /*string(%s,100)*/ NOT NULL',
             statements[0]
         )
 
@@ -161,7 +161,7 @@ class SqliteSchemaGrammarTestCase(OratorTestCase):
 
         self.assertEqual(1, len(statements))
         self.assertEqual(
-            'ALTER TABLE "users" ADD COLUMN "foo" VARCHAR /*string(%s 100)*/ NULL DEFAULT \'bar\'',
+            'ALTER TABLE "users" ADD COLUMN "foo" VARCHAR /*string(%s,100)*/ NULL DEFAULT \'bar\'',
             statements[0]
         )
 
