@@ -17,3 +17,18 @@ class QueryException(Exception):
 
     def __str__(self):
         return self.message
+
+
+class IntegrityError(QueryException):
+
+    """
+    Exception raised when the relational integrity of the database
+    is affected, e.g. a foreign key check fails, duplicate key,
+    etc.
+    """
+
+
+def raise_from_cause(db_api, query, bindings, e):
+    if isinstance(e, db_api.IntegrityError):
+        raise IntegrityError(query, bindings, e)
+    raise QueryException(query, bindings, e)

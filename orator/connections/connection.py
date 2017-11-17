@@ -11,7 +11,7 @@ from ..query.expression import QueryExpression
 from ..query.processors.processor import QueryProcessor
 from ..schema.builder import SchemaBuilder
 from ..dbal.schema_manager import SchemaManager
-from ..exceptions.query import QueryException
+from ..exceptions.query import raise_from_cause
 
 
 query_logger = logging.getLogger('orator.connection.queries')
@@ -341,7 +341,7 @@ class Connection(ConnectionInterface):
 
             return callback(self, query, bindings, *args, **kwargs)
 
-        raise QueryException(query, bindings, e)
+        raise_from_cause(self._connection.get_api(), query, bindings, e)
 
     def _caused_by_lost_connection(self, e):
         message = str(e)
