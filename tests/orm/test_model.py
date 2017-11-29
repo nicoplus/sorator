@@ -968,18 +968,6 @@ class OrmModelTestCase(OratorTestCase):
 
         self.assertEqual('stub', model.get_morph_name())
 
-    def test_pickle(self):
-        model = OrmModelStub()
-        model.set_table('stub')
-        attributes = {'name': 'test'}
-        relations = {'labels': Collection(OrmModelDefaultAttributes())}
-        model.set_raw_attributes(attributes)
-        model.set_relations(relations)
-        state = pickle.dumps(model, protocol=pickle.HIGHEST_PROTOCOL)
-        new_model = pickle.loads(state)
-        assert new_model._attributes == attributes
-        assert new_model.labels
-
 
 class OrmModelStub(Model):
 
