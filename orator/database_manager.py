@@ -92,6 +92,7 @@ class BaseDatabaseManager(ConnectionResolverInterface):
 
         if name in self._connections:
             self._connections[name].disconnect()
+            del self._connections[name]
 
     def reconnect(self, name=None):
         if name is None:
