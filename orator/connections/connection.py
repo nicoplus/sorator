@@ -344,7 +344,7 @@ class Connection(ConnectionInterface):
         raise_from_cause(self._connection.get_api(), query, bindings, e)
 
     def _caused_by_lost_connection(self, e):
-        message = str(e)
+        message = str(e).lower()
 
         for s in ['server has gone away',
                   'no connection to the server',
@@ -356,7 +356,7 @@ class Connection(ConnectionInterface):
                   'SSL connection has been closed unexpectedly',
                   'Error writing data to the connection',
                   'Resource deadlock avoided', ]:
-            if s in message:
+            if s.lower() in message:
                 return True
 
         return False
