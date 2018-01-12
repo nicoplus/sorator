@@ -169,7 +169,8 @@ class LengthValidator(BaseValidator):
 
 
 class UniquenessValidator(BaseValidator):
-    """validates that the value is unique in db
+    """This function is deprecated.
+    validates that the value is unique in db
     """
 
     def __init__(self, status):
